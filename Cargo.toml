@@ -1,0 +1,15 @@
+[package]
+name = "rosu-pp-py"
+version = "0.4.0"
+description = "osu! difficulty and pp calculation for all modes"
+authors = ["Max Ohn <ohn.m@hotmail.de>"]
+license = "MIT"
+edition = "2018"
+
+[lib]
+name = "rosu_pp_py"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.15.1", features = ["macros", "extension-module"] }
+rosu-pp = { version = "0.4" }
