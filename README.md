@@ -16,16 +16,26 @@ calculator = Calculator('/path/to/file.osu')
 ```
 2) Next, you need to create `ScoreParams`. It has the following fields:
 ```
-- mods: Optional[int],          // bit value for mods, defaults to 0 (NM) see https://github.com/ppy/osu-api/wiki#mods
-- acc: Optional[float],         // if neither acc nor hitresults are specified, acc defaults to 100.0
-- n300: Optional[int],          // defaults to value based on acc
-- n100: Optional[int],          // defaults to value based on acc
-- n50: Optional[int],           // defaults to value based on acc
-- nMisses: Optional[int],       // defaults to 0
-- nKatu: Optional[int],         // only relevant for osu!ctb
-- combo: Optional[int],         // defaults to full combo
-- score: Optional[int],         // only relevant for osu!mania
-- passedObjects: Optional[int], // only consider this many hit objects; useful for failed scores; defaults to all objects
+mods: Optional[int],
+    bit value for mods, defaults to 0 (NM) see https://github.com/ppy/osu-api/wiki#mods
+acc: Optional[float],
+    if neither acc nor hitresults are specified, acc defaults to 100.0
+n300: Optional[int],
+    defaults to value based on acc
+n100: Optional[int],
+    defaults to value based on acc
+n50: Optional[int],
+    defaults to value based on acc
+nMisses: Optional[int],
+    defaults to 0
+nKatu: Optional[int],
+    only relevant for osu!ctb
+combo: Optional[int],
+    defaults to full combo
+score: Optional[int],
+    only relevant for osu!mania
+passedObjects: Optional[int],
+    only consider this many hit objects; useful for failed scores; defaults to all objects
 ```
 Note that all fields are optional. If nothing is specified, the parameters are equivalent to the parameters of the best possible NM score.
 `ScoreParams` can be created either by calling the constructor without arguments and then set the fields manually like so
@@ -126,7 +136,7 @@ $ pip install rosu-pp-py
 ```
 or
 ```
-$ pip install https://github.com/MaxOhn/rosu-pp-py
+$ pip install git+https://github.com/MaxOhn/rosu-pp-py
 ```
 
 ## Learn More
