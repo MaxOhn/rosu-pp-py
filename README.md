@@ -64,9 +64,14 @@ params1 = ScoreParams(
 )
 params2 = ScoreParams(mods = 24)
 
+# provide params for a single score, returns a list with one element
 [result] = calculator.calculate(params1)
+
+# provide multiple params
 results = calculator.calculate([params1, params2])
+
 assert result == results[0]
+
 print(f'PP: {results[0].pp}/{results[1].pp} | Stars: {results[1].stars}')
 ```
 

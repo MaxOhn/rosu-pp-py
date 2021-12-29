@@ -1,14 +1,24 @@
 [build-system]
-requires = ["maturin>=0.12,<0.13"]
+requires = ["maturin>=0.12,<0.13", "setuptools", "setuptools-rust", "wheel"]
 build-backend = "maturin"
 
 [project]
 name = "rosu-pp-py"
+version = "0.4.0"
 requires-python = ">=3.6"
+description = "osu! difficulty and pp calculation for all modes"
 classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
-
-
+packages = [{ include = "rosu_pp_py" }]
+authors = [{ name = "Max Ohn", email = "ohn.m@hotmail.de" }]
+readme = "README.md"
+license = { file = "LICENSE" }
+repository = "https://github.com/MaxOhn/rosu-pp-py"
+keywords = ["osu", "pp", "stars", "performance", "difficulty"]
