@@ -12,7 +12,7 @@ use pyo3::{
     PyObjectProtocol,
 };
 use rosu_pp::{
-    fruits::FruitsPerformanceAttributes, mania::ManiaPerformanceAttributes,
+    catch::CatchPerformanceAttributes, mania::ManiaPerformanceAttributes,
     osu::OsuPerformanceAttributes, taiko::TaikoPerformanceAttributes, AnyPP, Beatmap,
     BeatmapAttributes, BeatmapExt, PerformanceAttributes,
 };
@@ -58,7 +58,15 @@ impl Calculator {
 
                         let difficulty = mod_diffs
                             .entry((mods, params.passed_objects))
-                            .or_insert_with(|| self.0.stars(mods, params.passed_objects))
+                            .or_insert_with(|| {
+                                let mut calculator = self.0.stars().mods(mods);
+
+                                if let Some(passed_objects) = params.passed_objects {
+                                    calculator = calculator.passed_objects(passed_objects);
+                                }
+
+                                calculator.calculate()
+                            })
                             .to_owned();
 
                         let calculator = params.apply(AnyPP::new(&self.0).attributes(difficulty));
@@ -163,7 +171,7 @@ impl CalculateResult {
         let bpm = map.bpm() * clock_rate;
 
         match attrs {
-            PerformanceAttributes::Fruits(FruitsPerformanceAttributes { pp, difficulty }) => Self {
+            PerformanceAttributes::Catch(CatchPerformanceAttributes { pp, difficulty }) => Self {
                 mode: 2,
                 pp,
                 stars: difficulty.stars,
