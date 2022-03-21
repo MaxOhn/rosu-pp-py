@@ -1,4 +1,4 @@
-# Upcoming
+# v0.5.1 (2022-03-22)
 - Updated to [rosu-pp v0.5.1](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md)
 - `Calculator` now accepts the kwargs `ar`, `cs`, `hp`, and `od` to adjust the map's attributes
 - Additionally to the kwargs, `Calculator` also has new methods `set_ar(v)`, `set_cs(v)`, `set_hp(v)`, and `set_od(v)`.
