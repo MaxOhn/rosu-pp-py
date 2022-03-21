@@ -14,6 +14,12 @@ The library exposes three classes: `Calculator`, `ScoreParams`, and `CalculateRe
 ```py
 calculator = Calculator('/path/to/file.osu')
 ```
+Optionally, you can also provide the kwargs `ar`, `cs`, `hp`, or `od` to adjust the map's attributes
+or alternatively, after creating the calculator, you can call `set_ar(v)`, `set_cs(v)`, `set_hp(v)`, or `set_od(v)`.
+```py
+calculator = Calculator('/path/to/file.osu', ar = 10.0)
+calculator.set_od(9.2)
+```
 2) Next, you need to create `ScoreParams`. It has the following fields:
 ```
 mods: Optional[int],
@@ -36,6 +42,8 @@ score: Optional[int],
     only relevant for osu!mania
 passedObjects: Optional[int],
     only consider this many hit objects; useful for failed scores; defaults to all objects
+clockRate: Optional[float]
+    defaults to the mod's clock rate.
 ```
 Note that all fields are optional. If nothing is specified, the parameters are equivalent to the parameters of the best possible NM score.
 `ScoreParams` can be created either by calling the constructor without arguments and then set the fields manually like so
@@ -120,6 +128,8 @@ od: float
     Overall difficulty of the map. (O/T/C/M)
 bpm: float
     Beats per minute of the map. (O/T/C/M)
+clockRate: float
+    Clock rate used in calculation i.e. 1.5 for DT, 0.75 for HT, 1.0 for NM or one that was specified (O/T/C/M)
 nCircles: Optional[int]
     The amount of circles in the map. (O/T/M)
 nSliders: Optional[int]

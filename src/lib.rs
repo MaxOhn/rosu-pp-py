@@ -2,6 +2,7 @@ use std::{
     collections::HashMap,
     error::Error as StdError,
     fmt::{Display, Formatter, Result as FmtResult, Write},
+    hash::{Hash, Hasher},
 };
 
 use pyo3::{
@@ -23,19 +24,79 @@ struct Calculator(Beatmap);
 #[pymethods]
 impl Calculator {
     #[new]
-    fn new(path: &str) -> PyResult<Self> {
+    #[args(kwds = "**")]
+    fn new(path: &str, kwds: Option<&PyDict>) -> PyResult<Self> {
+        let mut ar = None;
+        let mut cs = None;
+        let mut hp = None;
+        let mut od = None;
+
+        if let Some(dict) = kwds {
+            for (key, value) in dict.iter() {
+                if let Ok(key) = key.extract() {
+                    match key {
+                        "ar" => ar = Some(value.extract()?),
+                        "cs" => cs = Some(value.extract()?),
+                        "hp" => hp = Some(value.extract()?),
+                        "od" => od = Some(value.extract()?),
+                        _ => {
+                            return Err(PyTypeError::new_err(format!(
+                                "got an unexpected keyword argument '{}'; \
+                                expexted 'ar', 'cs', 'hp', 'od'",
+                                key,
+                            )))
+                        }
+                    }
+                }
+            }
+        }
+
         Beatmap::from_path(path)
-            .map(Self)
+            .map(|mut map| {
+                if let Some(ar) = ar {
+                    map.ar = ar;
+                }
+                if let Some(cs) = cs {
+                    map.cs = cs;
+                }
+                if let Some(hp) = hp {
+                    map.hp = hp;
+                }
+                if let Some(od) = od {
+                    map.od = od;
+                }
+
+                Self(map)
+            })
             .map_err(|e| unwind_error("Failed to parse beatmap", &e))
             .map_err(PyException::new_err)
     }
 
-    fn calculate(&self, py: Python, obj: &PyAny) -> PyResult<Vec<CalculateResult>> {
+    fn set_ar(&mut self, ar: f32) {
+        self.0.ar = ar;
+    }
+
+    fn set_cs(&mut self, cs: f32) {
+        self.0.cs = cs;
+    }
+
+    fn set_hp(&mut self, hp: f32) {
+        self.0.hp = hp;
+    }
+
+    fn set_od(&mut self, od: f32) {
+        self.0.od = od;
+    }
+
+    fn calculate(&mut self, py: Python, obj: &PyAny) -> PyResult<Vec<CalculateResult>> {
         match obj.extract::<ScoreParams>() {
             Ok(params) => {
                 let mods = params.mods;
+                let clock_rate = params.clock_rate;
+
                 let calculator = params.apply(AnyPP::new(&self.0));
-                let result = CalculateResult::new(calculator.calculate(), &self.0, mods);
+                let result =
+                    CalculateResult::new(calculator.calculate(), &self.0, mods, clock_rate);
 
                 Ok(vec![result])
             }
@@ -55,9 +116,11 @@ impl Calculator {
                     .map(|elem| {
                         let params: ScoreParams = elem?.extract()?;
                         let mods = params.mods;
+                        let clock_rate = params.clock_rate;
+                        let attr_key = params.as_attr_key();
 
                         let difficulty = mod_diffs
-                            .entry((mods, params.passed_objects))
+                            .entry(attr_key)
                             .or_insert_with(|| {
                                 let mut calculator = self.0.stars().mods(mods);
 
@@ -65,13 +128,19 @@ impl Calculator {
                                     calculator = calculator.passed_objects(passed_objects);
                                 }
 
+                                if let Some(clock_rate) = params.clock_rate {
+                                    calculator = calculator.clock_rate(clock_rate);
+                                }
+
                                 calculator.calculate()
                             })
                             .to_owned();
 
-                        let calculator = params.apply(AnyPP::new(&self.0).attributes(difficulty));
+                        let attrs = params
+                            .apply(AnyPP::new(&self.0).attributes(difficulty))
+                            .calculate();
 
-                        Ok(CalculateResult::new(calculator.calculate(), &self.0, mods))
+                        Ok(CalculateResult::new(attrs, &self.0, mods, clock_rate))
                     })
                     .collect::<Result<Vec<_>, PyErr>>()
             }
@@ -99,6 +168,7 @@ struct ScoreParams {
     #[pyo3(get, set)]
     score: Option<u32>,
     passed_objects: Option<usize>,
+    clock_rate: Option<f64>,
 }
 
 #[pyclass]
@@ -149,6 +219,8 @@ struct CalculateResult {
     #[pyo3(get, set)]
     bpm: f64,
     #[pyo3(get, set)]
+    clockRate: f64,
+    #[pyo3(get, set)]
     nCircles: Option<usize>,
     #[pyo3(get, set)]
     nSliders: Option<usize>,
@@ -159,15 +231,21 @@ struct CalculateResult {
 }
 
 impl CalculateResult {
-    fn new(attrs: PerformanceAttributes, map: &Beatmap, mods: u32) -> Self {
+    fn new(
+        attrs: PerformanceAttributes,
+        map: &Beatmap,
+        mods: u32,
+        clock_rate: Option<f64>,
+    ) -> Self {
         let BeatmapAttributes {
             ar,
             cs,
             hp,
             od,
-            clock_rate,
+            clock_rate: clock_rate_,
         } = map.attributes().mods(mods);
 
+        let clock_rate = clock_rate.unwrap_or(clock_rate_);
         let bpm = map.bpm() * clock_rate;
 
         match attrs {
@@ -185,6 +263,7 @@ impl CalculateResult {
                 hp,
                 od,
                 bpm,
+                clockRate: clock_rate,
                 ..Default::default()
             },
             PerformanceAttributes::Mania(ManiaPerformanceAttributes {
@@ -205,6 +284,7 @@ impl CalculateResult {
                 hp,
                 od,
                 bpm,
+                clockRate: clock_rate,
                 ..Default::default()
             },
             PerformanceAttributes::Osu(OsuPerformanceAttributes {
@@ -235,6 +315,7 @@ impl CalculateResult {
                 hp,
                 od,
                 bpm,
+                clockRate: clock_rate,
                 ..Default::default()
             },
             PerformanceAttributes::Taiko(TaikoPerformanceAttributes {
@@ -257,6 +338,7 @@ impl CalculateResult {
                 hp,
                 od,
                 bpm,
+                clockRate: clock_rate,
                 ..Default::default()
             },
         }
@@ -298,6 +380,14 @@ fn unwind_error(cause: &str, mut e: &dyn StdError) -> String {
 }
 
 impl ScoreParams {
+    fn as_attr_key(&self) -> AttributeKey {
+        AttributeKey {
+            mods: self.mods,
+            passed_objects: self.passed_objects,
+            clock_rate: self.clock_rate,
+        }
+    }
+
     fn apply(self, mut calculator: AnyPP) -> AnyPP {
         let ScoreParams {
             mods,
@@ -310,6 +400,7 @@ impl ScoreParams {
             combo,
             score,
             passed_objects,
+            clock_rate,
         } = self;
 
         if let Some(n300) = n300 {
@@ -338,6 +429,10 @@ impl ScoreParams {
 
         if let Some(passed_objects) = passed_objects {
             calculator = calculator.passed_objects(passed_objects);
+        }
+
+        if let Some(clock_rate) = clock_rate {
+            calculator = calculator.clock_rate(clock_rate);
         }
 
         if let Some(acc) = acc {
@@ -373,10 +468,11 @@ impl ScoreParams {
                         "combo" => params.combo = value.extract()?,
                         "score" => params.score = value.extract()?,
                         "passedObjects" => params.passed_objects = value.extract()?,
+                        "clockRate" => params.clock_rate = value.extract()?,
                         _ => {
                             return Err(PyTypeError::new_err(format!(
-                                "got an unexpected keyword argument '{}'; expected 'mods', 'n300', \
-                                'n100', 'n50', 'nMisses', 'nKatu', 'acc', 'combo', 'score', 'passedObjects'",
+                                "got an unexpected keyword argument '{}'; expected 'mods', 'n300', 'n100', \
+                                'n50', 'nMisses', 'nKatu', 'acc', 'combo', 'score', 'passedObjects', 'clockRate'",
                                 key,
                             )))
                         }
@@ -416,6 +512,16 @@ impl ScoreParams {
     #[setter(passedObjects)]
     fn set_passed_objects(&mut self, passed_objects: usize) {
         self.passed_objects = Some(passed_objects);
+    }
+
+    #[getter(clockRate)]
+    fn clock_rate(&self) -> Option<f64> {
+        self.clock_rate
+    }
+
+    #[setter(clockRate)]
+    fn set_clock_rate(&mut self, clock_rate: f64) {
+        self.clock_rate = Some(clock_rate);
     }
 }
 
@@ -494,7 +600,8 @@ impl Display for CalculateResult {
             .field("cs", &self.cs)
             .field("hp", &self.hp)
             .field("od", &self.od)
-            .field("bpm", &self.bpm);
+            .field("bpm", &self.bpm)
+            .field("clockRate", &self.clockRate);
 
         if let Some(ref n_circles) = self.nCircles {
             s.field("nCircles", n_circles);
@@ -526,7 +633,8 @@ impl Display for ScoreParams {
             acc: {}, \
             combo: {}, \
             score: {}, \
-            passedObjects: {} \
+            passedObjects: {}, \
+            clockRate: {} \
         }}",
             self.mods,
             match self.n300 {
@@ -565,6 +673,10 @@ impl Display for ScoreParams {
                 Some(ref passed_objects) => passed_objects as &dyn Display,
                 None => &"None" as &dyn Display,
             },
+            match self.clock_rate {
+                Some(ref clock_rate) => clock_rate as &dyn Display,
+                None => &"None" as &dyn Display,
+            },
         )
     }
 }
@@ -577,3 +689,27 @@ fn rosu_pp_py(_py: Python, m: &PyModule) -> PyResult<()> {
 
     Ok(())
 }
+
+struct AttributeKey {
+    mods: u32,
+    passed_objects: Option<usize>,
+    clock_rate: Option<f64>,
+}
+
+impl Hash for AttributeKey {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.mods.hash(state);
+        self.passed_objects.hash(state);
+        (&self.clock_rate as *const _ as *const Option<u64>).hash(state);
+    }
+}
+
+impl PartialEq for AttributeKey {
+    fn eq(&self, other: &Self) -> bool {
+        self.mods == other.mods
+            && self.passed_objects == other.passed_objects
+            && self.clock_rate == other.clock_rate
+    }
+}
+
+impl Eq for AttributeKey {}

@@ -29,6 +29,9 @@ class ScoreParams:
     `passedObjects`: Optional[int]
         Amount of hitobjects to be considered. Useful for failed plays.
         Defaults to all objects.
+    `clockRate`: Optional[float]
+        Customizable clock rate to replace the one dictated by mods.
+        Defaults to the mod's clock rate.
 
     ## Example
     ```py
@@ -90,6 +93,8 @@ class CalculateResult:
         Overall difficulty of the map. (O/T/C/M)
     `bpm`: float
         Beats per minute of the map. (O/T/C/M)
+    `clockRate`: float
+        Clock rate used in calculation i.e. 1.5 for DT, 0.75 for HT, 1.0 for NM or one that was specified (O/T/C/M)
     `nCircles`: Optional[int]
         The amount of circles in the map. (O/T/M)
     `nSliders`: Optional[int]
@@ -110,14 +115,33 @@ class Calculator:
     `path`: str
         The path to the .osu file.
 
+    ## Named arguments
+
+    `ar`: Optional[float]
+        Adjusts the map's approach rate.
+    `cs`: Optional[float]
+        Adjusts the map's circle size.
+    `hp`: Optional[float]
+        Adjusts the map's drain rate.
+    `od`: Optional[float]
+        Adjusts the map's overall difficulty.
+
     ## Methods
 
+    `set_ar(ar)`
+        Specify an approach rate to override the map's value.
+    `set_cs(cs)`
+        Specify a circle size to override the map's value.
+    `set_hp(hp)`
+        Specify a drain rate to override the map's value.
+    `set_od(od)`
+        Specify an overall difficulty to override the map's value.
     `calculate(params)`
         Calculate the difficulty and performance attributes for the given score parameters.
 
     ## Raises
 
-    Throws an Exception if the map could not be parsed.
+    Throws an Exception if the map could not be parsed or an invalid named argument was given.
     """
     def __init__(self, path: str) -> None: ...
 
