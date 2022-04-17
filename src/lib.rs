@@ -615,6 +615,10 @@ impl Display for CalculateResult {
             s.field("nSpinners", n_spinners);
         }
 
+        if let Some(ref combo) = self.maxCombo {
+            s.field("maxCombo", combo);
+        }
+
         s.finish()
     }
 }
