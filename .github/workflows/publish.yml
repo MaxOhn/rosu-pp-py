@@ -129,13 +129,13 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    if: "startsWith(github.ref, 'refs/tags/')"
     needs: [ macos, windows, linux ]
     steps:
       - name: Get artifacts
         uses: actions/download-artifact@v3
         with:
           name: wheels
+
       - name: Python setup
         uses: actions/setup-python@v2
         with:
