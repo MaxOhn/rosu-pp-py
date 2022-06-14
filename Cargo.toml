@@ -13,3 +13,8 @@ crate-type = ["cdylib"]
 [dependencies]
 pyo3 = { version = "0.15.1", features = ["macros", "extension-module"] }
 rosu-pp = { version = "0.5" }
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+strip = "debuginfo"
