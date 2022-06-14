@@ -30,7 +30,7 @@ jobs:
         uses: messense/maturin-action@v1
         with:
           target: x86_64
-          args: --release --out dist -m ./Cargo.toml
+          args: --release --out dist
 
       - name: Install built wheel - x86_64
         run: |
@@ -40,7 +40,7 @@ jobs:
       - name: Build wheels - universal2
         uses: messense/maturin-action@v1
         with:
-          args: --release --universal2 --out dist --no-sdist -m ./Cargo.toml
+          args: --release --universal2 --out dist --no-sdist
   
       - name: Install built wheel - universal2
         run: |
@@ -79,7 +79,7 @@ jobs:
         uses: messense/maturin-action@v1
         with:
           target: ${{ matrix.target }}
-          args: --release --out dist --no-sdist -m ./Cargo.toml
+          args: --release --out dist --no-sdist
 
       - name: Install built wheel
         run: |
@@ -112,7 +112,7 @@ jobs:
       with:
         target: ${{ matrix.target }}
         manylinux: auto
-        args: --release --out dist --no-sdist -m ./Cargo.toml
+        args: --release --out dist --no-sdist
 
     - name: Install built wheel
       if: matrix.target == 'x86_64'
@@ -145,7 +145,7 @@ jobs:
       with:
         target: ${{ matrix.target }}
         manylinux: auto
-        args: --release --out dist --no-sdist -i python -m ./Cargo.toml
+        args: --release --out dist --no-sdist
   
     - name: Install built wheel
       uses: uraimo/run-on-arch-action@v2.0.5
@@ -190,7 +190,7 @@ jobs:
       with:
         target: ${{ matrix.target }}
         manylinux: musllinux_1_2
-        args: --release --out dist --no-sdist -i python -m ./Cargo.toml
+        args: --release --out dist --no-sdist
   
     - name: Install built wheel
       if: matrix.target == 'x86_64-unknown-linux-musl'
@@ -233,7 +233,7 @@ jobs:
       with:
         target: ${{ matrix.platform.target }}
         manylinux: musllinux_1_2
-        args: --release --out dist --no-sdist -m ./Cargo.toml
+        args: --release --out dist --no-sdist
 
     - name: Install built wheel
       uses: uraimo/run-on-arch-action@master

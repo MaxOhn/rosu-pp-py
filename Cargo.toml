@@ -18,3 +18,7 @@ rosu-pp = { version = "0.5" }
 lto = "fat"
 codegen-units = 1
 strip = "debuginfo"
+
+[package.metadata.maturin]
+name = "rosu_pp_py"
+python-source = "python"
