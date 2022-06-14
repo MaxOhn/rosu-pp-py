@@ -34,8 +34,8 @@ jobs:
 
       - name: Install built wheel - x86_64
         run: |
-          pip install crfs --no-index --find-links dist --force-reinstall
-          python -c "import crfs"
+          pip install rosu_pp_py --no-index --find-links dist --force-reinstall
+          python -c "import rosu_pp_py"
 
       - name: Build wheels - universal2
         uses: messense/maturin-action@v1
@@ -44,8 +44,8 @@ jobs:
   
       - name: Install built wheel - universal2
         run: |
-          pip install crfs --no-index --find-links dist --force-reinstall
-          python -c "import crfs"
+          pip install rosu_pp_py --no-index --find-links dist --force-reinstall
+          python -c "import rosu_pp_py"
 
       - name: Upload wheels
         uses: actions/upload-artifact@v3
@@ -83,8 +83,8 @@ jobs:
 
       - name: Install built wheel
         run: |
-          pip install crfs --no-index --find-links dist --force-reinstall
-          python -c "import crfs"
+          pip install rosu_pp_py --no-index --find-links dist --force-reinstall
+          python -c "import rosu_pp_py"
 
       - name: Upload wheels
         uses: actions/upload-artifact@v3
@@ -99,7 +99,7 @@ jobs:
         target: [x86_64, i686]
     steps:
     - name: Checkout project
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     
     - name: Python setup
       uses: actions/setup-python@v4
@@ -117,8 +117,8 @@ jobs:
     - name: Install built wheel
       if: matrix.target == 'x86_64'
       run: |
-        pip install crfs --no-index --find-links dist --force-reinstall
-        python -c "import crfs"
+        pip install rosu_pp_py --no-index --find-links dist --force-reinstall
+        python -c "import rosu_pp_py"
 
     - name: Upload wheels
       uses: actions/upload-artifact@v3
@@ -133,7 +133,7 @@ jobs:
         target: [aarch64, armv7, s390x, ppc64le, ppc64]
     steps:
     - name: Checkout project
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Python setup
       uses: actions/setup-python@v4
@@ -159,8 +159,8 @@ jobs:
           apt-get install -y --no-install-recommends python3 python3-pip
           pip3 install -U pip
         run: |
-          pip3 install crfs --no-index --find-links dist/ --force-reinstall
-          python3 -c "import crfs"
+          pip3 install rosu_pp_py --no-index --find-links dist/ --force-reinstall
+          python3 -c "import rosu_pp_py"
 
     - name: Upload wheels
       uses: actions/upload-artifact@v3
@@ -177,7 +177,7 @@ jobs:
           - i686-unknown-linux-musl
     steps:
     - name: Checkout project
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Python setup
       uses: actions/setup-python@v4
@@ -201,8 +201,8 @@ jobs:
         run: |
           apk add py3-pip
           pip3 install -U pip
-          pip3 install crfs --no-index --find-links /io/dist/ --force-reinstall
-          python3 -c "import crfs"
+          pip3 install rosu_pp_py --no-index --find-links /io/dist/ --force-reinstall
+          python3 -c "import rosu_pp_py"
 
     - name: Upload wheels
       uses: actions/upload-artifact@v3
@@ -245,8 +245,8 @@ jobs:
           apk add py3-pip
           pip3 install -U pip
         run: |
-          pip3 install crfs --no-index --find-links dist/ --force-reinstall
-          python3 -c "import crfs"
+          pip3 install rosu_pp_py --no-index --find-links dist/ --force-reinstall
+          python3 -c "import rosu_pp_py"
     - name: Upload wheels
       uses: actions/upload-artifact@v3
       with:
