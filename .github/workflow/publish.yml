@@ -1,0 +1,277 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+
+jobs:
+  macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v3
+
+      - name: Python setup
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10
+          architecture: x64
+  
+      - name: Rust setup
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          default: true
+
+      - name: Build wheels - x86_64
+        uses: messense/maturin-action@v1
+        with:
+          target: x86_64
+          args: --release --out dist -m ./Cargo.toml
+
+      - name: Install built wheel - x86_64
+        run: |
+          pip install crfs --no-index --find-links dist --force-reinstall
+          python -c "import crfs"
+
+      - name: Build wheels - universal2
+        uses: messense/maturin-action@v1
+        with:
+          args: --release --universal2 --out dist --no-sdist -m ./Cargo.toml
+  
+      - name: Install built wheel - universal2
+        run: |
+          pip install crfs --no-index --find-links dist --force-reinstall
+          python -c "import crfs"
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: dist
+
+  windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        target: [x64, x86]
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v3
+
+      - name: Python setup
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10
+          architecture: ${{ matrix.target }}
+
+      - name: Rust setup
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          default: true
+
+      - name: Build wheels
+        uses: messense/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          args: --release --out dist --no-sdist -m ./Cargo.toml
+
+      - name: Install built wheel
+        run: |
+          pip install crfs --no-index --find-links dist --force-reinstall
+          python -c "import crfs"
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: dist
+
+  linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [x86_64, i686]
+    steps:
+    - name: Checkout project
+      uses: actions/checkout@v2
+    
+    - name: Python setup
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.10
+        architecture: x64
+
+    - name: Build wheels
+      uses: messense/maturin-action@v1
+      with:
+        target: ${{ matrix.target }}
+        manylinux: auto
+        args: --release --out dist --no-sdist -m ./Cargo.toml
+
+    - name: Install built wheel
+      if: matrix.target == 'x86_64'
+      run: |
+        pip install crfs --no-index --find-links dist --force-reinstall
+        python -c "import crfs"
+
+    - name: Upload wheels
+      uses: actions/upload-artifact@v3
+      with:
+        name: wheels
+        path: dist
+
+  linux-cross:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [aarch64, armv7, s390x, ppc64le, ppc64]
+    steps:
+    - name: Checkout project
+      uses: actions/checkout@v2
+
+    - name: Python setup
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.10
+
+    - name: Build wheels
+      uses: messense/maturin-action@v1
+      with:
+        target: ${{ matrix.target }}
+        manylinux: auto
+        args: --release --out dist --no-sdist -m ./Cargo.toml
+  
+    - name: Install built wheel
+      uses: uraimo/run-on-arch-action@v2.0.5
+      if: matrix.target != 'ppc64'
+      with:
+        arch: ${{ matrix.target }}
+        distro: ubuntu18.04
+        githubToken: ${{ github.token }}
+        install: |
+          apt-get update
+          apt-get install -y --no-install-recommends python3 python3-pip
+          pip3 install -U pip
+        run: |
+          pip3 install crfs --no-index --find-links dist/ --force-reinstall
+          python3 -c "import crfs"
+
+    - name: Upload wheels
+      uses: actions/upload-artifact@v3
+      with:
+        name: wheels
+        path: dist
+
+  musllinux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target:
+          - x86_64-unknown-linux-musl
+          - i686-unknown-linux-musl
+    steps:
+    - name: Checkout project
+      uses: actions/checkout@v2
+
+    - name: Python setup
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.10
+        architecture: x64
+
+    - name: Build wheels
+      uses: messense/maturin-action@v1
+      with:
+        target: ${{ matrix.target }}
+        manylinux: musllinux_1_2
+        args: --release --out dist --no-sdist -m ./Cargo.toml
+  
+    - name: Install built wheel
+      if: matrix.target == 'x86_64-unknown-linux-musl'
+      uses: addnab/docker-run-action@v3
+      with:
+        image: alpine:latest
+        options: -v ${{ github.workspace }}:/io -w /io
+        run: |
+          apk add py3-pip
+          pip3 install -U pip
+          pip3 install crfs --no-index --find-links /io/dist/ --force-reinstall
+          python3 -c "import crfs"
+
+    - name: Upload wheels
+      uses: actions/upload-artifact@v3
+      with:
+        name: wheels
+        path: dist
+
+  musllinux-cross:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform:
+          - target: aarch64-unknown-linux-musl
+            arch: aarch64
+          - target: armv7-unknown-linux-musleabihf
+            arch: armv7
+    steps:
+    - name: Checkout project
+      uses: actions/checkout@v3
+
+    - name: Python setup
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.10
+
+    - name: Build wheels
+      uses: messense/maturin-action@v1
+      with:
+        target: ${{ matrix.platform.target }}
+        manylinux: musllinux_1_2
+        args: --release --out dist --no-sdist -m ./Cargo.toml
+
+    - name: Install built wheel
+      uses: uraimo/run-on-arch-action@master
+      with:
+        arch: ${{ matrix.platform.arch }}
+        distro: alpine_latest
+        githubToken: ${{ github.token }}
+        install: |
+          apk add py3-pip
+          pip3 install -U pip
+        run: |
+          pip3 install crfs --no-index --find-links dist/ --force-reinstall
+          python3 -c "import crfs"
+    - name: Upload wheels
+      uses: actions/upload-artifact@v3
+      with:
+        name: wheels
+        path: dist
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    if: "startsWith(github.ref, 'refs/tags/')"
+    needs: [ macos, windows, linux, linux-cross, musllinux, musllinux-cross ]
+    steps:
+      - name: Get artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: wheels
+      - name: Python setup
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10
+
+      - name: Publish to PyPi
+        env:
+          TWINE_USERNAME: MaxOhn
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: |
+          pip install --upgrade twine
+          twine upload --skip-existing *
