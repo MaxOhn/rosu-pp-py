@@ -42,7 +42,7 @@ impl Calculator {
                         _ => {
                             return Err(PyTypeError::new_err(format!(
                                 "got an unexpected keyword argument '{}'; \
-                                expexted 'ar', 'cs', 'hp', 'od'",
+                                expected 'ar', 'cs', 'hp', 'od'",
                                 key,
                             )))
                         }
