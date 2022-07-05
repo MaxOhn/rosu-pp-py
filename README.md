@@ -24,6 +24,7 @@ calculator.set_od(9.2)
 ```
 mode: Optional[GameMode],
     specify for scores on convert maps, default to the map's native mode
+    available enum variants are GameMode.Osu, GameMode.Taiko, GameMode.Catch, and GameMode.Mania
 mods: Optional[int],
     bit value for mods, defaults to 0 (NM) see https://github.com/ppy/osu-api/wiki#mods
 acc: Optional[float],
@@ -59,7 +60,7 @@ params = ScoreParams(acc = 98.76)
 ```
 3) The last step is to provide the `ScoreParams` to the `Calculator` through the function `calculate`. This function takes one argument which must be either a single `ScoreParams` or an `Iterable[ScoreParams]`, i.e. anything that python can iterate over like a list, set, ...
 
-## Example 
+## Example
 
 ```py
 from rosu_pp_py import Calculator, ScoreParams
@@ -68,7 +69,6 @@ calculator = Calculator('./maps/1980365.osu')
 
 params1 = ScoreParams(
     mods = 8 + 16,  # HDHR
-    mode = GameMode.Catch,
     acc = 97.89,
     nMisses = 13,
     combo = 1388,
