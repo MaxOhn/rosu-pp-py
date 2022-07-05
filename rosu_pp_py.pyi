@@ -1,4 +1,11 @@
 from typing import Iterable, List, Union
+from enum import Enum
+
+class GameMode(Enum):
+    Osu = 0
+    Taiko = 1
+    Catch = 2
+    Mania = 3
 
 class ScoreParams:
     """
@@ -7,6 +14,9 @@ class ScoreParams:
 
     ## Attributes
 
+    `mode`: Optional[GameMode]
+        Mode to convert the map. Only does something if the original map is osu!standard and
+        the specified mode is taiko, catch, or mania. Defaults to the map's native mode.
     `mods`: Optional[int]
         Bit value for mods, defaults to 0 (NM) see [https://github.com/ppy/osu-api/wiki#mods](https://github.com/ppy/osu-api/wiki#mods)
     `acc`: Optional[float]

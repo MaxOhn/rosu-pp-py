@@ -12,9 +12,10 @@ use pyo3::{
     types::{PyDict, PyIterator},
 };
 use rosu_pp::{
-    catch::CatchPerformanceAttributes, mania::ManiaPerformanceAttributes,
-    osu::OsuPerformanceAttributes, taiko::TaikoPerformanceAttributes, AnyPP, Beatmap,
-    BeatmapAttributes, BeatmapExt, PerformanceAttributes,
+    beatmap::BeatmapAttributes, catch::CatchPerformanceAttributes,
+    mania::ManiaPerformanceAttributes, osu::OsuPerformanceAttributes,
+    taiko::TaikoPerformanceAttributes, AnyPP, Beatmap, BeatmapExt, GameMode as RosuGameMode,
+    PerformanceAttributes,
 };
 
 #[pyclass]
@@ -148,8 +149,31 @@ impl Calculator {
 }
 
 #[pyclass]
+#[derive(Copy, Clone, PartialEq)]
+#[repr(u8)]
+enum GameMode {
+    Osu,
+    Taiko,
+    Catch,
+    Mania,
+}
+
+impl From<GameMode> for RosuGameMode {
+    fn from(mode: GameMode) -> Self {
+        match mode {
+            GameMode::Osu => RosuGameMode::STD,
+            GameMode::Taiko => RosuGameMode::TKO,
+            GameMode::Catch => RosuGameMode::CTB,
+            GameMode::Mania => RosuGameMode::MNA,
+        }
+    }
+}
+
+#[pyclass]
 #[derive(Clone, Default, PartialEq)]
 struct ScoreParams {
+    #[pyo3(get, set)]
+    mode: Option<GameMode>,
     #[pyo3(get, set)]
     mods: u32,
     #[pyo3(get, set)]
@@ -386,6 +410,7 @@ impl ScoreParams {
 
     fn apply(self, mut calculator: AnyPP) -> AnyPP {
         let ScoreParams {
+            mode,
             mods,
             n300,
             n100,
@@ -398,6 +423,10 @@ impl ScoreParams {
             passed_objects,
             clock_rate,
         } = self;
+
+        if let Some(mode) = mode {
+            calculator = calculator.mode(mode.into());
+        }
 
         if let Some(n300) = n300 {
             calculator = calculator.n300(n300);
@@ -454,6 +483,7 @@ impl ScoreParams {
             for (key, value) in dict.iter() {
                 if let Ok(key) = key.extract() {
                     match key {
+                        "mode" => params.mode = Some(value.extract()?),
                         "mods" => params.mods = value.extract()?,
                         "n300" => params.n300 = value.extract()?,
                         "n100" => params.n100 = value.extract()?,
@@ -467,7 +497,7 @@ impl ScoreParams {
                         "clockRate" => params.clock_rate = value.extract()?,
                         _ => {
                             return Err(PyTypeError::new_err(format!(
-                                "got an unexpected keyword argument '{}'; expected 'mods', 'n300', 'n100', \
+                                "got an unexpected keyword argument '{}'; expected 'mode', 'mods', 'n300', 'n100', \
                                 'n50', 'nMisses', 'nKatu', 'acc', 'combo', 'score', 'passedObjects', 'clockRate'",
                                 key,
                             )))
@@ -680,6 +710,7 @@ impl Display for ScoreParams {
 
 #[pymodule]
 fn rosu_pp_py(_py: Python, m: &PyModule) -> PyResult<()> {
+    m.add_class::<GameMode>()?;
     m.add_class::<ScoreParams>()?;
     m.add_class::<Calculator>()?;
     m.add_class::<CalculateResult>()?;

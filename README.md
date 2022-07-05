@@ -22,6 +22,8 @@ calculator.set_od(9.2)
 ```
 2) Next, you need to create `ScoreParams`. It has the following fields:
 ```
+mode: Optional[GameMode],
+    specify for scores on convert maps, default to the map's native mode
 mods: Optional[int],
     bit value for mods, defaults to 0 (NM) see https://github.com/ppy/osu-api/wiki#mods
 acc: Optional[float],
@@ -66,6 +68,7 @@ calculator = Calculator('./maps/1980365.osu')
 
 params1 = ScoreParams(
     mods = 8 + 16,  # HDHR
+    mode = GameMode.Catch,
     acc = 97.89,
     nMisses = 13,
     combo = 1388,

@@ -1,5 +1,8 @@
 ## Upcoming
 - Updated to [PyO3 v0.16](https://github.com/PyO3/pyo3/blob/main/CHANGELOG.md#0165---2022-05-15) from v0.15
+- Updated to [rosu-pp v0.6](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v060-2022-07-05)
+- Added the class `GameMode` to serve as enum e.g. `GameMode.Taiko`
+- `ScoreParams` now have an additional field `mode: Optional[GameMode]` which can be used to convert to other modes
 
 # v0.5.2 (2022-06-14)
 - Bumped patch version of dependencies, including a [rosu-pp](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v052-2022-06-14) update
