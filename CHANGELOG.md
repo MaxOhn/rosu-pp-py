@@ -1,3 +1,6 @@
+## Upcoming
+- Updated to [PyO3 v0.16](https://github.com/PyO3/pyo3/blob/main/CHANGELOG.md#0165---2022-05-15) from v0.15
+
 # v0.5.2 (2022-06-14)
 - Bumped patch version of dependencies, including a [rosu-pp](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v052-2022-06-14) update
 

@@ -10,7 +10,6 @@ use pyo3::{
     exceptions::{PyException, PyNotImplementedError, PyTypeError},
     prelude::*,
     types::{PyDict, PyIterator},
-    PyObjectProtocol,
 };
 use rosu_pp::{
     catch::CatchPerformanceAttributes, mania::ManiaPerformanceAttributes,
@@ -351,10 +350,7 @@ impl CalculateResult {
     fn new_() -> Self {
         Self::default()
     }
-}
 
-#[pyproto]
-impl PyObjectProtocol for CalculateResult {
     fn __richcmp__(&self, other: &PyAny, op: CompareOp) -> PyResult<bool> {
         match (other.extract::<Self>(), op) {
             (Ok(ref other), CompareOp::Eq) => Ok(self == other),
@@ -523,10 +519,7 @@ impl ScoreParams {
     fn set_clock_rate(&mut self, clock_rate: f64) {
         self.clock_rate = Some(clock_rate);
     }
-}
 
-#[pyproto]
-impl PyObjectProtocol for ScoreParams {
     fn __richcmp__(&self, other: &PyAny, op: CompareOp) -> PyResult<bool> {
         match (other.extract::<Self>(), op) {
             (Ok(ref other), CompareOp::Eq) => Ok(self == other),
