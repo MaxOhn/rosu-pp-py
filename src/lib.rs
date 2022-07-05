@@ -159,6 +159,7 @@ enum GameMode {
 }
 
 impl From<GameMode> for RosuGameMode {
+    #[inline]
     fn from(mode: GameMode) -> Self {
         match mode {
             GameMode::Osu => RosuGameMode::STD,
@@ -725,6 +726,7 @@ struct AttributeKey {
 }
 
 impl Hash for AttributeKey {
+    #[inline]
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.mods.hash(state);
         self.passed_objects.hash(state);
@@ -733,6 +735,7 @@ impl Hash for AttributeKey {
 }
 
 impl PartialEq for AttributeKey {
+    #[inline]
     fn eq(&self, other: &Self) -> bool {
         self.mods == other.mods
             && self.passed_objects == other.passed_objects
