@@ -1,3 +1,6 @@
+## Upcoming
+- Removed the `GameMode` class again; use simple numbers instead (0/1/2/3)
+
 # v0.6.0 (2022-07-05)
 - Updated to [PyO3 v0.16](https://github.com/PyO3/pyo3/blob/main/CHANGELOG.md#0165---2022-05-15) from v0.15
 - Updated to [rosu-pp v0.6](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v060-2022-07-05)

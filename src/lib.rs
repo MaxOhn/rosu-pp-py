@@ -14,8 +14,7 @@ use pyo3::{
 use rosu_pp::{
     beatmap::BeatmapAttributes, catch::CatchPerformanceAttributes,
     mania::ManiaPerformanceAttributes, osu::OsuPerformanceAttributes,
-    taiko::TaikoPerformanceAttributes, AnyPP, Beatmap, BeatmapExt, GameMode as RosuGameMode,
-    PerformanceAttributes,
+    taiko::TaikoPerformanceAttributes, AnyPP, Beatmap, BeatmapExt, GameMode, PerformanceAttributes,
 };
 
 #[pyclass]
@@ -149,32 +148,10 @@ impl Calculator {
 }
 
 #[pyclass]
-#[derive(Copy, Clone, PartialEq)]
-#[repr(u8)]
-enum GameMode {
-    Osu,
-    Taiko,
-    Catch,
-    Mania,
-}
-
-impl From<GameMode> for RosuGameMode {
-    #[inline]
-    fn from(mode: GameMode) -> Self {
-        match mode {
-            GameMode::Osu => RosuGameMode::STD,
-            GameMode::Taiko => RosuGameMode::TKO,
-            GameMode::Catch => RosuGameMode::CTB,
-            GameMode::Mania => RosuGameMode::MNA,
-        }
-    }
-}
-
-#[pyclass]
 #[derive(Clone, Default, PartialEq)]
 struct ScoreParams {
     #[pyo3(get, set)]
-    mode: Option<GameMode>,
+    mode: Option<u8>,
     #[pyo3(get, set)]
     mods: u32,
     #[pyo3(get, set)]
@@ -425,8 +402,16 @@ impl ScoreParams {
             clock_rate,
         } = self;
 
-        if let Some(mode) = mode {
-            calculator = calculator.mode(mode.into());
+        if let Some(mode @ 0..=3) = mode {
+            let mode = match mode {
+                0 => GameMode::STD,
+                1 => GameMode::TKO,
+                2 => GameMode::CTB,
+                3 => GameMode::MNA,
+                _ => unreachable!(),
+            };
+
+            calculator = calculator.mode(mode);
         }
 
         if let Some(n300) = n300 {
@@ -652,6 +637,7 @@ impl Display for ScoreParams {
         write!(
             f,
             "ScoreParams {{ \
+            mode: {}, \
             mods: {}, \
             n300: {}, \
             n100: {}, \
@@ -664,6 +650,10 @@ impl Display for ScoreParams {
             passedObjects: {}, \
             clockRate: {} \
         }}",
+            match self.mode {
+                Some(ref mode) => mode as &dyn Display,
+                None => &"None" as &dyn Display,
+            },
             self.mods,
             match self.n300 {
                 Some(ref n300) => n300 as &dyn Display,
@@ -711,7 +701,6 @@ impl Display for ScoreParams {
 
 #[pymodule]
 fn rosu_pp_py(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_class::<GameMode>()?;
     m.add_class::<ScoreParams>()?;
     m.add_class::<Calculator>()?;
     m.add_class::<CalculateResult>()?;

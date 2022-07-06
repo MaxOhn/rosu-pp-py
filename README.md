@@ -22,9 +22,9 @@ calculator.set_od(9.2)
 ```
 2) Next, you need to create `ScoreParams`. It has the following fields:
 ```
-mode: Optional[GameMode],
+mode: Optional[int],
     specify for scores on convert maps, default to the map's native mode
-    available enum variants are GameMode.Osu, GameMode.Taiko, GameMode.Catch, and GameMode.Mania
+    available values are 0 for standard, 1 for taiko, 2 for catch, and 3 for mania
 mods: Optional[int],
     bit value for mods, defaults to 0 (NM) see https://github.com/ppy/osu-api/wiki#mods
 acc: Optional[float],
