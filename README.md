@@ -8,7 +8,7 @@ Check out rosu-pp's README for more info.
 
 ## How to use rosu-pp-py
 
-The library exposes three classes: `Calculator`, `ScoreParams`, and `CalculateResult`. 
+The library exposes three classes: `Calculator`, `ScoreParams`, `CalculateResult`, and `Strains`.
 
 1) The first step is to create a new `Calculator` instance by providing the constructor the path to a `.osu` beatmap file like so
 ```py
@@ -141,6 +141,46 @@ nSpinners: Optional[int]
     The amount of spinners in the map. (O/T/C)
 maxCombo: Optional[int]
     The max combo of the map. (O/T/C)
+```
+
+## Calculating strains
+
+If you want to plot the difficulty of a map over time, you can calculate the strain values.
+The return type of `Calculator::strains` is an instance of the `Strains` class.
+Its attributes depend on the map's game mode again and look as follows:
+```
+sectionLength: float
+    The time in milliseconds between two strain values. (O/T/C/M)
+aim: List[float]
+    Strain values for the aim skill (O)
+aimNoSliders: List[float]
+    Strain values for the aim skill without sliders (O)
+speed: List[float]
+    Strain values for the speed skill (O)
+flashlight: List[float]
+    Strain values for the flashlight skill (O)
+color: List[float]
+    Strain values for the color skill (T)
+rhythm: List[float]
+    Strain values for the rhythm skill (T)
+staminaLeft: List[float]
+    Strain values for the left-stamina skill (T)
+staminaRight: List[float]
+    Strain values for the right-stamina skill (T)
+strains: List[float]
+    Strain values for the strain skill (M)
+movement: List[float]
+    Strain values for the movement skill (C)
+```
+Here's a small example
+```py
+from rosu_pp_py import Calculator
+
+calculator = Calculator('./maps/1980365.osu')
+strains = calculator.strains(8 + 16) # HDHR
+for i,strain in enumerate(strains.aim):
+    currTime = i * strains.sectionLength
+    print(f'Aim strain at {currTime}ms: {strain}')
 ```
 
 ## Installing rosu-pp-py

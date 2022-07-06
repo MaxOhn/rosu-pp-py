@@ -9,12 +9,13 @@ use pyo3::{
     basic::CompareOp,
     exceptions::{PyException, PyNotImplementedError, PyTypeError},
     prelude::*,
-    types::{PyDict, PyIterator},
+    types::{PyDict, PyIterator, PyTuple},
 };
 use rosu_pp::{
     beatmap::BeatmapAttributes, catch::CatchPerformanceAttributes,
     mania::ManiaPerformanceAttributes, osu::OsuPerformanceAttributes,
     taiko::TaikoPerformanceAttributes, AnyPP, Beatmap, BeatmapExt, GameMode, PerformanceAttributes,
+    Strains as RosuStrains,
 };
 
 #[pyclass]
@@ -87,7 +88,7 @@ impl Calculator {
         self.0.od = od;
     }
 
-    fn calculate(&mut self, py: Python, obj: &PyAny) -> PyResult<Vec<CalculateResult>> {
+    fn calculate(&mut self, obj: &PyAny) -> PyResult<Vec<CalculateResult>> {
         match obj.extract::<ScoreParams>() {
             Ok(params) => {
                 let mods = params.mods;
@@ -102,7 +103,7 @@ impl Calculator {
             Err(_) => {
                 let mut mod_diffs = HashMap::new();
 
-                PyIterator::from_object(py, obj)
+                PyIterator::from_object(obj.py(), obj)
                     .map_err(|_| {
                         let py_type = obj.get_type().name().unwrap_or("<unknown type>");
 
@@ -143,6 +144,105 @@ impl Calculator {
                     })
                     .collect::<Result<Vec<_>, PyErr>>()
             }
+        }
+    }
+
+    #[args(args = "*")]
+    fn strains(&mut self, args: &PyTuple) -> PyResult<Strains> {
+        let mods = if let Ok(obj) = args.get_item(0) {
+            if let Ok(mods) = obj.extract::<u32>() {
+                mods
+            } else {
+                let py_type = obj.get_type().name().unwrap_or("<unknown type>");
+                let err = format!("got '{}'; expected 'int'", py_type);
+
+                return Err(PyTypeError::new_err(err));
+            }
+        } else {
+            0
+        };
+
+        Ok(self.0.strains(mods).into())
+    }
+}
+
+#[pyclass]
+#[derive(Clone, Default, PartialEq)]
+#[allow(non_snake_case)]
+struct Strains {
+    #[pyo3(get, set)]
+    sectionLength: f64,
+
+    #[pyo3(get, set)]
+    color: Option<Vec<f64>>,
+    #[pyo3(get, set)]
+    rhythm: Option<Vec<f64>>,
+    #[pyo3(get, set)]
+    staminaLeft: Option<Vec<f64>>,
+    #[pyo3(get, set)]
+    staminaRight: Option<Vec<f64>>,
+
+    #[pyo3(get, set)]
+    aim: Option<Vec<f64>>,
+    #[pyo3(get, set)]
+    aimNoSliders: Option<Vec<f64>>,
+    #[pyo3(get, set)]
+    speed: Option<Vec<f64>>,
+    #[pyo3(get, set)]
+    flashlight: Option<Vec<f64>>,
+
+    #[pyo3(get, set)]
+    strains: Option<Vec<f64>>,
+
+    #[pyo3(get, set)]
+    movement: Option<Vec<f64>>,
+}
+
+#[pymethods]
+impl Strains {
+    fn __richcmp__(&self, other: &PyAny, op: CompareOp) -> PyResult<bool> {
+        match (other.extract::<Self>(), op) {
+            (Ok(ref other), CompareOp::Eq) => Ok(self == other),
+            (Ok(ref other), CompareOp::Ne) => Ok(self != other),
+            _ => Err(PyNotImplementedError::new_err("")),
+        }
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(self.to_string())
+    }
+}
+
+impl From<RosuStrains> for Strains {
+    #[inline]
+    fn from(strains: RosuStrains) -> Self {
+        match strains {
+            RosuStrains::Catch(strains) => Self {
+                sectionLength: strains.section_len,
+                movement: Some(strains.movement),
+                ..Default::default()
+            },
+            RosuStrains::Mania(strains) => Self {
+                sectionLength: strains.section_len,
+                strains: Some(strains.strains),
+                ..Default::default()
+            },
+            RosuStrains::Osu(strains) => Self {
+                sectionLength: strains.section_len,
+                aim: Some(strains.aim),
+                aimNoSliders: Some(strains.aim_no_sliders),
+                speed: Some(strains.speed),
+                flashlight: Some(strains.flashlight),
+                ..Default::default()
+            },
+            RosuStrains::Taiko(strains) => Self {
+                sectionLength: strains.section_len,
+                color: Some(strains.color),
+                rhythm: Some(strains.rhythm),
+                staminaLeft: Some(strains.stamina_left),
+                staminaRight: Some(strains.stamina_right),
+                ..Default::default()
+            },
         }
     }
 }
@@ -549,6 +649,40 @@ impl ScoreParams {
     }
 }
 
+impl Display for Strains {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        let mut s = f.debug_struct("Strains");
+
+        s.field("sectionLength", &self.sectionLength);
+
+        macro_rules! display_field {
+            ($self:ident, $s:ident: $($field:ident,)*) => {
+                $(
+                    if let Some(ref field) = $self.$field {
+                        $s.field(stringify!($field), field);
+                    }
+                )*
+            }
+        }
+
+        display_field! {
+            self, s:
+            color,
+            rhythm,
+            staminaLeft,
+            staminaRight,
+            aim,
+            aimNoSliders,
+            speed,
+            flashlight,
+            strains,
+            movement,
+        }
+
+        s.finish()
+    }
+}
+
 impl Display for CalculateResult {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         let mut s = f.debug_struct("CalculateResult");
@@ -704,6 +838,7 @@ fn rosu_pp_py(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<ScoreParams>()?;
     m.add_class::<Calculator>()?;
     m.add_class::<CalculateResult>()?;
+    m.add_class::<Strains>()?;
 
     Ok(())
 }

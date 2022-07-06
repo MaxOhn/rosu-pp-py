@@ -1,4 +1,4 @@
-from typing import Iterable, List, Union
+from typing import Iterable, List, Union, Optional
 
 class ScoreParams:
     """
@@ -47,6 +47,40 @@ class ScoreParams:
     ```
     """
     def __init__(self, **kwargs) -> None: ...
+
+class Strains:
+    """
+    A class that contains all strain values of a map.
+    Suitable to plot the difficulty of a map over time.
+    The strain attributes are optional based on the map's mode.
+    In the following, O/T/C/M will denote for which mode the given attribute will be present.
+
+    ## Attributes
+
+    `sectionLength`: float
+        The time in milliseconds between two strain values. (O/T/C/M)
+    `aim`: List[float]
+        Strain values for the aim skill (O)
+    `aimNoSliders`: List[float]
+        Strain values for the aim skill without sliders (O)
+    `speed`: List[float]
+        Strain values for the speed skill (O)
+    `flashlight`: List[float]
+        Strain values for the flashlight skill (O)
+    `color`: List[float]
+        Strain values for the color skill (T)
+    `rhythm`: List[float]
+        Strain values for the rhythm skill (T)
+    `staminaLeft`: List[float]
+        Strain values for the left-stamina skill (T)
+    `staminaRight`: List[float]
+        Strain values for the right-stamina skill (T)
+    `strains`: List[float]
+        Strain values for the strain skill (M)
+    `movement`: List[float]
+        Strain values for the movement skill (C)
+    """
+    def __init__(self) -> None: ...
 
 class CalculateResult:
     """
@@ -111,7 +145,7 @@ class CalculateResult:
 
 class Calculator:
     """
-    A class to calculate difficulty and performance attributes.
+    A class to calculate difficulty and performance attributes, aswell as strains.
 
     ## Arguments
 
@@ -141,6 +175,8 @@ class Calculator:
         Specify an overall difficulty to override the map's value.
     `calculate(params)`
         Calculate the difficulty and performance attributes for the given score parameters.
+    `strains(mods)`
+        Calculate the strain values for the given mods.
 
     ## Raises
 
@@ -178,5 +214,31 @@ class Calculator:
 
         # provide params for multiple scores
         results = calculator.calculate([params1, params2])
+        ```
+        """
+
+    def strains(self, mods: Optional[int]) -> Strains:
+        """
+        Calculate the strain values for the given mods.
+
+        ## Arguments
+
+        `mods`: Optional[int]
+            Bit value for mods, defaults to 0 (NM) see [https://github.com/ppy/osu-api/wiki#mods](https://github.com/ppy/osu-api/wiki#mods)
+
+        ## Returns
+
+        An instance of the `Strains` class consisting of the strain values
+        for all sections for all skills of the map's game mode,
+        aswell as the section length in milliseconds.
+
+        ## Example
+
+        ```py
+        calculator = Calculator('./maps/1980365.osu')
+        strains = calculator.strains(8 + 16)
+        for i,strain in enumerate(strains.aim):
+            currTime = i * strains.sectionLength
+            print(f'Aim strain at {currTime}ms: {strain}')
         ```
         """
