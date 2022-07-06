@@ -404,10 +404,10 @@ impl ScoreParams {
 
         if let Some(mode @ 0..=3) = mode {
             let mode = match mode {
-                0 => GameMode::STD,
-                1 => GameMode::TKO,
-                2 => GameMode::CTB,
-                3 => GameMode::MNA,
+                0 => GameMode::Osu,
+                1 => GameMode::Taiko,
+                2 => GameMode::Catch,
+                3 => GameMode::Mania,
                 _ => unreachable!(),
             };
 
