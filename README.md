@@ -8,7 +8,7 @@ Check out rosu-pp's README for more info.
 
 ## How to use rosu-pp-py
 
-The library exposes three classes: `Calculator`, `ScoreParams`, `CalculateResult`, and `Strains`.
+The library exposes four classes: `Calculator`, `ScoreParams`, `CalculateResult`, and `Strains`.
 
 1) The first step is to create a new `Calculator` instance by providing the constructor the path to a `.osu` beatmap file like so
 ```py
