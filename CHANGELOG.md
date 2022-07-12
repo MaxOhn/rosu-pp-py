@@ -1,3 +1,6 @@
+# v0.7.1 (2022-07-12)
+- Updated to [rosu-pp v0.7.1](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v071-2022-07-12)
+
 # v0.7.0 (2022-07-07)
 - Removed the `GameMode` class again; use simple numbers instead (0/1/2/3)
 - Updated to [rosu-pp v0.7.0](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v070-2022-07-06)
