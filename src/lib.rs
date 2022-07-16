@@ -546,6 +546,8 @@ impl ScoreParams {
             calculator = calculator.clock_rate(clock_rate);
         }
 
+        calculator.mods(mods);
+
         if let Some(acc) = acc {
             calculator = calculator.accuracy(acc);
         }
@@ -554,7 +556,7 @@ impl ScoreParams {
             calculator = calculator.score(score);
         }
 
-        calculator.mods(mods)
+        calculator
     }
 }
 
