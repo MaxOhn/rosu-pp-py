@@ -1,3 +1,6 @@
+# v0.7.2 (2022-07-16)
+- Apply acc before mods to fix pp values sometimes calculating incorrectly on certain mod combos
+
 # v0.7.1 (2022-07-12)
 - Updated to [rosu-pp v0.7.1](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v071-2022-07-12)
 
