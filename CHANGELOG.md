@@ -1,7 +1,7 @@
 # v0.7.2 (2022-07-16)
-- Apply acc before mods to fix pp values sometimes calculating incorrectly on certain mod combos
+- Apply mods before acc to fix pp values sometimes calculating incorrectly for osu!catch ([#3] - [@tsunyoku])
 
-# v0.7.1 (2022-07-12)
+## v0.7.1 (2022-07-12)
 - Updated to [rosu-pp v0.7.1](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v071-2022-07-12)
 
 ## v0.7.0 (2022-07-07)
@@ -27,3 +27,7 @@
 
 ## v0.4.0 (2021-12-29)
 - Initial release with rosu-pp v0.4.0
+
+[@tsunyoku]: https://github.com/tsunyoku
+
+[#3]: https://github.com/MaxOhn/rosu-pp-py/pull/3

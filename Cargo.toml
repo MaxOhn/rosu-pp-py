@@ -1,6 +1,6 @@
 [package]
 name = "rosu-pp-py"
-version = "0.7.1"
+version = "0.7.2"
 description = "osu! difficulty and pp calculation for all modes"
 authors = ["Max Ohn <ohn.m@hotmail.de>"]
 license = "MIT"
