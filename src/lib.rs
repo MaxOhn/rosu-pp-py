@@ -322,6 +322,10 @@ struct CalculateResult {
     #[pyo3(get, set)]
     clockRate: f64,
     #[pyo3(get, set)]
+    timePreempt: Option<f64>,
+    #[pyo3(get, set)]
+    greatHitWindow: Option<f64>,
+    #[pyo3(get, set)]
     nCircles: Option<usize>,
     #[pyo3(get, set)]
     nSliders: Option<usize>,
@@ -338,15 +342,30 @@ impl CalculateResult {
         mods: u32,
         clock_rate: Option<f64>,
     ) -> Self {
+        let mut attr_builder = map.attributes();
+
+        if let Some(clock_rate) = clock_rate {
+            attr_builder.clock_rate(clock_rate);
+        }
+
+        let mode = match &attrs {
+            PerformanceAttributes::Catch(_) => GameMode::Catch,
+            PerformanceAttributes::Mania(_) => GameMode::Mania,
+            PerformanceAttributes::Osu(_) => GameMode::Osu,
+            PerformanceAttributes::Taiko(_) => GameMode::Taiko,
+        };
+
+        attr_builder.converted(map.mode == GameMode::Osu && mode != GameMode::Osu);
+
         let BeatmapAttributes {
             ar,
             cs,
             hp,
             od,
-            clock_rate: clock_rate_,
-        } = map.attributes().mods(mods);
+            clock_rate,
+            hit_windows,
+        } = attr_builder.mods(mods).mode(mode).build();
 
-        let clock_rate = clock_rate.unwrap_or(clock_rate_);
         let bpm = map.bpm() * clock_rate;
 
         match attrs {
@@ -386,6 +405,7 @@ impl CalculateResult {
                 od,
                 bpm,
                 clockRate: clock_rate,
+                greatHitWindow: Some(hit_windows.od),
                 ..Default::default()
             },
             PerformanceAttributes::Osu(OsuPerformanceAttributes {
@@ -417,6 +437,8 @@ impl CalculateResult {
                 od,
                 bpm,
                 clockRate: clock_rate,
+                timePreempt: Some(hit_windows.ar),
+                greatHitWindow: Some(hit_windows.od),
                 ..Default::default()
             },
             PerformanceAttributes::Taiko(TaikoPerformanceAttributes {
@@ -440,6 +462,7 @@ impl CalculateResult {
                 od,
                 bpm,
                 clockRate: clock_rate,
+                greatHitWindow: Some(hit_windows.od),
                 ..Default::default()
             },
         }
@@ -745,6 +768,14 @@ impl Display for CalculateResult {
             .field("od", &self.od)
             .field("bpm", &self.bpm)
             .field("clockRate", &self.clockRate);
+
+        if let Some(ref time_preempt) = self.timePreempt {
+            s.field("timePreempt", time_preempt);
+        }
+
+        if let Some(ref great_hit_window) = self.greatHitWindow {
+            s.field("greatHitWindow", great_hit_window);
+        }
 
         if let Some(ref n_circles) = self.nCircles {
             s.field("nCircles", n_circles);

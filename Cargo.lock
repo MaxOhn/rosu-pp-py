@@ -159,13 +159,13 @@ dependencies = [
 
 [[package]]
 name = "rosu-pp"
-version = "0.7.1"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c807e3e09e6877ebe8f518d27dfe68235f7b3fc34a800d66310aebb743c96c43"
+checksum = "238725936123d4c42c3a4492397d02614798de0881008e7377d78d5db7e0e042"
 
 [[package]]
 name = "rosu-pp-py"
-version = "0.7.1"
+version = "0.8.0"
 dependencies = [
  "pyo3",
  "rosu-pp",

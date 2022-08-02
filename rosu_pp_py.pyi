@@ -132,6 +132,10 @@ class CalculateResult:
         Beats per minute of the map. (O/T/C/M)
     `clockRate`: float
         Clock rate used in calculation i.e. 1.5 for DT, 0.75 for HT, 1.0 for NM or one that was specified (O/T/C/M)
+    `timePreempt`: Optional[float]
+        The time in milliseconds in which the circles is visible before being clicked. (O)
+    `greatHitWindow`: Optional[float]
+        The time in milliseconds in which a 300 ("great") is achievable. (O/T/M)
     `nCircles`: Optional[int]
         The amount of circles in the map. (O/T/M)
     `nSliders`: Optional[int]
