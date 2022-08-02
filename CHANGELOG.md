@@ -1,4 +1,10 @@
-# v0.7.2 (2022-07-16)
+# v0.8.0 (2022-08-02)
+- Updated to [rosu-pp v0.8.0](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v080-2022-08-02)
+- The calculation result now contains a `timePreempt` field for osu!standard and `greatHitWindow` for
+osu!standard, osu!taiko, and osu!mania.
+- Fixed map attributes when mods were interacting with custom clock rates
+
+## v0.7.2 (2022-07-16)
 - Apply mods before acc to fix pp values sometimes calculating incorrectly for osu!catch ([#3] - [@tsunyoku])
 
 ## v0.7.1 (2022-07-12)
