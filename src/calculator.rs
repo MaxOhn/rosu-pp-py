@@ -11,9 +11,9 @@ use crate::{
     map_attrs::PyBeatmapAttributes, perf_attrs::PyPerformanceAttributes, strains::PyStrains,
 };
 
-#[pyclass]
+#[pyclass(name = "Calculator")]
 #[derive(Default)]
-pub struct Calculator {
+pub struct PyCalculator {
     attributes: Option<DifficultyAttributes>,
     mode: Option<GameMode>,
     mods: Option<u32>,
@@ -40,7 +40,7 @@ macro_rules! set_calc {
 }
 
 #[pymethods]
-impl Calculator {
+impl PyCalculator {
     #[new]
     #[args(kwargs = "**")]
     fn new(kwargs: Option<&PyDict>) -> PyResult<Self> {
