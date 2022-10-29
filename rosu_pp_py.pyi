@@ -237,7 +237,7 @@ class DifficultyAttributes:
 
     ## Attributes
 
-    The parantheses indicate for which mode the optional values will be available.
+    The parentheses indicate for which mode the optional values will be available.
 
     `'mode': int`
         Gamemode integer
@@ -290,7 +290,7 @@ class PerformanceAttributes:
 
     ## Attributes
 
-    The parantheses indicate for which mode the optional values will be available.
+    The parentheses indicate for which mode the optional values will be available.
 
     `'mode': int`
         Gamemode integer
@@ -319,7 +319,7 @@ class Strains:
 
     ## Attributes
 
-    The parantheses indicate for which mode the optional values will be available.
+    The parentheses indicate for which mode the optional values will be available.
 
     `'mode': int`
         Gamemode integer
