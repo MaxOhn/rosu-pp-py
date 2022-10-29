@@ -10,6 +10,7 @@ use self::{
 };
 
 use pyo3::{pymodule, types::PyModule, PyResult, Python};
+use strains::PyStrains;
 
 mod beatmap;
 mod calculator;
@@ -23,9 +24,11 @@ mod strains;
 fn rosu_pp_py(py: Python<'_>, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyBeatmap>()?;
     m.add_class::<PyCalculator>()?;
+
     m.add_class::<PyBeatmapAttributes>()?;
     m.add_class::<PyDifficultyAttributes>()?;
     m.add_class::<PyPerformanceAttributes>()?;
+    m.add_class::<PyStrains>()?;
 
     m.add("ParseError", py.get_type::<ParseError>())?;
     m.add("KwargsError", py.get_type::<KwargsError>())?;
