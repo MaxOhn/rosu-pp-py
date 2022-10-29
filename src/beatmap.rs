@@ -22,36 +22,110 @@ impl PyBeatmap {
             }
         };
 
-        if let Some(arg) = kwargs.get_item("path") {
-            let path = arg
-                .extract::<&str>()
-                .map_err(|_| PyTypeError::new_err("kwarg 'path': must be a string"))?;
+        let mut map = None;
+        let mut ar = None;
+        let mut cs = None;
+        let mut hp = None;
+        let mut od = None;
 
-            let map = Beatmap::from_path(path)
-                .map_err(|e| ParseError::new_err(e.unwind("Failed to parse beatmap")))?;
+        for (key, value) in kwargs.iter() {
+            match key.extract()? {
+                "path" => {
+                    let path = value
+                        .extract::<&str>()
+                        .map_err(|_| PyTypeError::new_err("kwarg 'path': must be a string"))?;
 
-            Self::new_with_attrs(map, kwargs)
-        } else if let Some(arg) = kwargs.get_item("content") {
-            if let Ok(content) = arg.extract::<&str>() {
-                Self::new_from_bytes(content.as_bytes(), kwargs)
-            } else if let Ok(bytes) = arg.extract::<&[u8]>() {
-                Self::new_from_bytes(bytes, kwargs)
-            } else {
-                Err(PyTypeError::new_err(
-                    "kwarg 'content': must be a string or a bytearray",
-                ))
+                    let parsed = Beatmap::from_path(path)
+                        .map_err(|e| ParseError::new_err(e.unwind("Failed to parse beatmap")))?;
+
+                    map = Some(parsed);
+                }
+                "content" => {
+                    let bytes = if let Ok(content) = value.extract::<&str>() {
+                        content.as_bytes()
+                    } else if let Ok(bytes) = value.extract::<&[u8]>() {
+                        bytes
+                    } else {
+                        return Err(PyTypeError::new_err(
+                            "kwarg 'content': must be a string or a bytearray",
+                        ));
+                    };
+
+                    let parsed = Beatmap::from_bytes(bytes)
+                        .map_err(|e| ParseError::new_err(e.unwind("Failed to parse beatmap")))?;
+
+                    map = Some(parsed);
+                }
+                "bytes" => {
+                    let bytes = value
+                        .extract::<&[u8]>()
+                        .map_err(|_| PyTypeError::new_err("kwarg 'bytes': must be a bytearray"))?;
+
+                    let parsed = Beatmap::from_bytes(bytes)
+                        .map_err(|e| ParseError::new_err(e.unwind("Failed to parse beatmap")))?;
+
+                    map = Some(parsed);
+                }
+                "ar" => {
+                    let value = value
+                        .extract()
+                        .map_err(|_| PyTypeError::new_err("kwarg 'ar': must be a real number"))?;
+
+                    ar = Some(value);
+                }
+                "cs" => {
+                    let value = value
+                        .extract()
+                        .map_err(|_| PyTypeError::new_err("kwarg 'cs': must be a real number"))?;
+
+                    cs = Some(value);
+                }
+                "hp" => {
+                    let value = value
+                        .extract()
+                        .map_err(|_| PyTypeError::new_err("kwarg 'hp': must be a real number"))?;
+
+                    hp = Some(value);
+                }
+                "od" => {
+                    let value = value
+                        .extract()
+                        .map_err(|_| PyTypeError::new_err("kwarg 'od': must be a real number"))?;
+
+                    od = Some(value);
+                }
+                kwarg => {
+                    let err = format!(
+                        "unexpected kwarg '{kwarg}': expected 'path', \n\
+                        'content', 'bytes', 'ar', 'cs', 'hp', or 'od'"
+                    );
+
+                    return Err(KwargsError::new_err(err));
+                }
             }
-        } else if let Some(arg) = kwargs.get_item("bytes") {
-            let bytes = arg
-                .extract::<&[u8]>()
-                .map_err(|_| PyTypeError::new_err("kwarg 'bytes': must be a bytearray"))?;
-
-            Self::new_from_bytes(bytes, kwargs)
-        } else {
-            Err(KwargsError::new_err(
-                "kwargs must include 'path', 'content', or 'bytes'",
-            ))
         }
+
+        let mut map = map.ok_or_else(|| {
+            KwargsError::new_err("kwargs must include 'path', 'content', or 'bytes'")
+        })?;
+
+        if let Some(ar) = ar {
+            map.ar = ar;
+        }
+
+        if let Some(cs) = cs {
+            map.cs = cs;
+        }
+
+        if let Some(hp) = hp {
+            map.hp = hp;
+        }
+
+        if let Some(od) = od {
+            map.od = od;
+        }
+
+        Ok(Self { inner: map })
     }
 
     fn set_ar(&mut self, ar: f32) {
@@ -68,38 +142,5 @@ impl PyBeatmap {
 
     fn set_od(&mut self, od: f32) {
         self.inner.od = od;
-    }
-}
-
-impl PyBeatmap {
-    fn new_from_bytes(bytes: &[u8], kwargs: &PyDict) -> PyResult<Self> {
-        let map = Beatmap::from_bytes(bytes)
-            .map_err(|e| ParseError::new_err(e.unwind("Failed to parse beatmap")))?;
-
-        Self::new_with_attrs(map, kwargs)
-    }
-
-    fn new_with_attrs(mut map: Beatmap, kwargs: &PyDict) -> PyResult<Self> {
-        macro_rules! parse_attr {
-            ( $( $name:ident ),*) => {
-                $(
-                    if let Some(arg) = kwargs.get_item(stringify!($name)) {
-                        let value = arg.extract::<f32>().map_err(|_| {
-                            PyTypeError::new_err(concat!(
-                                "kwarg '",
-                                stringify!($name),
-                                "': must be a real number"
-                            ))
-                        })?;
-
-                        map.$name = value;
-                    }
-                )*
-            };
-        }
-
-        parse_attr!(ar, cs, hp, od);
-
-        Ok(Self { inner: map })
     }
 }

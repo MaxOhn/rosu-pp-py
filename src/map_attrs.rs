@@ -1,10 +1,9 @@
-use std::fmt::{Debug, Display, Formatter, Result as FmtResult};
+use std::fmt::{Display, Formatter, Result as FmtResult};
 
 use pyo3::{pyclass, pymethods};
 use rosu_pp::{beatmap::BeatmapAttributes, Beatmap};
 
 #[pyclass(name = "BeatmapAttributes")]
-#[derive(Debug)]
 pub struct PyBeatmapAttributes {
     #[pyo3(get)]
     ar: f64,
@@ -57,7 +56,45 @@ impl PyBeatmapAttributes {
 impl Display for PyBeatmapAttributes {
     #[inline]
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        <Self as Debug>::fmt(self, f)
+        let Self {
+            ar,
+            cs,
+            hp,
+            od,
+            ar_hit_window,
+            od_hit_window,
+            clock_rate,
+            bpm,
+            mode,
+            version,
+            n_circles,
+            n_sliders,
+            n_spinners,
+        } = self;
+
+        macro_rules! debug {
+            ( $( $field:ident ,)* ) => {
+                f.debug_struct("BeatmapAttributes")
+                    $( .field(stringify!($field), $field) )*
+                    .finish()
+            };
+        }
+
+        debug! {
+            ar,
+            cs,
+            hp,
+            od,
+            ar_hit_window,
+            od_hit_window,
+            clock_rate,
+            bpm,
+            mode,
+            version,
+            n_circles,
+            n_sliders,
+            n_spinners,
+        }
     }
 }
 

@@ -1,4 +1,9 @@
-use pyo3::{exceptions::PyValueError, pyclass, pymethods, types::PyDict, PyResult};
+use pyo3::{
+    exceptions::{PyTypeError, PyValueError},
+    pyclass, pymethods,
+    types::PyDict,
+    PyResult,
+};
 use rosu_pp::{AnyPP, AnyStars, DifficultyAttributes, GameMode};
 
 use crate::{
@@ -49,7 +54,11 @@ impl Calculator {
         for (key, value) in kwargs.iter() {
             match key.extract()? {
                 "mode" => {
-                    this.mode = match value.extract::<u8>()? {
+                    let int = value
+                        .extract::<u8>()
+                        .map_err(|_| PyTypeError::new_err("kwarg 'mode': must be an int"))?;
+
+                    this.mode = match int {
                         0 => Some(GameMode::Osu),
                         1 => Some(GameMode::Taiko),
                         2 => Some(GameMode::Catch),
@@ -57,19 +66,66 @@ impl Calculator {
                         _ => return Err(PyValueError::new_err("invalid mode integer")),
                     }
                 }
-                "mods" => this.mods = value.extract()?,
-                "n300" => this.n300 = value.extract()?,
-                "n100" => this.n100 = value.extract()?,
-                "n50" => this.n50 = value.extract()?,
-                "n_misses" => this.n_misses = value.extract()?,
-                "n_geki" => this.n_geki = value.extract()?,
-                "n_katu" => this.n_katu = value.extract()?,
-                "acc" | "accuracy" => this.acc = value.extract()?,
-                "combo" => this.combo = value.extract()?,
-                "passed_objects" => this.passed_objects = value.extract()?,
-                "clock_rate" => this.clock_rate = value.extract()?,
+                "mods" => {
+                    this.mods = value
+                        .extract()
+                        .map_err(|_| PyTypeError::new_err("kwarg 'mods': must be an int"))?;
+                }
+                "n300" => {
+                    this.n300 = value
+                        .extract()
+                        .map_err(|_| PyTypeError::new_err("kwarg 'n300': must be an int"))?;
+                }
+                "n100" => {
+                    this.n100 = value
+                        .extract()
+                        .map_err(|_| PyTypeError::new_err("kwarg 'n100': must be an int"))?;
+                }
+                "n50" => {
+                    this.n50 = value
+                        .extract()
+                        .map_err(|_| PyTypeError::new_err("kwarg 'n50': must be an int"))?;
+                }
+                "n_misses" => {
+                    this.n_misses = value
+                        .extract()
+                        .map_err(|_| PyTypeError::new_err("kwarg 'n_misses': must be an int"))?;
+                }
+                "n_geki" => {
+                    this.n_geki = value
+                        .extract()
+                        .map_err(|_| PyTypeError::new_err("kwarg 'n_geki': must be an int"))?;
+                }
+                "n_katu" => {
+                    this.n_katu = value
+                        .extract()
+                        .map_err(|_| PyTypeError::new_err("kwarg 'n_katu': must be an int"))?;
+                }
+                "acc" | "accuracy" => {
+                    this.acc = value
+                        .extract()
+                        .map_err(|_| PyTypeError::new_err("kwarg 'acc': must be a real number"))?;
+                }
+                "combo" => {
+                    this.combo = value
+                        .extract()
+                        .map_err(|_| PyTypeError::new_err("kwarg 'combo': must be an int"))?;
+                }
+                "passed_objects" => {
+                    this.passed_objects = value.extract().map_err(|_| {
+                        PyTypeError::new_err("kwarg 'passed_objects': must be an int")
+                    })?;
+                }
+                "clock_rate" => {
+                    this.clock_rate = value.extract().map_err(|_| {
+                        PyTypeError::new_err("kwarg 'clock_rate': must be a real number")
+                    })?;
+                }
                 "difficulty" | "attributes" => {
-                    let attrs = value.extract::<PyDifficultyAttributes>()?;
+                    let attrs = value.extract::<PyDifficultyAttributes>().map_err(|_| {
+                        PyTypeError::new_err("kwarg 'difficulty': must be DifficultyAttributes")
+                    })?;
+
                     this.attributes = Some(attrs.inner);
                 }
                 kwarg => {
