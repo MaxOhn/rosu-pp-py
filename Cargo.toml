@@ -11,7 +11,7 @@ name = "rosu_pp_py"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = { version = "0.16", features = ["extension-module", "macros"] }
+pyo3 = { version = "0.17", features = ["extension-module", "macros"] }
 rosu-pp = { version = "0.9" }
 
 [profile.release]
