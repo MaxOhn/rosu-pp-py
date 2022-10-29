@@ -1,248 +1,346 @@
-from typing import Iterable, List, Union, Optional
-
-class ScoreParams:
+class Beatmap:
     """
-    A class to describe the state of a score to pass to a `Calculator`.
-    Note that all attributes are optional.
+    A class containing a parsed beatmap.
 
-    ## Attributes
+    The kwargs must include any of the following:
+        `'path': str`
+            The path to a .osu file
+        `'content': str | bytearray`
+            The content of a .osu file as string or bytes
+        `'bytes': bytearray`
+            The content of a .osu file as bytes
 
-    `mode`: Optional[int]
-        Mode to convert the map. Only does something if the original map is osu!standard (0) and
-        the specified mode is taiko (1), catch (2), or mania (3). Defaults to the map's native mode.
-    `mods`: Optional[int]
-        Bit value for mods, defaults to 0 (NM) see [https://github.com/ppy/osu-api/wiki#mods](https://github.com/ppy/osu-api/wiki#mods)
-    `acc`: Optional[float]
-        Accuracy between 0.0 and 100.0.
-        If neither acc nor hitresults are specified, acc defaults to 100.0.
-    `n300`: Optional[int]
-        Amount of 300s, defaults to value based on acc.
-    `n100`: Optional[int]
-        Amount of 100s, defaults to value based on acc.
-    `n50`: Optional[int]
-        Amount of 50s, defaults to value based on acc.
-    `nMisses`: Optional[int]
-        Amount of misses, defaults to 0.
-    `nKatu`: Optional[int]
-        Amount of katus. Only important for osu!ctb.
-    `combo`: Optional[int]
-        The max combo of the score, defaults to full combo.
-    `score`: Optional[int]
-        The final score. Only important for osu!mania.
-    `passedObjects`: Optional[int]
-        Amount of hitobjects to be considered. Useful for failed plays.
-        Defaults to all objects.
-    `clockRate`: Optional[float]
-        Customizable clock rate to replace the one dictated by mods.
-        Defaults to the mod's clock rate.
-
-    ## Example
-    ```py
-    # specify through setter
-    params = ScoreParams()
-    params.acc = 98.76
-
-    # specify through constructor kwargs
-    params = ScoreParams(acc = 98.76)
-    ```
-    """
-    def __init__(self, **kwargs) -> None: ...
-
-class Strains:
-    """
-    A class that contains all strain values of a map.
-    Suitable to plot the difficulty of a map over time.
-    The strain attributes are optional based on the map's mode.
-    In the following, O/T/C/M will denote for which mode the given attribute will be present.
-
-    ## Attributes
-
-    `sectionLength`: float
-        The time in milliseconds between two strain values. (O/T/C/M)
-    `aim`: List[float]
-        Strain values for the aim skill (O)
-    `aimNoSliders`: List[float]
-        Strain values for the aim skill without sliders (O)
-    `speed`: List[float]
-        Strain values for the speed skill (O)
-    `flashlight`: List[float]
-        Strain values for the flashlight skill (O)
-    `color`: List[float]
-        Strain values for the color skill (T)
-    `rhythm`: List[float]
-        Strain values for the rhythm skill (T)
-    `staminaLeft`: List[float]
-        Strain values for the left-stamina skill (T)
-    `staminaRight`: List[float]
-        Strain values for the right-stamina skill (T)
-    `strains`: List[float]
-        Strain values for the strain skill (M)
-    `movement`: List[float]
-        Strain values for the movement skill (C)
-    """
-    def __init__(self) -> None: ...
-
-class CalculateResult:
-    """
-    A class that contains all difficulty and performance attributes.
-    Most attributes are optional based on the map's mode.
-    In the following, O/T/C/M will denote for which mode the given attribute will be present.
-
-    ## Attributes
-
-    `mode`: int
-        Game mode of the map. (O/T/C/M)
-    `stars`: float
-        Star rating of the map. (O/T/C/M)
-    `pp`: float
-        Performance points of the score. (O/T/C/M)
-    `ppAcc`: Optional[float]
-        Accuracy based portion of the performance points. (O/T/M)
-    `ppAim`: Optional[float]
-        Aim based portion of the performance points. (O)
-    `ppFlashlight`: Optional[float]
-        Flashlight based portion of the performance points. (O)
-    `ppSpeed`: Optional[float]
-        Speed based portion of the performance points. (O)
-    `ppStrain`: Optional[float]
-        Strain based portion of the performance points. (T/M)
-    `nFruits`: Optional[int]
-        The amount of fruits in the map. (C)
-    `nDroplets`: Optional[int]
-        The amount of droplets in the map. (C)
-    `nTinyDroplets`: Optional[int]
-        The amount of tiny droplets in the map. (C)
-    `aimStrain`: Optional[float]
-        Aim based portion of the star rating. (O)
-    `speedStrain`: Optional[float]
-        Speed based portion of the star rating. (O)
-    `flashlightRating`: Optional[float]
-        Flashlight based portion of the star rating. (O)
-    `sliderFactor`: Optional[float]
-        Nerf factor for sliders. (O)
-    `ar`: float
-        Approach rate of the map. (O/T/C/M)
-    `cs`: float
-        Circle size of the map. (O/T/C/M)
-    `hp`: float
-        Health drain rate of the map. (O/T/C/M)
-    `od`: float
-        Overall difficulty of the map. (O/T/C/M)
-    `bpm`: float
-        Beats per minute of the map. (O/T/C/M)
-    `clockRate`: float
-        Clock rate used in calculation i.e. 1.5 for DT, 0.75 for HT, 1.0 for NM or one that was specified (O/T/C/M)
-    `timePreempt`: Optional[float]
-        The time in milliseconds in which the circles is visible before being clicked. (O)
-    `greatHitWindow`: Optional[float]
-        The time in milliseconds in which a 300 ("great") is achievable. (O/T/M)
-    `nCircles`: Optional[int]
-        The amount of circles in the map. (O/T/M)
-    `nSliders`: Optional[int]
-        The amount of sliders in the map. (O/T/M)
-    `nSpinners`: Optional[int]
-        The amount of spinners in the map. (O/T/C)
-    `maxCombo`: Optional[int]
-        The max combo of the map. (O/T/C)
-    """
-    def __init__(self) -> None: ...
-
-class Calculator:
-    """
-    A class to calculate difficulty and performance attributes, aswell as strains.
-
-    ## Arguments
-
-    `path`: str
-        The path to the .osu file.
-
-    ## Named arguments
-
-    `ar`: Optional[float]
-        Adjusts the map's approach rate.
-    `cs`: Optional[float]
-        Adjusts the map's circle size.
-    `hp`: Optional[float]
-        Adjusts the map's drain rate.
-    `od`: Optional[float]
-        Adjusts the map's overall difficulty.
-
-    ## Methods
-
-    `set_ar(ar)`
-        Specify an approach rate to override the map's value.
-    `set_cs(cs)`
-        Specify a circle size to override the map's value.
-    `set_hp(hp)`
-        Specify a drain rate to override the map's value.
-    `set_od(od)`
-        Specify an overall difficulty to override the map's value.
-    `calculate(params)`
-        Calculate the difficulty and performance attributes for the given score parameters.
-    `strains(mods)`
-        Calculate the strain values for the given mods.
+    The kwargs may include any of the following:
+        `'ar': float`
+            Specify a custom approach rate
+        `'cs': float`
+            Specify a custom circle size
+        `'hp': float`
+            Specify a custom drain rate
+        `'od': float`
+            Specify a custom overall difficulty
 
     ## Raises
 
-    Throws an Exception if the map could not be parsed or an invalid named argument was given.
+    Throws an exception if the map could not be parsed or an invalid kwarg was given
     """
-    def __init__(self, path: str) -> None: ...
 
-    def calculate(self, params: Union[ScoreParams, Iterable[ScoreParams]]) -> List[CalculateResult]:
+    def __init__(self, **kwargs) -> None: ...
+
+    def set_ar(self, ar: float) -> None:
         """
-        Calculate the difficulty and performance attributes for the given score parameters.
-
-        ## Arguments
-
-        `params`: Either a single `ScoreParams` or multiple `ScoreParams` in an iterable collection.
-
-        ## Returns
-
-        A list of `CalculateResult` consisting of difficulty and performance attributes for each given `ScoreParams`
-
-        ## Example
-
-        ```py
-        calculator = Calculator('./maps/1980365.osu')
-
-        params1 = ScoreParams(mods = 8 + 16) # HDHR
-        params2 = ScoreParams(
-            mods = 24,
-            acc = 97.89,
-            nMisses = 13,
-            combo = 1388,
-        )
-
-        # provide params for one score
-        result1 = calculator.calculate(params1)
-
-        # provide params for multiple scores
-        results = calculator.calculate([params1, params2])
-        ```
+        Specify a custom approach rate
         """
+        ...
 
-    def strains(self, mods: Optional[int]) -> Strains:
+    def set_cs(self, cs: float) -> None:
         """
-        Calculate the strain values for the given mods.
-
-        ## Arguments
-
-        `mods`: Optional[int]
-            Bit value for mods, defaults to 0 (NM) see [https://github.com/ppy/osu-api/wiki#mods](https://github.com/ppy/osu-api/wiki#mods)
-
-        ## Returns
-
-        An instance of the `Strains` class consisting of the strain values
-        for all sections for all skills of the map's game mode,
-        aswell as the section length in milliseconds.
-
-        ## Example
-
-        ```py
-        calculator = Calculator('./maps/1980365.osu')
-        strains = calculator.strains(8 + 16)
-        for i,strain in enumerate(strains.aim):
-            currTime = i * strains.sectionLength
-            print(f'Aim strain at {currTime}ms: {strain}')
-        ```
+        Specify a custom circle size
         """
+        ...
+
+    def set_hp(self, hp: float) -> None:
+        """
+        Specify a custom drain rate
+        """
+        ...
+
+    def set_od(self, od: float) -> None:
+        """
+        Specify a custom overall difficulty
+        """
+        ...
+
+
+class Calculator:
+    """
+    A class containing various attributes to calculate strains or map, difficulty, or performance attributes.
+
+    The kwargs may include any of the following:
+        `'mode': int`
+            Must be 0 for osu!standard, 1 for taiko, 2 for catch, or 3 for mania
+        `'mods': int`
+            Bitflags for mods, see https://github.com/ppy/osu-api/wiki#mods
+        `'acc': float`
+            The accuracy between 0.0 and 100.0
+        `'n_geki': int`
+            The amount of gekis i.e. n320 in mania
+        `'n_katu': int`
+            The amount of katu i.e. tiny droplet misses in catch and n200 in mania
+        `'n300': int`
+            The amount of n300
+        `'n100': int`
+            The amount of n100
+        `'n50': int`
+            The amount of n50
+        `'n_misses': int`
+            The amount of misses
+        `'combo': int`
+            The max combo of the score
+        `'passed_object': int`
+            The amount of passed objects, handy for partial plays like fails
+        `'clock_rate': float`
+            Specify a custom clock rate
+        `'difficulty': DifficultyAttributes`
+            If you perform multiple calculations and neither map, mode, mods, nor passed objects change,
+            pass the difficulty attributes from a previous calculation so that they don't have to be recalculated
+
+    ## Raises
+
+    Throws an exception if an invalid kwarg was given
+    """
+
+    def __init__(self, **kwargs) -> None: ...
+
+    def set_mode(self, mode: int) -> None:
+        """
+        Must be 0 for osu!standard, 1 for taiko, 2 for catch, or 3 for mania
+        """
+        ...
+
+    def set_mods(self, mods: int) -> None:
+        """
+        Bitflags for mods, see https://github.com/ppy/osu-api/wiki#mods
+        """
+        ...
+
+    def set_acc(self, acc: float) -> None:
+        """
+        The accuracy between 0.0 and 100.0
+        """
+        ...
+
+    def set_n_geki(self, n_geki: int) -> None:
+        """
+        The amount of gekis i.e. n320 in mania
+        """
+        ...
+
+    def set_n_katu(self, n_katu: int) -> None:
+        """
+        The amount of katu i.e. tiny droplet misses in catch and n200 in mania
+        """
+        ...
+
+    def set_n300(self, n300: int) -> None:
+        """
+        The amount of n300
+        """
+        ...
+
+    def set_n100(self, n100: int) -> None:
+        """
+        The amount of n100
+        """
+        ...
+
+    def set_n50(self, n50: int) -> None:
+        """
+        The amount of n50
+        """
+        ...
+
+    def set_n_misses(self, n_misses: int) -> None:
+        """
+        The amount of misses
+        """
+        ...
+
+    def set_combo(self, combo: int) -> None:
+        """
+        The max combo of the score
+        """
+        ...
+
+    def set_passed_objects(self, passed_objects: int) -> None:
+        """
+        The amount of passed objects, handy for partial plays like fails
+        """
+        ...
+
+    def set_clock_rate(self, clock_rate: float) -> None:
+        """
+        Specify a custom clock rate
+        """
+        ...
+
+    def set_difficulty(self, difficulty: DifficultyAttributes) -> None:
+        """
+        If you perform multiple calculations and neither map, mode, mods, nor passed objects change,
+        pass the difficulty attributes from a previous calculation so that they don't have to be recalculated
+        """
+        ...
+
+    def map_attributes(self, map: Beatmap) -> BeatmapAttributes:
+        """
+        Based on the specified mods and clock rate, calculate the beatmap attributes for the given map
+        """
+        ...
+
+    def difficulty(self, map: Beatmap) -> DifficultyAttributes:
+        """
+        Based on all specified parameters, calculate the difficulty attributes for the given map
+        """
+        ...
+
+    def performance(self, map: Beatmap) -> PerformanceAttributes:
+        """
+        Based on all specified parameters, calculate the performance attributes for the given map
+        """
+        ...
+
+    def strains(self, map: Beatmap) -> Strains:
+        """
+        Based on all specified parameters, calculate the strains for the given map
+        """
+        ...
+
+
+class BeatmapAttributes:
+    """
+    Various attributes of a beatmap
+
+    ## Attributes
+
+    `'ar': float`
+        Approach rate
+    `'cs': float`
+        Circle size
+    `'hp': float`
+        Drain rate
+    `'od': float`
+        Overall difficulty
+    `'ar_hit_window': float`
+        Time in ms the the circle is visible ("time preempt")
+    `'od_hit_window': float`
+        Time in ms to get an n300 hitresult ("great hit window")
+    `'clock_rate': float`
+        Clock rate
+    `'bpm': float`
+        Beats per minute
+    `'mode': int`
+        Gamemode integer
+    `'version': int`
+        Version of the .osu file
+    `'n_circles': int`
+        Amount of circles
+    `'n_sliders': int`
+        Amount of sliders
+    `'n_spinners': int`
+        Amount of spinners
+    """
+
+
+class DifficultyAttributes:
+    """
+    All difficulty attributes depending on the mode.
+
+    ## Attributes
+
+    The parantheses indicate for which mode the optional values will be available.
+
+    `'mode': int`
+        Gamemode integer
+    `'stars': float`
+        Star rating
+    `'max_combo': int`
+        Max combo
+    `'aim': Optional[float]`
+        Aim based portion of the star rating (O)
+    `'speed': Optional[float]`
+        Speed based portion of the star rating (O)
+    `'flashlight': Optional[float]`
+        Flashlight based portion of the star rating (O)
+    `'slider_factor': Optional[float]`
+        Nerf factor for aim based on slider difficulty (O)
+    `'speed_note_count': Optional[float]`
+        Amount of notes that are considered as difficult regarding speed (O)
+    `'ar': Optional[float]`
+        Approach rate (O, T)
+    `'od': Optional[float]`
+        Overall difficulty (O)
+    `'n_circles': Optional[int]`
+        Amount of circles (O)
+    `'n_sliders': Optional[int]`
+        Amount of sliders (O)
+    `'n_spinners': Optional[int]`
+        Amount of spinners (O)
+    `'stamina': Optional[float]`
+        Stamina based portion of the star rating (T)
+    `'color': Optional[float]`
+        Color based portion of the star rating (T)
+    `'rhythm': Optional[float]`
+        Rhythm based portion of the star rating (T)
+    `'peak': Optional[float]`
+        Combination of stamina, color, and rhythm ratings (T)
+    `'hit_window': Optional[float]`
+        Great hit window (T, M)
+    `'n_fruits': Optional[int]`
+        Amount of fruits (C)
+    `'n_droplets': Optional[int]`
+        Amount of droplets (C)
+    `'n_tiny_droplets': Optional[int]`
+        Amount of tiny droplets (C)
+    """
+
+
+class PerformanceAttributes:
+    """
+    All performance attributes depending on the mode.
+
+    ## Attributes
+
+    The parantheses indicate for which mode the optional values will be available.
+
+    `'mode': int`
+        Gamemode integer
+    `'pp': float`
+        Performance points
+    `'difficulty': DifficultyAttributes`
+        Difficulty attributes based on the mode
+    `'pp_acc': Optional[float]`
+        Accuracy based portion of the performance points (O, T)
+    `'pp_aim': Optional[float]`
+        Aim based portion of the performance points (O)
+    `'pp_speed': Optional[float]`
+        Speed based portion of the performance points (O)
+    `'pp_flashlight': Optional[float]`
+        Flashlight based portion of the performance points (O)
+    `'effective_miss_count': Optional[float]`
+        Approximated misses including actual misses and assumed slider breaks (O, T)
+    `'pp_difficulty': Optional[float]`
+        Difficulty based portion of the performance points (T, M)
+    """
+
+
+class Strains:
+    """
+    All strain values depending on the mode
+
+    ## Attributes
+
+    The parantheses indicate for which mode the optional values will be available.
+
+    `'mode': int`
+        Gamemode integer
+    `'section_len': float`
+        Time in ms between two strain points
+    `'aim': Optional[List[float]]`
+        Aim strain values (O)
+    `'aim_no_sliders': Optional[List[float]]`
+        Aim strain values with sliders (O)
+    `'speed': Optional[List[float]]`
+        Speed strain values (O)
+    `'flashlight': Optional[List[float]]`
+        Flashlight strain values (O)
+    `'color': Optional[List[float]]`
+        Color strain values (T)
+    `'stamina': Optional[List[float]]`
+        Stamina strain values (T)
+    `'rhythm': Optional[List[float]]`
+        Rhythm strain values (T)
+    `'movement': Optional[List[float]]`
+        Movement strain values (C)
+    `'strains': Optional[List[float]]`
+        Strain values (M)
+    """
