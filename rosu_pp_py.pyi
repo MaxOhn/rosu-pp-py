@@ -82,7 +82,7 @@ class Calculator:
         `'clock_rate': float`
             Specify a custom clock rate
         `'difficulty': DifficultyAttributes`
-            If you perform multiple calculations and neither map, mode, mods, nor passed objects change,
+            If you perform multiple calculations and neither map, mode, mods, nor passed objects amount change,
             pass the difficulty attributes from a previous calculation so that they don't have to be recalculated
 
     ## Raises
