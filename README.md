@@ -11,11 +11,11 @@ Check out rosu-pp's [README](https://github.com/MaxOhn/rosu-pp/blob/main/README.
 The library exposes the following classes:
 
 - `Calculator`: Contains various parameters to calculate strains or map, difficulty, or performance attributes
-- `Beatmap`: Contains a parsed beatmap; passed to the calculator
-- `BeatmapAttributes`: Contains various attributes about the map itself
-- `DifficultyAttributes`: Contains various attributes about the difficulty based on the mode
-- `PerformanceAttributes`: Contains various attributes about the performance and difficulty based on the mode
-- `Strains`: Contains strain values for each skill based on the mode
+- `Beatmap`: Contains a parsed beatmap
+- [`BeatmapAttributes`](https://github.com/MaxOhn/rosu-pp-py/blob/81e1d6f28064b832661a4940a3896a2089f76b6b/rosu_pp_py.pyi#L199-L231): Contains various attributes about the map itself
+- [`DifficultyAttributes`](https://github.com/MaxOhn/rosu-pp-py/blob/81e1d6f28064b832661a4940a3896a2089f76b6b/rosu_pp_py.pyi#L234-L284): Contains various attributes about the difficulty based on the mode
+- [`PerformanceAttributes`](https://github.com/MaxOhn/rosu-pp-py/blob/81e1d6f28064b832661a4940a3896a2089f76b6b/rosu_pp_py.pyi#L287-L313): Contains various attributes about the performance and difficulty based on the mode
+- [`Strains`](https://github.com/MaxOhn/rosu-pp-py/blob/81e1d6f28064b832661a4940a3896a2089f76b6b/rosu_pp_py.pyi#L316-L346): Contains strain values for each skill based on the mode
 
 Additionally, the following error types are exposed:
 - `ParseError`: Failed to parse a beatmap
@@ -37,7 +37,7 @@ with open("/path/to/file.osu") as file:
     map = Beatmap(content = file.read())
 ```
 
-2) Next, you need to create `Calculator` instance by providing the appropriate kwargs again.
+2) Next, you need to create an instance of `Calculator` by providing the appropriate kwargs again.
 Any of the following kwargs are allowed: `mode`, `mods`, `acc`, `n_geki`, `n_katu`, `n300`, `n100`, `n50`, `n_misses`, `combo`, `passed_objects`, `clock_rate`, and `difficulty`.
 Each of these also have a setter method e.g. `set_n_misses`.
 ```py
@@ -71,7 +71,6 @@ calc.set_combo(200)
 calc.set_difficulty(max_perf.difficulty)
 
 curr_perf = calc.performance(map)
-
 print(f'PP: {curr_perf.pp}/{max_perf.pp} | Stars: {max_perf.difficulty.stars}')
 
 map_attrs = calc.map_attributes(map)
