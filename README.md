@@ -52,7 +52,7 @@ calc.set_mods(8 + 64) # HDDT
 ```py
 from rosu_pp_py import Beatmap, Calculator
 
-map = Beatmap(path = './maps/100.osu')
+map = Beatmap(path = "./maps/100.osu")
 calc = Calculator(mods = 8)
 
 # Calculate an SS on HD
@@ -97,5 +97,5 @@ $ pip install git+https://github.com/MaxOhn/rosu-pp-py
 ## Learn More
 - [rosu-pp documentation](https://docs.rs/rosu-pp/latest/rosu_pp/)
 - [Rust documentation](https://www.rust-lang.org).
-- [PyO3 documentation](https://pyo3.rs/v0.15.1/).
+- [PyO3 documentation](https://pyo3.rs/).
 - [Python documentation](https://docs.python.org/3/).
