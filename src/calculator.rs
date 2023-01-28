@@ -42,7 +42,7 @@ macro_rules! set_calc {
 #[pymethods]
 impl PyCalculator {
     #[new]
-    #[args(kwargs = "**")]
+    #[pyo3(signature = (**kwargs))]
     fn new(kwargs: Option<&PyDict>) -> PyResult<Self> {
         let kwargs = match kwargs {
             Some(kwargs) => kwargs,
