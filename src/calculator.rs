@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use pyo3::{
     exceptions::{PyTypeError, PyValueError},
     pyclass, pymethods,
@@ -192,7 +194,11 @@ impl PyCalculator {
     }
 
     fn map_attributes(&self, map: &PyBeatmap) -> PyResult<PyBeatmapAttributes> {
-        let map = &map.inner;
+        let (map, mode) = match self.mode {
+            Some(mode) => (map.inner.convert_mode(mode), mode),
+            None => (Cow::Borrowed(&map.inner), map.inner.mode),
+        };
+
         let mut calc = map.attributes();
 
         if let Some(mode) = self.mode {
@@ -211,7 +217,7 @@ impl PyCalculator {
             calc.clock_rate(clock_rate);
         }
 
-        Ok(PyBeatmapAttributes::new(calc.build(), map))
+        Ok(PyBeatmapAttributes::new(calc.build(), mode, map.as_ref()))
     }
 
     fn difficulty(&self, map: &PyBeatmap) -> PyResult<PyDifficultyAttributes> {

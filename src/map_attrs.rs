@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
 use pyo3::{pyclass, pymethods};
-use rosu_pp::{beatmap::BeatmapAttributes, Beatmap};
+use rosu_pp::{beatmap::BeatmapAttributes, Beatmap, GameMode};
 
 #[pyclass(name = "BeatmapAttributes")]
 pub struct PyBeatmapAttributes {
@@ -34,7 +34,7 @@ pub struct PyBeatmapAttributes {
 }
 
 impl PyBeatmapAttributes {
-    pub fn new(attrs: BeatmapAttributes, map: &Beatmap) -> Self {
+    pub fn new(attrs: BeatmapAttributes, mode: GameMode, map: &Beatmap) -> Self {
         Self {
             ar: attrs.ar,
             cs: attrs.cs,
@@ -44,7 +44,7 @@ impl PyBeatmapAttributes {
             od_hit_window: attrs.hit_windows.od,
             clock_rate: attrs.clock_rate,
             bpm: map.bpm() * attrs.clock_rate,
-            mode: map.mode as u8,
+            mode: mode as u8,
             version: map.version,
             n_circles: map.n_circles,
             n_sliders: map.n_sliders,
