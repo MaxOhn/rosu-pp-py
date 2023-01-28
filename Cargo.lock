@@ -175,7 +175,7 @@ checksum = "798ddfd34a73918c234251d8a4ba163a08041ca29d39910d5cd28826529eaab8"
 
 [[package]]
 name = "rosu-pp-py"
-version = "0.9.1"
+version = "0.9.3"
 dependencies = [
  "pyo3",
  "rosu-pp",
