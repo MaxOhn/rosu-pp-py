@@ -112,7 +112,7 @@ jobs:
       with:
         target: ${{ matrix.target }}
         manylinux: auto
-        args: --release --out dist
+        args: --release --out dist -i 3.9
 
     - name: Install built wheel
       if: matrix.target == 'x86_64'
