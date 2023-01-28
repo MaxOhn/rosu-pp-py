@@ -27,7 +27,7 @@ jobs:
           default: true
 
       - name: Build wheels - x86_64
-        uses: messense/maturin-action@v1
+        uses: PyO3/maturin-action@v1
         with:
           target: x86_64
           args: --release --out dist
@@ -38,7 +38,7 @@ jobs:
           python -c "import rosu_pp_py"
 
       - name: Build wheels - universal2
-        uses: messense/maturin-action@v1
+        uses: PyO3/maturin-action@v1
         with:
           args: --release --universal2 --out dist --no-sdist
   
@@ -76,7 +76,7 @@ jobs:
           default: true
 
       - name: Build wheels
-        uses: messense/maturin-action@v1
+        uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
           args: --release --out dist --no-sdist
@@ -108,7 +108,7 @@ jobs:
         architecture: x64
 
     - name: Build wheels
-      uses: messense/maturin-action@v1
+      uses: PyO3/maturin-action@v1
       with:
         target: ${{ matrix.target }}
         manylinux: auto
