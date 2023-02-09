@@ -1,4 +1,8 @@
-# v0.9.3 (2023-01-28)
+# v0.9.4 (2023-02-09)
+
+- Updated to [rosu-pp v0.9.4](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v094-2023-02-09).
+
+## v0.9.3 (2023-01-28)
 
 - Updated to [rosu-pp v0.9.3](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v093-2023-01-28). Only includes some bug fixes.
 - Fixed the hitobjects counts of map attributes on converted maps.
