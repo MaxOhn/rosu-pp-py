@@ -12,7 +12,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = { version = "0.18", features = ["extension-module", "macros"] }
-rosu-pp = { version = "0.9.3" }
+rosu-pp = { version = "0.9.4" }
 
 [profile.release]
 lto = "fat"
