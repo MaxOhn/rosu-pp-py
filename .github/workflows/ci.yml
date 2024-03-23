@@ -1,0 +1,243 @@
+# Largely references https://github.com/pydantic/pydantic-core/blob/193f5d7a8627c988b1c7fab9a3712c779afbbe94/.github/workflows/ci.yml
+
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - next
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Install stable toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run clippy
+        run: cargo clippy --all-targets
+
+  build-sdist:
+    name: Build sdist
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          command: sdist
+          args: --out dist
+          rust-toolchain: stable
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: pypi_files_sdist
+          path: dist
+
+  build:
+    name: Build on ${{ matrix.os }} (${{ matrix.target }} - ${{ matrix.interpreter || 'all' }}${{ matrix.os == 'linux' && format(' - {0}', matrix.manylinux == 'auto' && 'manylinux' || matrix.manylinux) || '' }})
+    if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/next'
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [linux, macos, windows]
+        target: [x86_64, aarch64]
+        manylinux: [auto]
+        include:
+          # manylinux
+          - os: linux
+            manylinux: auto
+            target: aarch64
+          - os: linux
+            manylinux: auto
+            target: armv7
+            interpreter: 3.8 3.9 3.10 3.11 3.12
+          - os: linux
+            manylinux: auto
+            target: x86_64
+
+          # musllinux
+          - os: linux
+            manylinux: musllinux_1_1
+            target: x86_64
+          - os: linux
+            manylinux: musllinux_1_1
+            target: aarch64
+
+          # macos
+          - os: macos
+            target: x86_64
+          - os: macos
+            target: aarch64
+
+          # windows
+          - os: windows
+            target: x86_64
+          - os: windows
+            target: aarch64
+            interpreter: 3.11 3.12
+
+    runs-on: ${{ (matrix.os == 'linux' && 'ubuntu') || matrix.os }}-latest
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Set up python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          architecture: ${{ matrix.python-architecture || 'x64' }}
+
+      - run: pip install -U twine 'ruff==0.1.3' typing_extensions
+
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          manylinux: ${{ matrix.manylinux }}
+          args: --release --out dist --interpreter ${{ matrix.interpreter || '3.8 3.9 3.10 3.11 3.12 pypy3.9 pypy3.10' }}
+          rust-toolchain: stable
+          docker-options: -e CI
+
+      - run: twine check --strict dist/*
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: pypi_files_${{ matrix.os }}_${{ matrix.target }}_${{ matrix.interpreter || 'all' }}_${{ matrix.manylinux }}
+          path: dist
+
+  test-builds-arch:
+    name: Test build on ${{ matrix.target }}-${{ matrix.distro }}
+    needs: [build]
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [aarch64, armv7]
+        distro: ['ubuntu22.04']
+        include:
+          - target: aarch64
+            distro: alpine_latest
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Get artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: pypi_files_linux_*
+          merge-multiple: true
+          path: dist
+
+      - name: Install & test
+        uses: uraimo/run-on-arch-action@v2.7.1
+        with:
+          arch: ${{ matrix.target }}
+          distro: ${{ matrix.distro }}
+          githubToken: ${{ github.token }}
+          install: |
+            set -x
+            if command -v apt-get &> /dev/null; then
+              echo "installing python & pip with apt-get..."
+              apt-get update
+              apt-get install -y --no-install-recommends python3 python3-pip python3-venv git
+            else
+              echo "installing python & pip with apk..."
+              apk update
+              apk add python3 py3-pip git
+            fi
+          run: |
+            set -x
+            # typing-extensions isn't automatically installed because of `--no-index --no-deps`
+            python3 -m venv venv
+            source venv/bin/activate
+            python3 -m pip install -U pip typing-extensions
+            python3 -m pip install -r tests/requirements.txt
+            python3 -m pip install rosu_pp_py --no-index --no-deps --find-links dist --force-reinstall
+            python3 -c "import rosu_pp_py"
+
+  test-builds-os:
+    name: Test build on ${{ matrix.os }}
+    needs: [build]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu, macos, windows]
+
+    runs-on: ${{ matrix.os }}-latest
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Set up python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Get artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: pypi_files_*
+          merge-multiple: true
+          path: dist
+
+      - run: |
+        pip install typing-extensions
+        pip install -r tests/requirements.txt
+        pip install rosu_pp_py --no-index --no-deps --find-links dist --force-reinstall
+        python -c "import rosu_pp_py"
+
+  release:
+    name: Release
+    needs: [test-builds-arch, test-builds-os, build-sdist]
+    if: success() && startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Set up python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - run: pip install -U twine
+
+      - name: Get artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: pypi_files_*
+          merge-multiple: true
+          path: dist
+
+      - run: twine check --strict dist/*
+
+      - name: Upload to PyPI
+        run: twine upload dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
