@@ -205,10 +205,10 @@ jobs:
           path: dist
 
       - run: |
-        pip install typing-extensions
-        pip install -r tests/requirements.txt
-        pip install rosu_pp_py --no-index --no-deps --find-links dist --force-reinstall
-        python -c "import rosu_pp_py"
+          pip install typing-extensions
+          pip install -r tests/requirements.txt
+          pip install rosu_pp_py --no-index --no-deps --find-links dist --force-reinstall
+          python -c "import rosu_pp_py"
 
   release:
     name: Release
