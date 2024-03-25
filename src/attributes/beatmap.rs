@@ -167,39 +167,41 @@ impl PyBeatmapAttributesBuilder {
         self.is_convert = map.is_convert;
     }
 
-    fn set_mode(&mut self, mode: PyGameMode) {
-        self.mode = Some(mode);
-    }
-
-    fn set_is_convert(&mut self, is_convert: bool) {
+    #[pyo3(signature = (mode, is_convert))]
+    fn set_mode(&mut self, mode: Option<PyGameMode>, is_convert: bool) {
+        self.mode = mode;
         self.is_convert = is_convert;
     }
 
-    fn set_mods(&mut self, mods: u32) {
-        self.mods = mods;
+    fn set_mods(&mut self, mods: Option<u32>) {
+        self.mods = mods.unwrap_or(0);
     }
 
-    fn set_clock_rate(&mut self, clock_rate: f64) {
-        self.clock_rate = Some(clock_rate);
+    fn set_clock_rate(&mut self, clock_rate: Option<f64>) {
+        self.clock_rate = clock_rate;
     }
 
-    fn set_ar(&mut self, ar: f32, ar_with_mods: bool) {
-        self.ar = Some(ar);
+    #[pyo3(signature = (ar, ar_with_mods))]
+    fn set_ar(&mut self, ar: Option<f32>, ar_with_mods: bool) {
+        self.ar = ar;
         self.ar_with_mods = ar_with_mods;
     }
 
-    fn set_cs(&mut self, cs: f32, cs_with_mods: bool) {
-        self.cs = Some(cs);
+    #[pyo3(signature = (cs, cs_with_mods))]
+    fn set_cs(&mut self, cs: Option<f32>, cs_with_mods: bool) {
+        self.cs = cs;
         self.cs_with_mods = cs_with_mods;
     }
 
-    fn set_hp(&mut self, hp: f32, hp_with_mods: bool) {
-        self.hp = Some(hp);
+    #[pyo3(signature = (hp, hp_with_mods))]
+    fn set_hp(&mut self, hp: Option<f32>, hp_with_mods: bool) {
+        self.hp = hp;
         self.hp_with_mods = hp_with_mods;
     }
 
-    fn set_od(&mut self, od: f32, od_with_mods: bool) {
-        self.od = Some(od);
+    #[pyo3(signature = (od, od_with_mods))]
+    fn set_od(&mut self, od: Option<f32>, od_with_mods: bool) {
+        self.od = od;
         self.od_with_mods = od_with_mods;
     }
 }

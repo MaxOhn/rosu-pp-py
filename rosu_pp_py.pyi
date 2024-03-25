@@ -183,6 +183,11 @@ class Difficulty:
         Suitable to plot the difficulty over time.
         """
 
+    def performance(self) -> Performance:
+        """
+        Use the current difficulty settings to create a performance calculator
+        """
+
     def gradual_difficulty(self, map: Beatmap) -> GradualDifficulty:
         """
         Returns a gradual difficulty calculator for the current difficulty settings
@@ -193,11 +198,11 @@ class Difficulty:
         Returns a gradual performance calculator for the current difficulty settings
         """
 
-    def set_mods(self, mods: int) -> None: ...
+    def set_mods(self, mods: Optional[int]) -> None: ...
 
-    def set_clock_rate(self, clock_rate: float) -> None: ...
+    def set_clock_rate(self, clock_rate: Optional[float]) -> None: ...
 
-    def set_ar(self, ar: float, with_mods: bool) -> None:
+    def set_ar(self, ar: Optional[float], with_mods: bool) -> None:
         """
         Override a beatmap's set AR.
             
@@ -210,7 +215,7 @@ class Difficulty:
         used as is and on `false` it will be modified based on the mods.
         """
 
-    def set_cs(self, cs: float, with_mods: bool) -> None:
+    def set_cs(self, cs: Optional[float], with_mods: bool) -> None:
         """
         Override a beatmap's set CS.
             
@@ -223,7 +228,7 @@ class Difficulty:
         used as is and on `false` it will be modified based on the mods.
         """
 
-    def set_hp(self, hp: float, with_mods: bool) -> None:
+    def set_hp(self, hp: Optional[float], with_mods: bool) -> None:
         """
         Override a beatmap's set HP.
 
@@ -234,7 +239,7 @@ class Difficulty:
         used as is and on `false` it will be modified based on the mods.
         """
 
-    def set_od(self, od: float, with_mods: bool) -> None:
+    def set_od(self, od: Optional[float], with_mods: bool) -> None:
         """
         Override a beatmap's set OD.
 
@@ -245,9 +250,9 @@ class Difficulty:
         used as is and on `false` it will be modified based on the mods.
         """
 
-    def set_passed_objects(self, passed_objects: int) -> None: ...
+    def set_passed_objects(self, passed_objects: Optional[int]) -> None: ...
 
-    def set_hardrock_offsets(self, hardrock_offsets: bool) -> None: ...
+    def set_hardrock_offsets(self, hardrock_offsets: Optional[bool]) -> None: ...
 
 class Performance:
     """
@@ -358,11 +363,16 @@ class Performance:
         custom ar, ... otherwise the final attributes will be incorrect.
         """
 
-    def set_mods(self, mods: int) -> None: ...
+    def difficulty(self) -> Difficulty:
+        """
+        Use the current difficulty settings to create a difficulty calculator
+        """
 
-    def set_clock_rate(self, clock_rate: float) -> None: ...
+    def set_mods(self, mods: Optional[int]) -> None: ...
 
-    def set_ar(self, ar: float, with_mods: bool) -> None:
+    def set_clock_rate(self, clock_rate: Optional[float]) -> None: ...
+
+    def set_ar(self, ar: Optional[float], with_mods: bool) -> None:
         """
         Override a beatmap's set AR.
             
@@ -375,7 +385,7 @@ class Performance:
         used as is and on `false` it will be modified based on the mods.
         """
 
-    def set_cs(self, cs: float, with_mods: bool) -> None:
+    def set_cs(self, cs: Optional[float], with_mods: bool) -> None:
         """
         Override a beatmap's set CS.
             
@@ -388,7 +398,7 @@ class Performance:
         used as is and on `false` it will be modified based on the mods.
         """
 
-    def set_hp(self, hp: float, with_mods: bool) -> None:
+    def set_hp(self, hp: Optional[float], with_mods: bool) -> None:
         """
         Override a beatmap's set HP.
 
@@ -399,7 +409,7 @@ class Performance:
         used as is and on `false` it will be modified based on the mods.
         """
 
-    def set_od(self, od: float, with_mods: bool) -> None:
+    def set_od(self, od: Optional[float], with_mods: bool) -> None:
         """
         Override a beatmap's set OD.
 
@@ -410,27 +420,27 @@ class Performance:
         used as is and on `false` it will be modified based on the mods.
         """
 
-    def set_passed_objects(self, passed_objects: int) -> None: ...
+    def set_passed_objects(self, passed_objects: Optional[int]) -> None: ...
 
-    def set_hardrock_offsets(self, hardrock_offsets: bool) -> None: ...
+    def set_hardrock_offsets(self, hardrock_offsets: Optional[bool]) -> None: ...
 
-    def set_accuracy(self, accuracy: float) -> None: ...
+    def set_accuracy(self, accuracy: Optional[float]) -> None: ...
 
-    def set_combo(self, combo: int) -> None: ...
+    def set_combo(self, combo: Optional[int]) -> None: ...
 
-    def set_n_geki(self, n_geki: int) -> None: ...
+    def set_n_geki(self, n_geki: Optional[int]) -> None: ...
 
-    def set_n_katu(self, n_katu: int) -> None: ...
+    def set_n_katu(self, n_katu: Optional[int]) -> None: ...
 
-    def set_n300(self, n300: int) -> None: ...
+    def set_n300(self, n300: Optional[int]) -> None: ...
 
-    def set_n100(self, n100: int) -> None: ...
+    def set_n100(self, n100: Optional[int]) -> None: ...
 
-    def set_n50(self, n50: int) -> None: ...
+    def set_n50(self, n50: Optional[int]) -> None: ...
 
-    def set_misses(self, misses: int) -> None: ...
+    def set_misses(self, misses: Optional[int]) -> None: ...
 
-    def set_hitresult_priority(self, hitresult_priority: HitResultPriority) -> None: ...
+    def set_hitresult_priority(self, hitresult_priority: Optional[HitResultPriority]) -> None: ...
 
 class GradualDifficulty(Iterator):
     """
@@ -556,15 +566,13 @@ class BeatmapAttributesBuilder:
         Consider the map's attributes, mode, and convert status
         """
 
-    def set_mode(self, mode: GameMode) -> None: ...
+    def set_mode(self, mode: Optional[GameMode], is_convert: bool) -> None: ...
 
-    def set_is_convert(self, is_convert: bool) -> None: ...
+    def set_mods(self, mods: Optional[int]) -> None: ...
 
-    def set_mods(self, mods: int) -> None: ...
+    def set_clock_rate(self, clock_rate: Optional[float]) -> None: ...
 
-    def set_clock_rate(self, clock_rate: float) -> None: ...
-
-    def set_ar(self, ar: float, with_mods: bool) -> None:
+    def set_ar(self, ar: Optional[float], with_mods: bool) -> None:
         """
         Override a beatmap's set AR.
             
@@ -577,7 +585,7 @@ class BeatmapAttributesBuilder:
         used as is and on `false` it will be modified based on the mods.
         """
 
-    def set_cs(self, cs: float, with_mods: bool) -> None:
+    def set_cs(self, cs: Optional[float], with_mods: bool) -> None:
         """
         Override a beatmap's set CS.
             
@@ -590,7 +598,7 @@ class BeatmapAttributesBuilder:
         used as is and on `false` it will be modified based on the mods.
         """
 
-    def set_hp(self, hp: float, with_mods: bool) -> None:
+    def set_hp(self, hp: Optional[float], with_mods: bool) -> None:
         """
         Override a beatmap's set HP.
 
@@ -601,7 +609,7 @@ class BeatmapAttributesBuilder:
         used as is and on `false` it will be modified based on the mods.
         """
 
-    def set_od(self, od: float, with_mods: bool) -> None:
+    def set_od(self, od: Optional[float], with_mods: bool) -> None:
         """
         Override a beatmap's set OD.
 
