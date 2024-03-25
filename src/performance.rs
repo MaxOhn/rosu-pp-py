@@ -7,33 +7,34 @@ use rosu_pp::{
 use crate::{
     attributes::{difficulty::PyDifficultyAttributes, performance::PyPerformanceAttributes},
     beatmap::PyBeatmap,
+    difficulty::PyDifficulty,
     error::ArgsError,
 };
 
 #[pyclass(name = "Performance")]
 #[derive(Default)]
 pub struct PyPerformance {
-    mods: u32,
-    clock_rate: Option<f64>,
-    ar: Option<f32>,
-    ar_with_mods: bool,
-    cs: Option<f32>,
-    cs_with_mods: bool,
-    hp: Option<f32>,
-    hp_with_mods: bool,
-    od: Option<f32>,
-    od_with_mods: bool,
-    passed_objects: Option<u32>,
-    hardrock_offsets: Option<bool>,
-    accuracy: Option<f64>,
-    combo: Option<u32>,
-    n_geki: Option<u32>,
-    n_katu: Option<u32>,
-    n300: Option<u32>,
-    n100: Option<u32>,
-    n50: Option<u32>,
-    misses: Option<u32>,
-    hitresult_priority: PyHitResultPriority,
+    pub(crate) mods: u32,
+    pub(crate) clock_rate: Option<f64>,
+    pub(crate) ar: Option<f32>,
+    pub(crate) ar_with_mods: bool,
+    pub(crate) cs: Option<f32>,
+    pub(crate) cs_with_mods: bool,
+    pub(crate) hp: Option<f32>,
+    pub(crate) hp_with_mods: bool,
+    pub(crate) od: Option<f32>,
+    pub(crate) od_with_mods: bool,
+    pub(crate) passed_objects: Option<u32>,
+    pub(crate) hardrock_offsets: Option<bool>,
+    pub(crate) accuracy: Option<f64>,
+    pub(crate) combo: Option<u32>,
+    pub(crate) n_geki: Option<u32>,
+    pub(crate) n_katu: Option<u32>,
+    pub(crate) n300: Option<u32>,
+    pub(crate) n100: Option<u32>,
+    pub(crate) n50: Option<u32>,
+    pub(crate) misses: Option<u32>,
+    pub(crate) hitresult_priority: PyHitResultPriority,
 }
 
 #[pymethods]
@@ -219,82 +220,120 @@ impl PyPerformance {
 
         perf = self.apply(perf);
         let state = perf.generate_state();
-        let mut attrs = PyPerformanceAttributes::from(perf.calculate());
+        let x = perf.calculate();
+        let mut attrs = PyPerformanceAttributes::from(x);
         attrs.state = Some(state.into());
 
         Ok(attrs)
     }
 
-    fn set_mods(&mut self, mods: u32) {
-        self.mods = mods;
+    fn difficulty(&self) -> PyDifficulty {
+        let Self {
+            mods,
+            clock_rate,
+            ar,
+            ar_with_mods,
+            cs,
+            cs_with_mods,
+            hp,
+            hp_with_mods,
+            od,
+            od_with_mods,
+            passed_objects,
+            hardrock_offsets,
+            ..
+        } = self;
+
+        PyDifficulty {
+            mods: *mods,
+            clock_rate: *clock_rate,
+            ar: *ar,
+            ar_with_mods: *ar_with_mods,
+            cs: *cs,
+            cs_with_mods: *cs_with_mods,
+            hp: *hp,
+            hp_with_mods: *hp_with_mods,
+            od: *od,
+            od_with_mods: *od_with_mods,
+            passed_objects: *passed_objects,
+            hardrock_offsets: *hardrock_offsets,
+        }
     }
 
-    fn set_clock_rate(&mut self, clock_rate: f64) {
-        self.clock_rate = Some(clock_rate);
+    fn set_mods(&mut self, mods: Option<u32>) {
+        self.mods = mods.unwrap_or(0);
     }
 
-    fn set_ar(&mut self, ar: f32, ar_with_mods: bool) {
-        self.ar = Some(ar);
+    fn set_clock_rate(&mut self, clock_rate: Option<f64>) {
+        self.clock_rate = clock_rate;
+    }
+
+    #[pyo3(signature = (ar, ar_with_mods))]
+    fn set_ar(&mut self, ar: Option<f32>, ar_with_mods: bool) {
+        self.ar = ar;
         self.ar_with_mods = ar_with_mods;
     }
 
-    fn set_cs(&mut self, cs: f32, cs_with_mods: bool) {
-        self.cs = Some(cs);
+    #[pyo3(signature = (cs, cs_with_mods))]
+    fn set_cs(&mut self, cs: Option<f32>, cs_with_mods: bool) {
+        self.cs = cs;
         self.cs_with_mods = cs_with_mods;
     }
 
-    fn set_hp(&mut self, hp: f32, hp_with_mods: bool) {
-        self.hp = Some(hp);
+    #[pyo3(signature = (hp, hp_with_mods))]
+    fn set_hp(&mut self, hp: Option<f32>, hp_with_mods: bool) {
+        self.hp = hp;
         self.hp_with_mods = hp_with_mods;
     }
 
-    fn set_od(&mut self, od: f32, od_with_mods: bool) {
-        self.od = Some(od);
+    #[pyo3(signature = (od, od_with_mods))]
+    fn set_od(&mut self, od: Option<f32>, od_with_mods: bool) {
+        self.od = od;
         self.od_with_mods = od_with_mods;
     }
 
-    fn set_passed_objects(&mut self, passed_objects: u32) {
-        self.passed_objects = Some(passed_objects);
+    fn set_passed_objects(&mut self, passed_objects: Option<u32>) {
+        self.passed_objects = passed_objects;
     }
 
-    fn set_hardrock_offsets(&mut self, hardrock_offsets: bool) {
-        self.hardrock_offsets = Some(hardrock_offsets);
+    fn set_hardrock_offsets(&mut self, hardrock_offsets: Option<bool>) {
+        self.hardrock_offsets = hardrock_offsets;
     }
 
-    fn set_accuracy(&mut self, accuracy: f64) {
-        self.accuracy = Some(accuracy);
+    fn set_accuracy(&mut self, accuracy: Option<f64>) {
+        self.accuracy = accuracy;
     }
 
-    fn set_combo(&mut self, combo: u32) {
-        self.combo = Some(combo);
+    fn set_combo(&mut self, combo: Option<u32>) {
+        self.combo = combo;
     }
 
-    fn set_n_geki(&mut self, n_geki: u32) {
-        self.n_geki = Some(n_geki);
+    fn set_n_geki(&mut self, n_geki: Option<u32>) {
+        self.n_geki = n_geki;
     }
 
-    fn set_n_katu(&mut self, n_katu: u32) {
-        self.n_katu = Some(n_katu);
+    fn set_n_katu(&mut self, n_katu: Option<u32>) {
+        self.n_katu = n_katu;
     }
 
-    fn set_n300(&mut self, n300: u32) {
-        self.n300 = Some(n300);
+    fn set_n300(&mut self, n300: Option<u32>) {
+        self.n300 = n300;
     }
 
-    fn set_n100(&mut self, n100: u32) {
-        self.n100 = Some(n100);
+    fn set_n100(&mut self, n100: Option<u32>) {
+        self.n100 = n100;
     }
 
-    fn set_n50(&mut self, n50: u32) {
-        self.n50 = Some(n50);
+    fn set_n50(&mut self, n50: Option<u32>) {
+        self.n50 = n50;
     }
 
-    fn set_misses(&mut self, misses: u32) {
-        self.misses = Some(misses);
+    fn set_misses(&mut self, misses: Option<u32>) {
+        self.misses = misses;
     }
 
-    fn set_hitresult_priority(&mut self, hitresult_priority: PyHitResultPriority) {
-        self.hitresult_priority = hitresult_priority;
+    fn set_hitresult_priority(&mut self, hitresult_priority: Option<PyHitResultPriority>) {
+        self.hitresult_priority = hitresult_priority.unwrap_or_default();
     }
 }
 

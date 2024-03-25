@@ -93,14 +93,24 @@ impl PyScoreState {
 
 impl Debug for PyScoreState {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        let Self {
+            max_combo,
+            n_geki,
+            n_katu,
+            n300,
+            n100,
+            n50,
+            misses,
+        } = self;
+
         f.debug_struct("ScoreState")
-            .field("max_combo", &self.max_combo)
-            .field("n_geki", &self.n_geki)
-            .field("n_katu", &self.n_katu)
-            .field("n300", &self.n300)
-            .field("n100", &self.n100)
-            .field("n50", &self.n50)
-            .field("misses", &self.misses)
+            .field("max_combo", max_combo)
+            .field("n_geki", n_geki)
+            .field("n_katu", n_katu)
+            .field("n300", n300)
+            .field("n100", n100)
+            .field("n50", n50)
+            .field("misses", misses)
             .finish()
     }
 }
