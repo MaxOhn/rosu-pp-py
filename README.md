@@ -7,17 +7,123 @@ As such, its performance is much faster than a native python library.
 
 ## Usage
 
-TODO
+The library exposes multiple classes:
+- [`Beatmap`](https://github.com/MaxOhn/rosu-pp-py/blob/79a5af50dc263d5c36246691010290b5f2048721/rosu_pp_py.pyi#L23-L105): Parsed `.osu` file
+- [`GameMode`](https://github.com/MaxOhn/rosu-pp-py/blob/79a5af50dc263d5c36246691010290b5f2048721/rosu_pp_py.pyi#L5-L13)
+- Calculators
+  - [`Difficulty`](https://github.com/MaxOhn/rosu-pp-py/blob/79a5af50dc263d5c36246691010290b5f2048721/rosu_pp_py.pyi#L107-L250): Class to calculate difficulty attributes, strains, or create gradual calculators
+  - [`Performance`](https://github.com/MaxOhn/rosu-pp-py/blob/79a5af50dc263d5c36246691010290b5f2048721/rosu_pp_py.pyi#L252-L433): Performance attributes calculator
+  - [`GradualDifficulty`](https://github.com/MaxOhn/rosu-pp-py/blob/79a5af50dc263d5c36246691010290b5f2048721/rosu_pp_py.pyi#L435-L459): Calculator to calculate difficulty attributes after each hitobject
+  - [`GradualPerformance`](https://github.com/MaxOhn/rosu-pp-py/blob/79a5af50dc263d5c36246691010290b5f2048721/rosu_pp_py.pyi#L461-L487): Calculator to calculator performance attributes after each hitresult
+  - [`BeatmapAttributesBuilder`](https://github.com/MaxOhn/rosu-pp-py/blob/79a5af50dc263d5c36246691010290b5f2048721/rosu_pp_py.pyi#L489-L660): Beatmap attributes calculator
+- Results
+  - [`DifficultyAttributes`](https://github.com/MaxOhn/rosu-pp-py/blob/79a5af50dc263d5c36246691010290b5f2048721/rosu_pp_py.pyi#L662-L849)
+  - [`Strains`](https://github.com/MaxOhn/rosu-pp-py/blob/79a5af50dc263d5c36246691010290b5f2048721/rosu_pp_py.pyi#L924-L994)
+  - [`PerformanceAttributes`](https://github.com/MaxOhn/rosu-pp-py/blob/79a5af50dc263d5c36246691010290b5f2048721/rosu_pp_py.pyi#L851-L922)
+  - [`BeatmapAttributes`](https://github.com/MaxOhn/rosu-pp-py/blob/79a5af50dc263d5c36246691010290b5f2048721/rosu_pp_py.pyi#L996-L1026)
+- [`HitResultPriority`](https://github.com/MaxOhn/rosu-pp-py/blob/79a5af50dc263d5c36246691010290b5f2048721/rosu_pp_py.pyi#L15-L21): Passed to `Performance`, decides whether specified accuracy should be realized through good or bad hitresults
+- [`ScoreState`](https://github.com/MaxOhn/rosu-pp-py/blob/79a5af50dc263d5c36246691010290b5f2048721/rosu_pp_py.pyi#L615-L660): Hitresults and max combo of a score, found in `PerformanceAttributes` and passed to gradual calculators
 
 ## Example
 
-TODO
+### Calculating performance
+
+```py
+import rosu_pp_py as rosu
+
+map = rosu.Beatmap(
+    path = "/path/to/file.osu", # either `path`, `bytes`, or `content` must be specified
+    mode = rosu.GameMode.Mania, # optionally convert to a specified mode
+)
+
+# Or convert afterwards like `map.convert(rosu.GameMode.Taiko)`
+
+perf = rosu.Performance(
+    # various kwargs available
+    accuracy = 98.76,
+    misses = 2,
+    combo = 700,
+    hitresult_priority = rosu.HitResultPriority.WorstCase, # favors bad hitresults
+)
+
+# Each kwarg can also be specified afterwards through setters
+perf.set_accuracy(99.11) # override previously specified accuracy
+perf.set_mods(8 + 64)    # HDDT
+perf.set_clock_rate(1.4)
+
+# 2nd arg of map attributes specifies whether mods still need to be accounted for
+# `True`: mods already considered; `False`: value should still be adjusted
+perf.set_ar(10.5, True)
+perf.set_od(5, False)
+
+# Calculate for the map
+attrs = perf.calculate(map)
+
+# Note that calculating via map will have to calculate difficulty attributes
+# internally which is fairly expensive. To speed it up, you can also pass in
+# previously calculated attributes, but be sure they were calculated for the
+# same difficulty settings like mods, clock rate, custom map attributes, ...
+
+perf.set_accuracy(100)
+perf.set_misses(None)
+perf.set_combo(None)
+
+# Calculate a new set of attributes by re-using previous attributes instead of the map
+max_attrs = perf.calculate(attrs)
+
+print(f'PP: {attrs.pp}/{max_attrs.pp} | Stars: {max_attrs.difficulty.stars}')
+```
+
+### Gradual calculation
+
+```py
+import rosu_pp_py as rosu
+
+# Parsing the map, this time through the `content` kwarg
+with open("/path/to/file.osu") as file:
+    map = rosu.Beatmap(content = file.read())
+
+# Specifying some difficulty parameters
+diff = rosu.Difficulty(
+    mods = 16 + 1024, # HRFL
+    clock_rate = 1.1,
+    ar = 10.2,
+    ar_with_mods = True,
+)
+
+# Gradually calculating *difficulty* attributes
+gradual_diff = diff.gradual_difficulty(map)
+
+for i, attrs in enumerate(gradual_diff):
+    print(f'Stars after {i} hitobjects: {attrs.stars}')
+
+# Gradually calculating *performance* attributes
+gradual_perf = diff.gradual_performance(map)
+i = 1
+
+while True:
+    state = rosu.ScoreState(
+        max_combo = i,
+        n300 = i,
+        n100 = 0,
+        # ...
+    )
+
+    attrs = gradual_perf.next(state)
+
+    if attrs is None:
+        # All hitobjects have been processed
+        break
+
+    print(f'PP: {attrs.pp}')
+    i += 1
+```
 
 ## Installing rosu-pp-py
 
 Installing rosu-pp-py requires a [supported version of Python and Rust](https://github.com/PyO3/PyO3#usage).
 
-Once [Python] and [Rust](https://www.rust-lang.org/learn/get-started) and ready to go, you can install the project with pip:
+Once [Python] and [Rust](https://www.rust-lang.org/learn/get-started) are ready to go, you can install the project with pip:
 
 ```sh
 $ pip install rosu-pp-py
@@ -35,7 +141,7 @@ $ pip install git+https://github.com/MaxOhn/rosu-pp-py
 - [PyO3]
 
 [osu!]: https://osu.ppy.sh/home
-[Rust]: (https://www.rust-lang.org
+[Rust]: https://www.rust-lang.org
 [rosu-pp]: https://github.com/MaxOhn/rosu-pp
 [PyO3]: https://github.com/PyO3/pyo3
 [Python]: https://www.python.org/downloads/
