@@ -32,10 +32,6 @@ class Beatmap:
         `'bytes': bytearray`
             The content of a .osu file as bytes
 
-    The kwargs may include any of the following:
-        `'mode': GameMode`
-            Immediately convert the beatmap to the given mode
-
     ## Raises
 
     Throws an exception if the map could not be parsed or the map's mode cannot be converted to

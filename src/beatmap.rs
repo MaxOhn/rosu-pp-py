@@ -31,7 +31,6 @@ impl PyBeatmap {
         };
 
         let mut map_res = None;
-        let mut mode = None;
 
         for (key, value) in kwargs.iter() {
             match key.extract()? {
@@ -62,17 +61,10 @@ impl PyBeatmap {
 
                     map_res = Some(Beatmap::from_bytes(bytes));
                 }
-                "mode" => {
-                    let value = value
-                        .extract()
-                        .map_err(|_| PyTypeError::new_err("kwarg 'mode': must be a GameMode"))?;
-
-                    mode = Some(value);
-                }
                 kwarg => {
                     let err = format!(
                         "unexpected kwarg '{kwarg}': expected 'path', \
-                        'content', 'bytes', or 'mode'"
+                        'content', or 'bytes'"
                     );
 
                     return Err(ArgsError::new_err(err));
@@ -100,13 +92,7 @@ impl PyBeatmap {
             }
         };
 
-        let mut this = Self { inner: map };
-
-        if let Some(mode) = mode {
-            this.convert(mode)?;
-        }
-
-        Ok(this)
+        Ok(Self { inner: map })
     }
 
     fn convert(&mut self, mode: PyGameMode) -> PyResult<()> {
