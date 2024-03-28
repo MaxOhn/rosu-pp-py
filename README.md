@@ -31,12 +31,11 @@ The library exposes multiple classes:
 ```py
 import rosu_pp_py as rosu
 
-map = rosu.Beatmap(
-    path = "/path/to/file.osu", # either `path`, `bytes`, or `content` must be specified
-    mode = rosu.GameMode.Mania, # optionally convert to a specified mode
-)
+# either `path`, `bytes`, or `content` must be specified when parsing a map
+map = rosu.Beatmap(path = "/path/to/file.osu")
 
-# Or convert afterwards like `map.convert(rosu.GameMode.Taiko)`
+# Optionally convert to a specific mode
+map.convert(rosu.GameMode.Mania)
 
 perf = rosu.Performance(
     # various kwargs available
