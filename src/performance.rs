@@ -1,4 +1,9 @@
-use pyo3::{exceptions::PyTypeError, pyclass, pymethods, types::PyDict, PyAny, PyRef, PyResult};
+use pyo3::{
+    exceptions::PyTypeError,
+    pyclass, pymethods,
+    types::{PyAnyMethods, PyDict},
+    Bound, PyAny, PyRef, PyResult,
+};
 use rosu_pp::{
     any::{DifficultyAttributes, HitResultPriority},
     Difficulty, Performance,
@@ -41,14 +46,14 @@ pub struct PyPerformance {
 impl PyPerformance {
     #[new]
     #[pyo3(signature = (**kwargs))]
-    fn new(kwargs: Option<&PyDict>) -> PyResult<Self> {
+    fn new(kwargs: Option<&Bound<'_, PyDict>>) -> PyResult<Self> {
         let mut this = Self::default();
 
         let Some(kwargs) = kwargs else {
             return Ok(this);
         };
 
-        for (key, value) in kwargs.iter() {
+        for (key, value) in kwargs {
             match key.extract()? {
                 "mods" => {
                     this.mods = value
@@ -175,13 +180,11 @@ impl PyPerformance {
                     )
                 }
                 "hitresult_priority" => {
-                    let priority: PyHitResultPriority = value.extract().map_err(|_| {
+                    this.hitresult_priority = value.extract().map_err(|_| {
                         PyTypeError::new_err(
                             "kwarg 'hitresult_priority': must be a HitResultPriority",
                         )
                     })?;
-
-                    this.hitresult_priority = priority.into()
                 }
                 kwarg => {
                     let err = format!(
@@ -201,7 +204,7 @@ impl PyPerformance {
         Ok(this)
     }
 
-    fn calculate(&self, args: &PyAny) -> PyResult<PyPerformanceAttributes> {
+    fn calculate(&self, args: &Bound<'_, PyAny>) -> PyResult<PyPerformanceAttributes> {
         let _map;
 
         let mut perf = if let Ok(attrs) = args.extract::<PyPerformanceAttributes>() {
