@@ -1,6 +1,6 @@
 use error::ConvertError;
 use performance::PyHitResultPriority;
-use pyo3::{pymodule, types::PyModule, PyResult, Python};
+use pyo3::{pymodule, types::PyModule, Bound, PyResult, Python};
 
 use self::{
     attributes::{
@@ -32,7 +32,7 @@ mod score_state;
 mod strains;
 
 #[pymodule]
-fn rosu_pp_py(py: Python<'_>, m: &PyModule) -> PyResult<()> {
+fn rosu_pp_py(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyBeatmap>()?;
     m.add_class::<PyDifficulty>()?;
     m.add_class::<PyPerformance>()?;
@@ -49,9 +49,9 @@ fn rosu_pp_py(py: Python<'_>, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyPerformanceAttributes>()?;
     m.add_class::<PyStrains>()?;
 
-    m.add("ParseError", py.get_type::<ParseError>())?;
-    m.add("ArgsError", py.get_type::<ArgsError>())?;
-    m.add("ConvertError", py.get_type::<ConvertError>())?;
+    m.add("ParseError", py.get_type_bound::<ParseError>())?;
+    m.add("ArgsError", py.get_type_bound::<ArgsError>())?;
+    m.add("ConvertError", py.get_type_bound::<ConvertError>())?;
 
     Ok(())
 }

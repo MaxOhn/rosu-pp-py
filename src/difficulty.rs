@@ -1,4 +1,9 @@
-use pyo3::{exceptions::PyTypeError, pyclass, pymethods, types::PyDict, PyResult};
+use pyo3::{
+    exceptions::PyTypeError,
+    pyclass, pymethods,
+    types::{PyAnyMethods, PyDict},
+    Bound, PyResult,
+};
 use rosu_pp::Difficulty;
 
 use crate::{
@@ -31,14 +36,14 @@ pub struct PyDifficulty {
 impl PyDifficulty {
     #[new]
     #[pyo3(signature = (**kwargs))]
-    fn new(kwargs: Option<&PyDict>) -> PyResult<Self> {
+    fn new(kwargs: Option<&Bound<'_, PyDict>>) -> PyResult<Self> {
         let mut this = Self::default();
 
         let Some(kwargs) = kwargs else {
             return Ok(this);
         };
 
-        for (key, value) in kwargs.iter() {
+        for (key, value) in kwargs {
             match key.extract()? {
                 "mods" => {
                     this.mods = value

@@ -1,6 +1,11 @@
 use std::{error::Error as StdError, fmt::Write};
 
-use pyo3::{exceptions::PyTypeError, pyclass, pymethods, types::PyDict, PyResult};
+use pyo3::{
+    exceptions::PyTypeError,
+    pyclass, pymethods,
+    types::{PyAnyMethods, PyDict},
+    Bound, PyResult,
+};
 use rosu_pp::{
     model::{
         hit_object::HitObjectKind,
@@ -23,7 +28,7 @@ pub struct PyBeatmap {
 impl PyBeatmap {
     #[new]
     #[pyo3(signature = (**kwargs))]
-    fn new(kwargs: Option<&PyDict>) -> PyResult<Self> {
+    fn new(kwargs: Option<&Bound<'_, PyDict>>) -> PyResult<Self> {
         let Some(kwargs) = kwargs else {
             return Err(ArgsError::new_err(
                 "kwarg 'path', 'bytes', or 'content' must be specified",
@@ -32,7 +37,7 @@ impl PyBeatmap {
 
         let mut map_res = None;
 
-        for (key, value) in kwargs.iter() {
+        for (key, value) in kwargs {
             match key.extract()? {
                 "path" => {
                     let path = value

@@ -1,6 +1,11 @@
 use std::fmt::{Debug, Display, Formatter, Result as FmtResult};
 
-use pyo3::{exceptions::PyTypeError, pyclass, types::PyDict, PyResult};
+use pyo3::{
+    exceptions::PyTypeError,
+    pyclass,
+    types::{PyAnyMethods, PyDict},
+    Bound, PyResult,
+};
 use rosu_pp::any::ScoreState;
 
 use crate::error::ArgsError;
@@ -28,7 +33,7 @@ pub struct PyScoreState {
 impl PyScoreState {
     #[new]
     #[pyo3(signature = (**kwargs))]
-    fn new(kwargs: Option<&PyDict>) -> PyResult<Self> {
+    fn new(kwargs: Option<&Bound<'_, PyDict>>) -> PyResult<Self> {
         let mut this = Self::default();
 
         let Some(kwargs) = kwargs else {
