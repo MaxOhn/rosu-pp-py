@@ -8,7 +8,7 @@ use crate::mode::PyGameMode;
 type DoubleList = Vec<f64>;
 
 define_class! {
-    #[pyclass(name = "Strains")]
+    #[pyclass(name = "Strains", frozen)]
     #[derive(Default)]
     pub struct PyStrains {
         pub mode: PyGameMode!,

@@ -223,8 +223,7 @@ impl PyPerformance {
 
         perf = self.apply(perf);
         let state = perf.generate_state();
-        let x = perf.calculate();
-        let mut attrs = PyPerformanceAttributes::from(x);
+        let mut attrs = PyPerformanceAttributes::from(perf.calculate());
         attrs.state = Some(state.into());
 
         Ok(attrs)
