@@ -174,7 +174,6 @@ jobs:
             python3 -m venv venv
             source venv/bin/activate
             python3 -m pip install -U pip typing-extensions
-            python3 -m pip install -r tests/requirements.txt
             python3 -m pip install rosu_pp_py --no-index --no-deps --find-links dist --force-reinstall
             python3 -c "import rosu_pp_py"
 
@@ -206,7 +205,6 @@ jobs:
 
       - run: |
           pip install typing-extensions
-          pip install -r tests/requirements.txt
           pip install rosu_pp_py --no-index --no-deps --find-links dist --force-reinstall
           python -c "import rosu_pp_py"
 
