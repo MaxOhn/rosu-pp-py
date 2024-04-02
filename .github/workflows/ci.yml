@@ -115,7 +115,7 @@ jobs:
           target: ${{ matrix.target }}
           manylinux: ${{ matrix.manylinux }}
           args: --release --out dist --interpreter ${{ matrix.interpreter || '3.8 3.9 3.10 3.11 3.12 pypy3.9 pypy3.10' }}
-          rust-toolchain: stable
+          rust-toolchain: 1.77.0
           docker-options: -e CI
           sccache: true
 
