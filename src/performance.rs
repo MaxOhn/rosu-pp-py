@@ -205,16 +205,16 @@ impl PyPerformance {
     }
 
     fn calculate(&self, args: &Bound<'_, PyAny>) -> PyResult<PyPerformanceAttributes> {
-        let _map;
+        let map;
 
         let mut perf = if let Ok(attrs) = args.extract::<PyPerformanceAttributes>() {
-            Performance::from_attributes(DifficultyAttributes::try_from(attrs.difficulty)?)
+            Performance::new(DifficultyAttributes::try_from(attrs.difficulty)?)
         } else if let Ok(attrs) = args.extract::<PyDifficultyAttributes>() {
-            Performance::from_attributes(DifficultyAttributes::try_from(attrs)?)
-        } else if let Ok(map) = args.extract::<PyRef<'_, PyBeatmap>>() {
-            _map = map;
+            Performance::new(DifficultyAttributes::try_from(attrs)?)
+        } else if let Ok(map_) = args.extract::<PyRef<'_, PyBeatmap>>() {
+            map = map_;
 
-            Performance::from_map(&_map.inner)
+            Performance::new(&map.inner)
         } else {
             return Err(ArgsError::new_err(
                 "argument must be DifficultyAttributes, PerformanceAttributes, or a Beatmap",

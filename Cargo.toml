@@ -14,7 +14,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = { version = "0.21", features = ["extension-module", "macros"] }
-rosu-pp = { git = "https://github.com/MaxOhn/rosu-pp", branch = "next", features = ["sync"] }
+rosu-pp = { version = "1.0.0", features = ["sync"] }
 
 [profile.release]
 lto = true
