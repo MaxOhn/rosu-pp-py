@@ -1,3 +1,11 @@
+pub struct BoolFormatter(pub bool);
+
+impl std::fmt::Debug for BoolFormatter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(if self.0 { "True" } else { "False" })
+    }
+}
+
 macro_rules! define_class {
     (
         #[pyclass(name = $py_name:literal $(, $py_meta:meta)* )]
@@ -20,18 +28,27 @@ macro_rules! define_class {
                 let mut debug = f.debug_struct($py_name);
 
                 macro_rules! debug_field {
-                    ( $inner_field:ident ? ) => {
+                    ( $inner_field:ident: $field_ty:ident ? ) => {
                         if let Some(ref $inner_field) = self.$inner_field {
-                            debug.field(stringify!($inner_field), $inner_field);
+                            debug.field(stringify!($inner_field), debug_field!(@VALUE $field_ty: $inner_field));
                         }
                     };
 
-                    ( $inner_field:ident ! ) => {
-                        debug.field(stringify!($inner_field), &self.$inner_field);
+                    ( $inner_field:ident: $field_ty:ident ! ) => {
+                        let field = &self.$inner_field;
+                        debug.field(stringify!($inner_field), debug_field!(@VALUE $field_ty: field));
+                    };
+
+                    ( @VALUE bool: $value:tt ) => {
+                        &crate::macros::BoolFormatter( *$value )
+                    };
+
+                    ( @VALUE $field_ty:ident: $value:tt ) => {
+                        &$value
                     };
                 }
 
-                $( debug_field!($field $ty_type); )*
+                $( debug_field!($field: $ty $ty_type); )*
 
                 debug.finish()
             }
