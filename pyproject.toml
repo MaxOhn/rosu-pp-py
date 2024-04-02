@@ -15,9 +15,10 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
-packages = [{ include = "rosu_pp_py" }]
 authors = [{ name = "Max Ohn", email = "ohn.m@hotmail.de" }]
 readme = "README.md"
 license = { file = "LICENSE" }
-repository = "https://github.com/MaxOhn/rosu-pp-py"
 keywords = ["osu", "pp", "stars", "performance", "difficulty"]
+
+[tool.maturin]
+features = ["pyo3/extension-module", "pyo3/generate-import-lib"]
