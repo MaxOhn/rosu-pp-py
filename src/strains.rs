@@ -12,7 +12,7 @@ define_class! {
     #[derive(Default)]
     pub struct PyStrains {
         pub mode: PyGameMode!,
-        pub section_len: f64!,
+        pub section_length: f64!,
         pub aim: DoubleList?,
         pub aim_no_sliders: DoubleList?,
         pub speed: DoubleList?,
@@ -36,7 +36,7 @@ impl From<OsuStrains> for PyStrains {
 
         Self {
             mode: PyGameMode::Osu,
-            section_len: OsuStrains::SECTION_LEN,
+            section_length: OsuStrains::SECTION_LEN,
             aim: Some(aim),
             aim_no_sliders: Some(aim_no_sliders),
             speed: Some(speed),
@@ -56,7 +56,7 @@ impl From<TaikoStrains> for PyStrains {
 
         Self {
             mode: PyGameMode::Taiko,
-            section_len: TaikoStrains::SECTION_LEN,
+            section_length: TaikoStrains::SECTION_LEN,
             color: Some(color),
             rhythm: Some(rhythm),
             stamina: Some(stamina),
@@ -71,7 +71,7 @@ impl From<CatchStrains> for PyStrains {
 
         Self {
             mode: PyGameMode::Catch,
-            section_len: CatchStrains::SECTION_LEN,
+            section_length: CatchStrains::SECTION_LEN,
             movement: Some(movement),
             ..Self::default()
         }
@@ -84,7 +84,7 @@ impl From<ManiaStrains> for PyStrains {
 
         Self {
             mode: PyGameMode::Mania,
-            section_len: ManiaStrains::SECTION_LEN,
+            section_length: ManiaStrains::SECTION_LEN,
             strains: Some(strains),
             ..Self::default()
         }
