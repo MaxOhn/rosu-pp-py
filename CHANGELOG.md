@@ -1,4 +1,14 @@
-# v0.9.4 (2023-02-09)
+# v1.0.0 (2024-04-03)
+
+- Updated to [rosu-pp v1.0.0](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v100-2024-04-02)
+- Breaking changes ahead! There are now multiple different calculators:
+  - `Difficulty` to calculate `DifficultyAttributes`, `Strains`, or create gradual calculators
+  - `Performance` to calculate `PerformanceAttributes`
+  - `BeatmapAttributesBuilder` to calculate `BeatmapAttributes`
+  - `GradualDifficulty` to calculate `DifficultyAttributes` for each hitobject
+  - `GradualPerformance` to calculate `PerformanceAttributes` for each hitresult
+
+## v0.9.4 (2023-02-09)
 
 - Updated to [rosu-pp v0.9.4](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v094-2023-02-09).
 
