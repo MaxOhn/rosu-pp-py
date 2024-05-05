@@ -1,3 +1,7 @@
+# v1.0.1 (2024-05-05)
+
+- `PerformanceAttributes`' field `pp_accuracy` was accidentally actually named `pp_acc`; now it's definitely `pp_accuracy` ([#7])
+
 # v1.0.0 (2024-04-03)
 
 - Updated to [rosu-pp v1.0.0](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v100-2024-04-02)
@@ -61,3 +65,4 @@ osu!standard, osu!taiko, and osu!mania.
 [@tsunyoku]: https://github.com/tsunyoku
 
 [#3]: https://github.com/MaxOhn/rosu-pp-py/pull/3
+[#7]: https://github.com/MaxOhn/rosu-pp-py/pull/7
