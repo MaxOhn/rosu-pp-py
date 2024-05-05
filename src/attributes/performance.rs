@@ -19,7 +19,7 @@ define_class! {
         pub pp_aim: f64?,
         pub pp_flashlight: f64?,
         pub pp_speed: f64?,
-        pub pp_acc: f64?,
+        pub pp_accuracy: f64?,
         pub effective_miss_count: f64?,
         pub pp_difficulty: f64?,
     }
@@ -40,7 +40,7 @@ impl From<OsuPerformanceAttributes> for PyPerformanceAttributes {
         Self {
             difficulty: difficulty.into(),
             pp,
-            pp_acc: Some(pp_acc),
+            pp_accuracy: Some(pp_acc),
             pp_aim: Some(pp_aim),
             pp_flashlight: Some(pp_flashlight),
             pp_speed: Some(pp_speed),
@@ -63,7 +63,7 @@ impl From<TaikoPerformanceAttributes> for PyPerformanceAttributes {
         Self {
             difficulty: difficulty.into(),
             pp,
-            pp_acc: Some(pp_acc),
+            pp_accuracy: Some(pp_acc),
             pp_difficulty: Some(pp_difficulty),
             effective_miss_count: Some(effective_miss_count),
             ..Self::default()
