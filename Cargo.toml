@@ -1,6 +1,6 @@
 [package]
 name = "rosu-pp-py"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
 authors = ["Max Ohn <ohn.m@hotmail.de>"]
 license = "MIT"
