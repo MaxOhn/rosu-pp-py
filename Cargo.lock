@@ -141,12 +141,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3c55926c8f0fed1db12fbe96f7a6083a2c4186443dd32532ab34e6902467a4f3"
 
 [[package]]
+name = "rosu-mods"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d69daf02885f7477085403a6eada6215f44333c7b54355ea1c4e276a02263bde"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "rosu-pp"
 version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "26f146c66bed5900ee1fa2b55ef5cc5dd2dbd45e6cac0f7bee5cae535980afbc"
 dependencies = [
  "rosu-map",
+ "rosu-mods",
 ]
 
 [[package]]
@@ -154,7 +162,29 @@ name = "rosu-pp-py"
 version = "1.0.1"
 dependencies = [
  "pyo3",
+ "rosu-mods",
  "rosu-pp",
+ "serde",
+]
+
+[[package]]
+name = "serde"
+version = "1.0.203"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7253ab4de971e72fb7be983802300c30b5a7f0c2e56fab8abfc6a214307c0094"
+dependencies = [
+ "serde_derive",
+]
+
+[[package]]
+name = "serde_derive"
+version = "1.0.203"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "500cbc0ebeb6f46627f50f3f5811ccf6bf00643be300b4c3eabc0ef55dc5b5ba"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]

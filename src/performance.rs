@@ -14,12 +14,13 @@ use crate::{
     beatmap::PyBeatmap,
     difficulty::PyDifficulty,
     error::ArgsError,
+    mods::PyGameMods,
 };
 
 #[pyclass(name = "Performance")]
 #[derive(Default)]
 pub struct PyPerformance {
-    pub(crate) mods: u32,
+    pub(crate) mods: PyGameMods,
     pub(crate) clock_rate: Option<f64>,
     pub(crate) ar: Option<f32>,
     pub(crate) ar_with_mods: bool,
@@ -58,7 +59,7 @@ impl PyPerformance {
                 "mods" => {
                     this.mods = value
                         .extract()
-                        .map_err(|_| PyTypeError::new_err("kwarg 'mods': must be an int"))?
+                        .map_err(|_| PyTypeError::new_err("kwarg 'mods': must be GameMods"))?
                 }
                 "clock_rate" => {
                     this.clock_rate =
@@ -247,7 +248,7 @@ impl PyPerformance {
         } = self;
 
         PyDifficulty {
-            mods: *mods,
+            mods: mods.clone(),
             clock_rate: *clock_rate,
             ar: *ar,
             ar_with_mods: *ar_with_mods,
@@ -263,8 +264,8 @@ impl PyPerformance {
     }
 
     #[pyo3(signature = (mods=None))]
-    fn set_mods(&mut self, mods: Option<u32>) {
-        self.mods = mods.unwrap_or(0);
+    fn set_mods(&mut self, mods: Option<PyGameMods>) {
+        self.mods = mods.unwrap_or_default();
     }
 
     #[pyo3(signature = (clock_rate=None))]
@@ -391,7 +392,13 @@ impl PyPerformance {
     }
 
     fn as_difficulty(&self) -> Difficulty {
-        let mut difficulty = Difficulty::new().mods(self.mods);
+        let mut difficulty = Difficulty::new();
+
+        difficulty = match self.mods {
+            PyGameMods::Lazer(ref mods) => difficulty.mods(mods.clone()),
+            PyGameMods::Intermode(ref mods) => difficulty.mods(mods),
+            PyGameMods::Legacy(mods) => difficulty.mods(mods),
+        };
 
         if let Some(passed_objects) = self.passed_objects {
             difficulty = difficulty.passed_objects(passed_objects);
