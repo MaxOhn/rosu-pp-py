@@ -179,10 +179,12 @@ impl PyDifficulty {
         PyGradualPerformance::new(self, map)
     }
 
+    #[pyo3(signature = (mods=None))]
     fn set_mods(&mut self, mods: Option<u32>) {
         self.mods = mods.unwrap_or(0);
     }
 
+    #[pyo3(signature = (clock_rate=None))]
     fn set_clock_rate(&mut self, clock_rate: Option<f64>) {
         self.clock_rate = clock_rate;
     }
@@ -211,10 +213,12 @@ impl PyDifficulty {
         self.od_with_mods = od_with_mods;
     }
 
+    #[pyo3(signature = (passed_objects=None))]
     fn set_passed_objects(&mut self, passed_objects: Option<u32>) {
         self.passed_objects = passed_objects;
     }
 
+    #[pyo3(signature = (hardrock_offsets=None))]
     fn set_hardrock_offsets(&mut self, hardrock_offsets: Option<bool>) {
         self.hardrock_offsets = hardrock_offsets;
     }

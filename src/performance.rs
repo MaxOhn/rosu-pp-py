@@ -262,10 +262,12 @@ impl PyPerformance {
         }
     }
 
+    #[pyo3(signature = (mods=None))]
     fn set_mods(&mut self, mods: Option<u32>) {
         self.mods = mods.unwrap_or(0);
     }
 
+    #[pyo3(signature = (clock_rate=None))]
     fn set_clock_rate(&mut self, clock_rate: Option<f64>) {
         self.clock_rate = clock_rate;
     }
@@ -294,46 +296,57 @@ impl PyPerformance {
         self.od_with_mods = od_with_mods;
     }
 
+    #[pyo3(signature = (passed_objects=None))]
     fn set_passed_objects(&mut self, passed_objects: Option<u32>) {
         self.passed_objects = passed_objects;
     }
 
+    #[pyo3(signature = (hardrock_offsets=None))]
     fn set_hardrock_offsets(&mut self, hardrock_offsets: Option<bool>) {
         self.hardrock_offsets = hardrock_offsets;
     }
 
+    #[pyo3(signature = (accuracy=None))]
     fn set_accuracy(&mut self, accuracy: Option<f64>) {
         self.accuracy = accuracy;
     }
 
+    #[pyo3(signature = (combo=None))]
     fn set_combo(&mut self, combo: Option<u32>) {
         self.combo = combo;
     }
 
+    #[pyo3(signature = (n_geki=None))]
     fn set_n_geki(&mut self, n_geki: Option<u32>) {
         self.n_geki = n_geki;
     }
 
+    #[pyo3(signature = (n_katu=None))]
     fn set_n_katu(&mut self, n_katu: Option<u32>) {
         self.n_katu = n_katu;
     }
 
+    #[pyo3(signature = (n300=None))]
     fn set_n300(&mut self, n300: Option<u32>) {
         self.n300 = n300;
     }
 
+    #[pyo3(signature = (n100=None))]
     fn set_n100(&mut self, n100: Option<u32>) {
         self.n100 = n100;
     }
 
+    #[pyo3(signature = (n50=None))]
     fn set_n50(&mut self, n50: Option<u32>) {
         self.n50 = n50;
     }
 
+    #[pyo3(signature = (misses=None))]
     fn set_misses(&mut self, misses: Option<u32>) {
         self.misses = misses;
     }
 
+    #[pyo3(signature = (hitresult_priority=None))]
     fn set_hitresult_priority(&mut self, hitresult_priority: Option<PyHitResultPriority>) {
         self.hitresult_priority = hitresult_priority.unwrap_or_default();
     }
@@ -412,8 +425,8 @@ impl PyPerformance {
     }
 }
 
-#[pyclass(name = "HitResultPriority")]
-#[derive(Copy, Clone, Default)]
+#[pyclass(eq, eq_int, name = "HitResultPriority")]
+#[derive(Copy, Clone, Default, PartialEq)]
 pub enum PyHitResultPriority {
     #[default]
     BestCase,
