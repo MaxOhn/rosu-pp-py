@@ -3,8 +3,8 @@ use std::fmt::{Debug, Formatter, Result as FmtResult};
 use pyo3::pyclass;
 use rosu_pp::model::mode::GameMode;
 
-#[pyclass(name = "GameMode")]
-#[derive(Copy, Clone, Default)]
+#[pyclass(eq, eq_int, name = "GameMode")]
+#[derive(Copy, Clone, Default, PartialEq)]
 pub enum PyGameMode {
     #[default]
     Osu,

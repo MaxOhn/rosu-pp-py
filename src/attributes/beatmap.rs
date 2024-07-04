@@ -178,10 +178,12 @@ impl PyBeatmapAttributesBuilder {
         self.is_convert = is_convert;
     }
 
+    #[pyo3(signature = (mods=None))]
     fn set_mods(&mut self, mods: Option<u32>) {
         self.mods = mods.unwrap_or(0);
     }
 
+    #[pyo3(signature = (clock_rate=None))]
     fn set_clock_rate(&mut self, clock_rate: Option<f64>) {
         self.clock_rate = clock_rate;
     }

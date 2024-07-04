@@ -1,5 +1,6 @@
 use error::ConvertError;
 use performance::PyHitResultPriority;
+use pyo3::prelude::PyModuleMethods;
 use pyo3::{pymodule, types::PyModule, Bound, PyResult, Python};
 
 use self::{
