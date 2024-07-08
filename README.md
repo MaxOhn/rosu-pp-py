@@ -118,6 +118,44 @@ while True:
     i += 1
 ```
 
+## Mods
+
+Wherever mods are specified, their type should coincide with the following alias definition:
+```py
+GameMods = Union[int, str, GameMod, List[Union[GameMod, str, int]]]
+GameMod = dict[str, Union[str, GameModSettings]]
+GameModSettings = dict[str, Union[bool, float, str]]
+```
+
+That means, mods can be given either through their [(legacy) bitflags](https://github.com/ppy/osu-api/wiki#reference),
+a string for acronyms, a "GameMod" `dict`, or a sequence whose items are either
+a "GameMod" `dict`, a single acronym string, or bitflags for a single mod.
+
+A "GameMod" `dict` **must** have the item `'acronym': str` and an optional item `'settings': GameModSettings`.
+
+Some examples for valid mods look as follows:
+
+```py
+mods = 8 + 64              # Hidden, DoubleTime
+mods = "hRNcWIez"          # HardRock, Nightcore, Wiggle, Easy
+mods = { 'acronym': "FI" } # FadeIn
+mods = [
+    1024,
+    'nf',
+    {
+        'acronym': "AC",
+        'settings': {
+            'minimum_accuracy': 95,
+            'restart': True
+        }
+    }
+] # Flashlight, NoFail, AccuracyChallenge
+
+import json
+mods_json = '[{"acronym": "TC"}, {"acronym": "HT", "settings": {"speed_change": 0.6}}]'
+mods = json.loads(mods_json) # Traceable, HalfTime
+```
+
 ## Installing rosu-pp-py
 
 Installing rosu-pp-py requires a [supported version of Python and Rust](https://github.com/PyO3/PyO3#usage).
