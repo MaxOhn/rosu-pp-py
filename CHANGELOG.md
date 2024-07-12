@@ -1,4 +1,4 @@
-## Upcoming
+# v1.1.0 (2024-07-12)
 
 - Updated to [rosu-pp v1.1.0](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v110-2024-07-10)
 - Mods can now be specified through more types than just `int` ([#9]). Instead, it has to coincide with the following alias defintions:
@@ -11,11 +11,11 @@
 
   A "GameMod" `dict` **must** have the item `'acronym': str` and an optional item `'settings': GameModSettings`.
 
-# v1.0.1 (2024-05-05)
+## v1.0.1 (2024-05-05)
 
 - `PerformanceAttributes`' field `pp_accuracy` was accidentally actually named `pp_acc`; now it's definitely `pp_accuracy` ([#7])
 
-# v1.0.0 (2024-04-03)
+## v1.0.0 (2024-04-03)
 
 - Updated to [rosu-pp v1.0.0](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v100-2024-04-02)
 - Breaking changes ahead! There are now multiple different calculators:
