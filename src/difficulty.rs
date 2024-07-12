@@ -16,9 +16,6 @@ use crate::{
     strains::PyStrains,
 };
 
-#[derive(Default)]
-struct Hi {}
-
 #[pyclass(name = "Difficulty")]
 #[derive(Default)]
 pub struct PyDifficulty {
