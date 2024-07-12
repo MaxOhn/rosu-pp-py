@@ -2,6 +2,13 @@ from enum import Enum
 from typing import List, Optional, Union
 from collections.abc import Iterator
 
+GameMods = Union[int, str, GameMod, List[Union[GameMod, str, int]]]
+GameMod = dict[str, Union[str, GameModSettings]]
+"""
+Must contain item `'acronym': str` and optionally `'settings': GameModSettings`
+"""
+GameModSettings = dict[str, Union[bool, float, str]]
+
 class GameMode(Enum):
     """
     Enum for a beatmap's gamemode
@@ -105,8 +112,17 @@ class Difficulty:
     Builder for a difficulty calculation
 
     The kwargs may include any of the following:
-        `'mods': int`
-            Specify mods through their bit values.
+        `'mods': GameMods`
+            Specify mods.
+
+            Relevant type aliases:
+                `GameMods = Union[int, str, GameMod, List[Union[GameMod, str, int]]]`
+
+                `GameMod = dict[str, Union[str, GameModSettings]]`
+                    `GameMod` *must* have an item `'acronym': str` and an optional
+                    item `'settings': GameModSettings`
+
+                `GameModSettings = dict[str, Union[bool, float, str]]`
             
             See https://github.com/ppy/osu-api/wiki#mods
         `'clock_rate': float`
@@ -194,7 +210,7 @@ class Difficulty:
         Returns a gradual performance calculator for the current difficulty settings
         """
 
-    def set_mods(self, mods: Optional[int]) -> None: ...
+    def set_mods(self, mods: Optional[GameMods]) -> None: ...
 
     def set_clock_rate(self, clock_rate: Optional[float]) -> None: ...
 
@@ -255,8 +271,17 @@ class Performance:
     Builder for a performance calculation
 
     The kwargs may include any of the following:
-        `'mods': int`
-            Specify mods through their bit values.
+        `'mods': GameMods`
+            Specify mods.
+
+            Relevant type aliases:
+                `GameMods = Union[int, str, GameMod, List[Union[GameMod, str, int]]]`
+
+                `GameMod = dict[str, Union[str, GameModSettings]]`
+                    `GameMod` *must* have an item `'acronym': str` and an optional
+                    item `'settings': GameModSettings`
+
+                `GameModSettings = dict[str, Union[bool, float, str]]`
             
             See https://github.com/ppy/osu-api/wiki#mods
         `'clock_rate': float`
@@ -364,7 +389,7 @@ class Performance:
         Use the current difficulty settings to create a difficulty calculator
         """
 
-    def set_mods(self, mods: Optional[int]) -> None: ...
+    def set_mods(self, mods: Optional[GameMods]) -> None: ...
 
     def set_clock_rate(self, clock_rate: Optional[float]) -> None: ...
 
@@ -501,8 +526,17 @@ class BeatmapAttributesBuilder:
             Specify a gamemode
         `'is_convert': bool`
             Specify whether it's a converted map
-        `'mods': int`
-            Specify mods through their bit values.
+        `'mods': GameMods`
+            Specify mods.
+
+            Relevant type aliases:
+                `GameMods = Union[int, str, GameMod, List[Union[GameMod, str, int]]]`
+
+                `GameMod = dict[str, Union[str, GameModSettings]]`
+                    `GameMod` *must* have an item `'acronym': str` and an optional
+                    item `'settings': GameModSettings`
+
+                `GameModSettings = dict[str, Union[bool, float, str]]`
             
             See https://github.com/ppy/osu-api/wiki#mods
         `'clock_rate': float`
@@ -564,7 +598,7 @@ class BeatmapAttributesBuilder:
 
     def set_mode(self, mode: Optional[GameMode], is_convert: bool) -> None: ...
 
-    def set_mods(self, mods: Optional[int]) -> None: ...
+    def set_mods(self, mods: Optional[GameMods]) -> None: ...
 
     def set_clock_rate(self, clock_rate: Optional[float]) -> None: ...
 

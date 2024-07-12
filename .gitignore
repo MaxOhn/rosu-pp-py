@@ -1,4 +1,6 @@
 /target
+expanded.rs
+output.rs
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

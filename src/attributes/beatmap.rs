@@ -6,14 +6,14 @@ use pyo3::{
 };
 use rosu_pp::model::beatmap::{BeatmapAttributes, BeatmapAttributesBuilder, HitWindows};
 
-use crate::{beatmap::PyBeatmap, error::ArgsError, mode::PyGameMode};
+use crate::{beatmap::PyBeatmap, error::ArgsError, mode::PyGameMode, mods::PyGameMods};
 
 #[pyclass(name = "BeatmapAttributesBuilder")]
 #[derive(Default)]
 pub struct PyBeatmapAttributesBuilder {
     mode: Option<PyGameMode>,
     is_convert: bool,
-    mods: u32,
+    mods: PyGameMods,
     clock_rate: Option<f64>,
     ar: Option<f32>,
     ar_with_mods: bool,
@@ -59,7 +59,7 @@ impl PyBeatmapAttributesBuilder {
                 "mods" => {
                     this.mods = value
                         .extract()
-                        .map_err(|_| PyTypeError::new_err("kwarg 'mods': must be an int"))?
+                        .map_err(|_| PyTypeError::new_err("kwarg 'mods': must be GameMods"))?
                 }
                 "clock_rate" => {
                     this.clock_rate =
@@ -132,7 +132,13 @@ impl PyBeatmapAttributesBuilder {
     }
 
     fn build(&self) -> PyBeatmapAttributes {
-        let mut builder = BeatmapAttributesBuilder::new().mods(self.mods);
+        let mut builder = BeatmapAttributesBuilder::new();
+
+        builder = match self.mods {
+            PyGameMods::Lazer(ref mods) => builder.mods(mods.clone()),
+            PyGameMods::Intermode(ref mods) => builder.mods(mods),
+            PyGameMods::Legacy(mods) => builder.mods(mods),
+        };
 
         if let Some(mode) = self.mode {
             builder = builder.mode(mode.into(), self.is_convert);
@@ -179,8 +185,8 @@ impl PyBeatmapAttributesBuilder {
     }
 
     #[pyo3(signature = (mods=None))]
-    fn set_mods(&mut self, mods: Option<u32>) {
-        self.mods = mods.unwrap_or(0);
+    fn set_mods(&mut self, mods: Option<PyGameMods>) {
+        self.mods = mods.unwrap_or_default();
     }
 
     #[pyo3(signature = (clock_rate=None))]
