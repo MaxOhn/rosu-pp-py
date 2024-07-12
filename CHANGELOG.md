@@ -1,3 +1,16 @@
+## Upcoming
+
+- Updated to [rosu-pp v1.1.0](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v110-2024-07-10)
+- Mods can now be specified through more types than just `int` ([#9]). Instead, it has to coincide with the following alias defintions:
+  ```py
+  GameMods = Union[int, str, GameMod, List[Union[GameMod, str, int]]]
+  GameMod = dict[str, Union[str, GameModSettings]]
+  GameModSettings = dict[str, Union[bool, float, str]]
+  ```
+  That means, mods can be given either through their [(legacy) bitflags](https://github.com/ppy/osu-api/wiki#reference), a string for acronyms, a "GameMod" `dict`, or a sequence whose items are either a "GameMod" `dict`, a single acronym string, or bitflags for a single mod.
+
+  A "GameMod" `dict` **must** have the item `'acronym': str` and an optional item `'settings': GameModSettings`.
+
 # v1.0.1 (2024-05-05)
 
 - `PerformanceAttributes`' field `pp_accuracy` was accidentally actually named `pp_acc`; now it's definitely `pp_accuracy` ([#7])
@@ -66,3 +79,4 @@ osu!standard, osu!taiko, and osu!mania.
 
 [#3]: https://github.com/MaxOhn/rosu-pp-py/pull/3
 [#7]: https://github.com/MaxOhn/rosu-pp-py/pull/7
+[#9]: https://github.com/MaxOhn/rosu-pp-py/pull/9
