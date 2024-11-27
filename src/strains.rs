@@ -20,6 +20,7 @@ define_class! {
         pub color: DoubleList?,
         pub rhythm: DoubleList?,
         pub stamina: DoubleList?,
+        pub single_color_stamina: DoubleList?,
         pub movement: DoubleList?,
         pub strains: DoubleList?,
     }
@@ -52,6 +53,7 @@ impl From<TaikoStrains> for PyStrains {
             color,
             rhythm,
             stamina,
+            single_color_stamina,
         } = strains;
 
         Self {
@@ -60,6 +62,7 @@ impl From<TaikoStrains> for PyStrains {
             color: Some(color),
             rhythm: Some(rhythm),
             stamina: Some(stamina),
+            single_color_stamina: Some(single_color_stamina),
             ..Self::default()
         }
     }

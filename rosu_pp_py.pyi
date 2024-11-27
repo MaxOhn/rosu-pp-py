@@ -47,13 +47,13 @@ class Beatmap:
 
     def __init__(self, **kwargs) -> None: ...
 
-    def convert(self, mode: GameMode) -> None:
+    def convert(self, mode: GameMode, mods: Optional[GameMods]) -> None:
         """
         Convert the beatmap to the specified mode
 
         ## Raises
 
-        Throws an exception if the specified mode is incompatible with the map's mode
+        Throws an exception if conversion fails or mods are invalid
         """
 
     @property
@@ -178,6 +178,11 @@ class Difficulty:
             Adjust patterns as if the HR mod is enabled.
 
             Only relevant for osu!catch.
+        `'lazer': bool`
+            Whether the calculated attributes belong to an osu!lazer or
+            osu!stable score.
+    
+            Defaults to `true`.
     """
 
     def __init__(self, **kwargs) -> None: ...
@@ -266,6 +271,8 @@ class Difficulty:
 
     def set_hardrock_offsets(self, hardrock_offsets: Optional[bool]) -> None: ...
 
+    def set_lazer(self, lazer: Optional[bool]) -> None: ...
+
 class Performance:
     """
     Builder for a performance calculation
@@ -337,12 +344,35 @@ class Performance:
             Adjust patterns as if the HR mod is enabled.
 
             Only relevant for osu!catch.
+        `'lazer': bool`
+            Whether the calculated attributes belong to an osu!lazer or
+            osu!stable score.
+    
+            Defaults to `true`.
         `'accuracy': float`
             Set the accuracy between `0.0` and `100.0`.
         `'combo': int`
             Specify the max combo of the play.
             
             Irrelevant for osu!mania.
+        `'large_tick_hits': int`
+            The amount of "large tick" hits.
+
+            Only relevant for osu!standard.
+
+            The meaning depends on the kind of score:
+            - if set on osu!stable, this value is irrelevant and can be `0`
+            - if set on osu!lazer *without* `CL`, this value is the amount of hit
+              slider ticks and repeats
+            - if set on osu!lazer *with* `CL`, this value is the amount of hit
+              slider heads, ticks, and repeats
+        `'slider_end_hits': int`
+            The amount of slider end hits.
+            
+            Only relevant for osu!standard.
+            
+            osu! calls this value "slider tail hits" without the classic
+            mod and "small tick hits" with the classic mod.
         `'n_geki': int`
             Specify the amount of gekis of a play.
             
@@ -445,9 +475,15 @@ class Performance:
 
     def set_hardrock_offsets(self, hardrock_offsets: Optional[bool]) -> None: ...
 
+    def set_lazer(self, lazer: Optional[bool]) -> None: ...
+
     def set_accuracy(self, accuracy: Optional[float]) -> None: ...
 
     def set_combo(self, combo: Optional[int]) -> None: ...
+
+    def set_large_tick_hits(self, n_large_ticks: Optional[int]) -> None: ...
+
+    def set_slider_end_hits(self, n_slider_ends: Optional[int]) -> None: ...
 
     def set_n_geki(self, n_geki: Optional[int]) -> None: ...
 
@@ -667,6 +703,25 @@ class ScoreState:
     Irrelevant for osu!mania.
     """
 
+    osu_large_tick_hits: int
+    """
+    "Large tick" hits for osu!standard.
+    
+    The meaning depends on the kind of score:
+    - if set on osu!stable, this field is irrelevant and can be `0`
+    - if set on osu!lazer *without* `CL`, this field is the amount of hit
+      slider ticks and repeats
+    - if set on osu!lazer *with* `CL`, this field is the amount of hit
+      slider heads, ticks, and repeats
+    """
+
+    slider_end_hits: int
+    """
+    Amount of successfully hit slider ends.
+    
+    Only relevant for osu!standard in lazer.
+    """
+
     n_geki: int
     """
     Amount of current gekis (n320 for osu!mania).
@@ -761,6 +816,22 @@ class DifficultyAttributes:
         """
 
     @property
+    def aim_difficult_strain_count(self) -> Optional[float]:
+        """
+        Weighted sum of aim strains.
+
+        Only available for osu!.
+        """
+
+    @property
+    def speed_difficult_strain_count(self) -> Optional[float]:
+        """
+        Weighted sum of speed strains.
+        
+        Only available for osu!.
+        """
+
+    @property
     def od(self) -> Optional[float]:
         """
         The overall difficulty
@@ -793,6 +864,21 @@ class DifficultyAttributes:
         """
 
     @property
+    def n_large_ticks(self) -> Optional[int]:
+        """
+        The amount of "large tick" hits.
+        
+        Only relevant for osu!standard.
+        
+        The meaning depends on the kind of score:
+        - if set on osu!stable, this value is irrelevant and can be `0`
+        - if set on osu!lazer *without* `CL`, this value is the amount of hit
+          slider ticks and repeats
+        - if set on osu!lazer *with* `CL`, this value is the amount of hit
+          slider heads, ticks, and repeats
+        """
+
+    @property
     def n_spinners(self) -> Optional[int]:
         """
         The amount of spinners.
@@ -804,6 +890,14 @@ class DifficultyAttributes:
     def stamina(self) -> Optional[float]:
         """
         The difficulty of the stamina skill.
+        
+        Only available for osu!taiko.
+        """
+
+    @property
+    def single_color_stamina(self) -> Optional[float]:
+        """
+        The difficulty of the single color stamina skill.
         
         Only available for osu!taiko.
         """
@@ -865,6 +959,14 @@ class DifficultyAttributes:
         """
 
     @property
+    def n_hold_notes(self) -> Optional[int]:
+        """
+        The amount of hold notes in the map.
+        
+        Only available for osu!mania.
+        """
+
+    @property
     def ar(self) -> Optional[float]:
         """
         The approach rate.
@@ -873,11 +975,19 @@ class DifficultyAttributes:
         """
 
     @property
-    def hit_window(self) -> Optional[float]:
+    def great_hit_window(self) -> Optional[float]:
         """
         The perceived hit window for an n300 inclusive of rate-adjusting mods (DT/HT/etc)
         
         Only available for osu!taiko and osu!mania.
+        """
+
+    @property
+    def ok_hit_window(self) -> Optional[float]:
+        """
+        The perceived hit window for an n100 inclusive of rate-adjusting mods (DT/HT/etc)
+        
+        Only available for osu!taiko.
         """
 
     @property
@@ -941,6 +1051,14 @@ class PerformanceAttributes:
         Scaled miss count based on total hits.
         
         Only available for osu! and osu!taiko.
+        """
+
+    @property
+    def estimated_unstable_rate(self) -> Optional[float]:
+        """
+        Upper bound on the player's tap deviation.
+
+        Only *optionally* available for osu!taiko.
         """
 
     @property
@@ -1020,6 +1138,12 @@ class Strains:
         """
 
     @property
+    def single_color_stamina(self) -> Optional[List[float]]:
+        """
+        Strain peaks of the single color stamina skill in osu!taiko.
+        """
+
+    @property
     def movement(self) -> Optional[List[float]]:
         """
         Strain peaks of the movement skill in osu!catch.
@@ -1058,7 +1182,15 @@ class BeatmapAttributes:
         """
 
     @property
-    def od_hitwindow(self) -> float:
+    def od_great_hitwindow(self) -> float:
         """
         Hit window for overall difficulty i.e. time to hit a 300 ("Great") in milliseconds.
+        """
+
+    @property
+    def od_ok_hitwindow(self) -> float:
+        """
+        Hit window for overall difficulty i.e. time to hit a 100 ("Ok") in milliseconds.
+
+        Not available for osu!mania.
         """

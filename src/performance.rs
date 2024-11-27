@@ -32,8 +32,11 @@ pub struct PyPerformance {
     pub(crate) od_with_mods: bool,
     pub(crate) passed_objects: Option<u32>,
     pub(crate) hardrock_offsets: Option<bool>,
+    pub(crate) lazer: Option<bool>,
     pub(crate) accuracy: Option<f64>,
     pub(crate) combo: Option<u32>,
+    pub(crate) large_tick_hits: Option<u32>,
+    pub(crate) slider_end_hits: Option<u32>,
     pub(crate) n_geki: Option<u32>,
     pub(crate) n_katu: Option<u32>,
     pub(crate) n300: Option<u32>,
@@ -55,149 +58,32 @@ impl PyPerformance {
         };
 
         for (key, value) in kwargs {
-            match key.extract()? {
-                "mods" => {
-                    this.mods = value
-                        .extract()
-                        .map_err(|_| PyTypeError::new_err("kwarg 'mods': must be GameMods"))?
-                }
-                "clock_rate" => {
-                    this.clock_rate =
-                        Some(value.extract().map_err(|_| {
-                            PyTypeError::new_err("kwarg 'clock_rate': must be a float")
-                        })?)
-                }
-                "ar" => {
-                    this.ar = Some(
-                        value
-                            .extract()
-                            .map_err(|_| PyTypeError::new_err("kwarg 'ar': must be a float"))?,
-                    )
-                }
-                "ar_with_mods" => {
-                    this.ar_with_mods = value
-                        .extract()
-                        .map_err(|_| PyTypeError::new_err("kwarg 'ar_with_mods': must be a bool"))?
-                }
-                "cs" => {
-                    this.cs = Some(
-                        value
-                            .extract()
-                            .map_err(|_| PyTypeError::new_err("kwarg 'cs': must be a float"))?,
-                    )
-                }
-                "cs_with_mods" => {
-                    this.cs_with_mods = value
-                        .extract()
-                        .map_err(|_| PyTypeError::new_err("kwarg 'cs_with_mods': must be a bool"))?
-                }
-                "hp" => {
-                    this.hp = Some(
-                        value
-                            .extract()
-                            .map_err(|_| PyTypeError::new_err("kwarg 'hp': must be a float"))?,
-                    )
-                }
-                "hp_with_mods" => {
-                    this.hp_with_mods = value
-                        .extract()
-                        .map_err(|_| PyTypeError::new_err("kwarg 'hp_with_mods': must be a bool"))?
-                }
-                "od" => {
-                    this.od = Some(
-                        value
-                            .extract()
-                            .map_err(|_| PyTypeError::new_err("kwarg 'od': must be a float"))?,
-                    )
-                }
-                "od_with_mods" => {
-                    this.od_with_mods = value
-                        .extract()
-                        .map_err(|_| PyTypeError::new_err("kwarg 'od_with_mods': must be a bool"))?
-                }
-                "passed_objects" => {
-                    this.passed_objects = value.extract().map_err(|_| {
-                        PyTypeError::new_err("kwarg 'passed_objects': must be an int")
-                    })?
-                }
-                "hardrock_offsets" => {
-                    this.hardrock_offsets = value.extract().map_err(|_| {
-                        PyTypeError::new_err("kwarg 'hardrock_offsets': must be a bool")
-                    })?
-                }
-                "accuracy" => {
-                    this.accuracy =
-                        Some(value.extract().map_err(|_| {
-                            PyTypeError::new_err("kwarg 'accuracy': must be a float")
-                        })?)
-                }
-                "combo" => {
-                    this.combo = Some(
-                        value
-                            .extract()
-                            .map_err(|_| PyTypeError::new_err("kwarg 'combo': must be an int"))?,
-                    )
-                }
-                "n_geki" => {
-                    this.n_geki = Some(
-                        value
-                            .extract()
-                            .map_err(|_| PyTypeError::new_err("kwarg 'n_geki': must be an int"))?,
-                    )
-                }
-                "n_katu" => {
-                    this.n_katu = Some(
-                        value
-                            .extract()
-                            .map_err(|_| PyTypeError::new_err("kwarg 'n_katu': must be an int"))?,
-                    )
-                }
-                "n300" => {
-                    this.n300 = Some(
-                        value
-                            .extract()
-                            .map_err(|_| PyTypeError::new_err("kwarg 'n300': must be an int"))?,
-                    )
-                }
-                "n100" => {
-                    this.n100 = Some(
-                        value
-                            .extract()
-                            .map_err(|_| PyTypeError::new_err("kwarg 'n100': must be an int"))?,
-                    )
-                }
-                "n50" => {
-                    this.n50 = Some(
-                        value
-                            .extract()
-                            .map_err(|_| PyTypeError::new_err("kwarg 'n50': must be an int"))?,
-                    )
-                }
-                "misses" => {
-                    this.misses = Some(
-                        value
-                            .extract()
-                            .map_err(|_| PyTypeError::new_err("kwarg 'misses': must be an int"))?,
-                    )
-                }
-                "hitresult_priority" => {
-                    this.hitresult_priority = value.extract().map_err(|_| {
-                        PyTypeError::new_err(
-                            "kwarg 'hitresult_priority': must be a HitResultPriority",
-                        )
-                    })?;
-                }
-                kwarg => {
-                    let err = format!(
-                        "unexpected kwarg '{kwarg}': expected 'mods', \n\
-                        'clock_rate', 'ar', 'ar_with_mods', 'cs', \n\
-                        'cs_with_mods', 'hp', 'hp_with_mods', 'od', \n\
-                        'od_with_mods', 'passed_objects', 'hardrock_offsets', \n\
-                        'accuracy', 'combo', 'n_geki', 'n_katu', 'n300', 'n100', \n\
-                        'n50', 'misses', or 'hitresult_priority'"
-                    );
-
-                    return Err(ArgsError::new_err(err));
+            extract_args! {
+                this.key = value {
+                    mods: GameMods,
+                    clock_rate: float,
+                    ar: float,
+                    ar_with_mods: bool,
+                    cs: float,
+                    cs_with_mods: bool,
+                    hp: float,
+                    hp_with_mods: bool,
+                    od: float,
+                    od_with_mods: bool,
+                    passed_objects: int,
+                    hardrock_offsets: bool,
+                    lazer: bool,
+                    accuracy: float,
+                    combo: int,
+                    large_tick_hits: int,
+                    slider_end_hits: int,
+                    n_geki: int,
+                    n_katu: int,
+                    n300: int,
+                    n100: int,
+                    n50: int,
+                    misses: int,
+                    hitresult_priority: HitResultPriority,
                 }
             }
         }
@@ -244,6 +130,7 @@ impl PyPerformance {
             od_with_mods,
             passed_objects,
             hardrock_offsets,
+            lazer,
             ..
         } = self;
 
@@ -260,12 +147,18 @@ impl PyPerformance {
             od_with_mods: *od_with_mods,
             passed_objects: *passed_objects,
             hardrock_offsets: *hardrock_offsets,
+            lazer: *lazer,
         }
     }
 
     #[pyo3(signature = (mods=None))]
     fn set_mods(&mut self, mods: Option<PyGameMods>) {
         self.mods = mods.unwrap_or_default();
+    }
+
+    #[pyo3(signature = (lazer=None))]
+    fn set_lazer(&mut self, lazer: Option<bool>) {
+        self.lazer = lazer;
     }
 
     #[pyo3(signature = (clock_rate=None))]
@@ -315,6 +208,16 @@ impl PyPerformance {
     #[pyo3(signature = (combo=None))]
     fn set_combo(&mut self, combo: Option<u32>) {
         self.combo = combo;
+    }
+
+    #[pyo3(signature = (n_large_ticks=None))]
+    fn set_large_tick_hits(&mut self, n_large_ticks: Option<u32>) {
+        self.large_tick_hits = n_large_ticks;
+    }
+
+    #[pyo3(signature = (n_slider_ends=None))]
+    fn set_slider_end_hits(&mut self, n_slider_ends: Option<u32>) {
+        self.slider_end_hits = n_slider_ends;
     }
 
     #[pyo3(signature = (n_geki=None))]

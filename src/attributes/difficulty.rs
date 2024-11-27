@@ -18,10 +18,13 @@ define_class! {
         pub flashlight: f64?,
         pub slider_factor: f64?,
         pub speed_note_count: f64?,
+        pub aim_difficult_strain_count: f64?,
+        pub speed_difficult_strain_count: f64?,
         pub od: f64?,
         pub hp: f64?,
         pub n_circles: u32?,
         pub n_sliders: u32?,
+        pub n_large_ticks: u32?,
         pub n_spinners: u32?,
         pub stamina: f64?,
         pub rhythm: f64?,
@@ -31,8 +34,11 @@ define_class! {
         pub n_droplets: u32?,
         pub n_tiny_droplets: u32?,
         pub n_objects: u32?,
+        pub n_hold_notes: u32?,
         pub ar: f64?,
-        pub hit_window: f64?,
+        pub great_hit_window: f64?,
+        pub ok_hit_window: f64?,
+        pub mono_stamina_factor: f64?,
         pub max_combo: u32!,
     }
 }
@@ -45,11 +51,14 @@ impl From<OsuDifficultyAttributes> for PyDifficultyAttributes {
             flashlight,
             slider_factor,
             speed_note_count,
+            aim_difficult_strain_count,
+            speed_difficult_strain_count,
             ar,
             od,
             hp,
             n_circles,
             n_sliders,
+            n_large_ticks,
             n_spinners,
             stars,
             max_combo,
@@ -64,11 +73,14 @@ impl From<OsuDifficultyAttributes> for PyDifficultyAttributes {
             flashlight: Some(flashlight),
             slider_factor: Some(slider_factor),
             speed_note_count: Some(speed_note_count),
+            aim_difficult_strain_count: Some(aim_difficult_strain_count),
+            speed_difficult_strain_count: Some(speed_difficult_strain_count),
             ar: Some(ar),
             od: Some(od),
             hp: Some(hp),
             n_circles: Some(n_circles),
             n_sliders: Some(n_sliders),
+            n_large_ticks: Some(n_large_ticks),
             n_spinners: Some(n_spinners),
             max_combo,
             ..Self::default()
@@ -83,7 +95,9 @@ impl From<TaikoDifficultyAttributes> for PyDifficultyAttributes {
             rhythm,
             color,
             peak,
-            hit_window,
+            great_hit_window,
+            ok_hit_window,
+            mono_stamina_factor,
             stars,
             max_combo,
             is_convert,
@@ -97,7 +111,9 @@ impl From<TaikoDifficultyAttributes> for PyDifficultyAttributes {
             rhythm: Some(rhythm),
             color: Some(color),
             peak: Some(peak),
-            hit_window: Some(hit_window),
+            great_hit_window: Some(great_hit_window),
+            ok_hit_window: Some(ok_hit_window),
+            mono_stamina_factor: Some(mono_stamina_factor),
             max_combo,
             ..Self::default()
         }
@@ -137,6 +153,7 @@ impl From<ManiaDifficultyAttributes> for PyDifficultyAttributes {
             stars,
             hit_window,
             n_objects,
+            n_hold_notes,
             max_combo,
             is_convert,
         } = attrs;
@@ -145,8 +162,9 @@ impl From<ManiaDifficultyAttributes> for PyDifficultyAttributes {
             mode: PyGameMode::Mania,
             stars,
             is_convert,
-            hit_window: Some(hit_window),
+            great_hit_window: Some(hit_window),
             n_objects: Some(n_objects),
+            n_hold_notes: Some(n_hold_notes),
             max_combo,
             ..Self::default()
         }
@@ -177,10 +195,13 @@ impl TryFrom<PyDifficultyAttributes> for DifficultyAttributes {
             flashlight,
             slider_factor,
             speed_note_count,
+            aim_difficult_strain_count,
+            speed_difficult_strain_count,
             od,
             hp,
             n_circles,
             n_sliders,
+            n_large_ticks,
             n_spinners,
             stamina,
             rhythm,
@@ -190,8 +211,11 @@ impl TryFrom<PyDifficultyAttributes> for DifficultyAttributes {
             n_droplets,
             n_tiny_droplets,
             n_objects,
+            n_hold_notes,
             ar,
-            hit_window,
+            great_hit_window,
+            ok_hit_window,
+            mono_stamina_factor,
             max_combo,
         } = attrs;
 
@@ -203,11 +227,14 @@ impl TryFrom<PyDifficultyAttributes> for DifficultyAttributes {
                     Some(flashlight),
                     Some(slider_factor),
                     Some(speed_note_count),
+                    Some(aim_difficult_strain_count),
+                    Some(speed_difficult_strain_count),
                     Some(ar),
                     Some(od),
                     Some(hp),
                     Some(n_circles),
                     Some(n_sliders),
+                    Some(n_large_ticks),
                     Some(n_spinners),
                 ) = (
                     aim,
@@ -215,11 +242,14 @@ impl TryFrom<PyDifficultyAttributes> for DifficultyAttributes {
                     flashlight,
                     slider_factor,
                     speed_note_count,
+                    aim_difficult_strain_count,
+                    speed_difficult_strain_count,
                     ar,
                     od,
                     hp,
                     n_circles,
                     n_sliders,
+                    n_large_ticks,
                     n_spinners,
                 ) {
                     return Ok(Self::Osu(OsuDifficultyAttributes {
@@ -228,11 +258,14 @@ impl TryFrom<PyDifficultyAttributes> for DifficultyAttributes {
                         flashlight,
                         slider_factor,
                         speed_note_count,
+                        aim_difficult_strain_count,
+                        speed_difficult_strain_count,
                         ar,
                         od,
                         hp,
                         n_circles,
                         n_sliders,
+                        n_large_ticks,
                         n_spinners,
                         stars,
                         max_combo,
@@ -240,15 +273,31 @@ impl TryFrom<PyDifficultyAttributes> for DifficultyAttributes {
                 }
             }
             PyGameMode::Taiko => {
-                if let (Some(stamina), Some(rhythm), Some(color), Some(peak), Some(hit_window)) =
-                    (stamina, rhythm, color, peak, hit_window)
-                {
+                if let (
+                    Some(stamina),
+                    Some(rhythm),
+                    Some(color),
+                    Some(peak),
+                    Some(great_hit_window),
+                    Some(ok_hit_window),
+                    Some(mono_stamina_factor),
+                ) = (
+                    stamina,
+                    rhythm,
+                    color,
+                    peak,
+                    great_hit_window,
+                    ok_hit_window,
+                    mono_stamina_factor,
+                ) {
                     return Ok(Self::Taiko(TaikoDifficultyAttributes {
                         stamina,
                         rhythm,
                         color,
                         peak,
-                        hit_window,
+                        great_hit_window,
+                        ok_hit_window,
+                        mono_stamina_factor,
                         stars,
                         max_combo,
                         is_convert,
@@ -270,11 +319,14 @@ impl TryFrom<PyDifficultyAttributes> for DifficultyAttributes {
                 }
             }
             PyGameMode::Mania => {
-                if let (Some(hit_window), Some(n_objects)) = (hit_window, n_objects) {
+                if let (Some(hit_window), Some(n_objects), Some(n_hold_notes)) =
+                    (great_hit_window, n_objects, n_hold_notes)
+                {
                     return Ok(Self::Mania(ManiaDifficultyAttributes {
                         stars,
                         hit_window,
                         n_objects,
+                        n_hold_notes,
                         max_combo,
                         is_convert,
                     }));

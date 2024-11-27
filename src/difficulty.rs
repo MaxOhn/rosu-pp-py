@@ -31,6 +31,7 @@ pub struct PyDifficulty {
     pub(crate) od_with_mods: bool,
     pub(crate) passed_objects: Option<u32>,
     pub(crate) hardrock_offsets: Option<bool>,
+    pub(crate) lazer: Option<bool>,
 }
 
 #[pymethods]
@@ -45,85 +46,21 @@ impl PyDifficulty {
         };
 
         for (key, value) in kwargs {
-            match key.extract()? {
-                "mods" => {
-                    this.mods = value
-                        .extract()
-                        .map_err(|_| PyTypeError::new_err("kwarg 'mods': must be GameMods"))?
-                }
-                "clock_rate" => {
-                    this.clock_rate =
-                        Some(value.extract().map_err(|_| {
-                            PyTypeError::new_err("kwarg 'clock_rate': must be a float")
-                        })?)
-                }
-                "ar" => {
-                    this.ar = Some(
-                        value
-                            .extract()
-                            .map_err(|_| PyTypeError::new_err("kwarg 'ar': must be a float"))?,
-                    )
-                }
-                "ar_with_mods" => {
-                    this.ar_with_mods = value
-                        .extract()
-                        .map_err(|_| PyTypeError::new_err("kwarg 'ar_with_mods': must be a bool"))?
-                }
-                "cs" => {
-                    this.cs = Some(
-                        value
-                            .extract()
-                            .map_err(|_| PyTypeError::new_err("kwarg 'cs': must be a float"))?,
-                    )
-                }
-                "cs_with_mods" => {
-                    this.cs_with_mods = value
-                        .extract()
-                        .map_err(|_| PyTypeError::new_err("kwarg 'cs_with_mods': must be a bool"))?
-                }
-                "hp" => {
-                    this.hp = Some(
-                        value
-                            .extract()
-                            .map_err(|_| PyTypeError::new_err("kwarg 'hp': must be a float"))?,
-                    )
-                }
-                "hp_with_mods" => {
-                    this.hp_with_mods = value
-                        .extract()
-                        .map_err(|_| PyTypeError::new_err("kwarg 'hp_with_mods': must be a bool"))?
-                }
-                "od" => {
-                    this.od = Some(
-                        value
-                            .extract()
-                            .map_err(|_| PyTypeError::new_err("kwarg 'od': must be a float"))?,
-                    )
-                }
-                "od_with_mods" => {
-                    this.od_with_mods = value
-                        .extract()
-                        .map_err(|_| PyTypeError::new_err("kwarg 'od_with_mods': must be a bool"))?
-                }
-                "passed_objects" => {
-                    this.passed_objects = Some(value.extract().map_err(|_| {
-                        PyTypeError::new_err("kwarg 'passed_objects': must be an int")
-                    })?)
-                }
-                "hardrock_offsets" => {
-                    this.hardrock_offsets = Some(value.extract().map_err(|_| {
-                        PyTypeError::new_err("kwarg 'hardrock_offsets': must be a bool")
-                    })?)
-                }
-                kwarg => {
-                    let err = format!(
-                        "unexpected kwarg '{kwarg}': expected 'mods', \n\
-                        'clock_rate', 'ar', 'ar_with_mods', 'cs', 'cs_with_mods', \n\
-                        'hp', 'hp_with_mods', 'od', 'od_with_mods', \n\
-                        'passed_objects', or 'hardrock_offsets'"
-                    );
-
-                    return Err(ArgsError::new_err(err));
+            extract_args! {
+                this.key = value {
+                    mods: GameMods,
+                    clock_rate: float,
+                    ar: float,
+                    ar_with_mods: bool,
+                    cs: float,
+                    cs_with_mods: bool,
+                    hp: float,
+                    hp_with_mods: bool,
+                    od: float,
+                    od_with_mods: bool,
+                    passed_objects: int,
+                    hardrock_offsets: bool,
+                    lazer: bool,
                 }
             }
         }
@@ -153,6 +90,7 @@ impl PyDifficulty {
             od_with_mods,
             passed_objects,
             hardrock_offsets,
+            lazer,
         } = self;
 
         PyPerformance {
@@ -168,6 +106,7 @@ impl PyDifficulty {
             od_with_mods: *od_with_mods,
             passed_objects: *passed_objects,
             hardrock_offsets: *hardrock_offsets,
+            lazer: *lazer,
             ..PyPerformance::default()
         }
     }
@@ -183,6 +122,11 @@ impl PyDifficulty {
     #[pyo3(signature = (mods=None))]
     fn set_mods(&mut self, mods: Option<PyGameMods>) {
         self.mods = mods.unwrap_or_default();
+    }
+
+    #[pyo3(signature = (lazer=None))]
+    fn set_lazer(&mut self, lazer: Option<bool>) {
+        self.lazer = lazer;
     }
 
     #[pyo3(signature = (clock_rate=None))]

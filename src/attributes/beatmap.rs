@@ -229,7 +229,8 @@ define_class! {
         pub hp: f64!,
         pub clock_rate: f64!,
         pub ar_hitwindow: f64!,
-        pub od_hitwindow: f64!,
+        pub od_great_hitwindow: f64!,
+        pub od_ok_hitwindow: f64?,
     }
 }
 
@@ -244,7 +245,8 @@ impl From<BeatmapAttributes> for PyBeatmapAttributes {
             hit_windows:
                 HitWindows {
                     ar: ar_hitwindow,
-                    od: od_hitwindow,
+                    od_great: od_great_hitwindow,
+                    od_ok: od_ok_hitwindow,
                 },
         } = attrs;
 
@@ -255,7 +257,8 @@ impl From<BeatmapAttributes> for PyBeatmapAttributes {
             hp,
             clock_rate,
             ar_hitwindow,
-            od_hitwindow,
+            od_great_hitwindow,
+            od_ok_hitwindow,
         }
     }
 }
