@@ -14,9 +14,9 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = { version = "0.22", features = ["extension-module", "macros"] }
-rosu-mods = { version = "0.1.0", default-features = false, features = ["serde"] }
-rosu-pp = { version = "1.0.0", features = ["sync"] }
-serde = "1.0.203"
+rosu-mods = { version = "0.2.0", default-features = false, features = ["serde"] }
+rosu-pp = { version = "2.0.0", features = ["sync"] }
+serde = { version = "1.0.203" }
 
 [profile.release]
 lto = true

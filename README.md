@@ -34,8 +34,8 @@ import rosu_pp_py as rosu
 # either `path`, `bytes`, or `content` must be specified when parsing a map
 map = rosu.Beatmap(path = "/path/to/file.osu")
 
-# Optionally convert to a specific mode
-map.convert(rosu.GameMode.Mania)
+# Optionally convert to a specific mode for optionally given mods
+map.convert(rosu.GameMode.Mania, "6K")
 
 perf = rosu.Performance(
     # various kwargs available

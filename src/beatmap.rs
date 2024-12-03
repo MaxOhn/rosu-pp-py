@@ -7,16 +7,14 @@ use pyo3::{
     Bound, PyResult,
 };
 use rosu_pp::{
-    model::{
-        hit_object::HitObjectKind,
-        mode::{ConvertStatus, GameMode},
-    },
-    Beatmap,
+    model::{hit_object::HitObjectKind, mode::GameMode},
+    Beatmap, GameMods,
 };
 
 use crate::{
     error::{ArgsError, ConvertError, ParseError},
     mode::PyGameMode,
+    mods::PyGameMods,
 };
 
 #[pyclass(name = "Beatmap")]
@@ -100,13 +98,19 @@ impl PyBeatmap {
         Ok(Self { inner: map })
     }
 
-    fn convert(&mut self, mode: PyGameMode) -> PyResult<()> {
+    #[pyo3(signature = (mode, mods=None))]
+    fn convert(&mut self, mode: PyGameMode, mods: Option<PyGameMods>) -> PyResult<()> {
+        let mods = match mods {
+            None => GameMods::default(),
+            Some(PyGameMods::Lazer(mods)) => mods.into(),
+            Some(PyGameMods::Intermode(mods)) => mods.into(),
+            Some(PyGameMods::Legacy(mods)) => mods.into(),
+        };
+
         let mode = GameMode::from(mode);
 
-        if let ConvertStatus::Incompatible = self.inner.convert_in_place(mode) {
-            let err = format!("Cannot convert {:?} to {mode:?}", self.inner.mode);
-
-            return Err(ConvertError::new_err(err));
+        if let Err(err) = self.inner.convert_mut(mode, &mods) {
+            return Err(ConvertError::new_err(err.to_string()));
         }
 
         Ok(())

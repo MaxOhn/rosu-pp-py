@@ -21,6 +21,7 @@ define_class! {
         pub pp_speed: f64?,
         pub pp_accuracy: f64?,
         pub effective_miss_count: f64?,
+        pub estimated_unstable_rate: f64?,
         pub pp_difficulty: f64?,
     }
 }
@@ -58,6 +59,7 @@ impl From<TaikoPerformanceAttributes> for PyPerformanceAttributes {
             pp_acc,
             pp_difficulty,
             effective_miss_count,
+            estimated_unstable_rate,
         } = attrs;
 
         Self {
@@ -66,6 +68,7 @@ impl From<TaikoPerformanceAttributes> for PyPerformanceAttributes {
             pp_accuracy: Some(pp_acc),
             pp_difficulty: Some(pp_difficulty),
             effective_miss_count: Some(effective_miss_count),
+            estimated_unstable_rate,
             ..Self::default()
         }
     }

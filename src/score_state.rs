@@ -16,6 +16,12 @@ pub struct PyScoreState {
     #[pyo3(get, set)]
     max_combo: u32,
     #[pyo3(get, set)]
+    osu_large_tick_hits: u32,
+    #[pyo3(get, set)]
+    osu_small_tick_hits: u32,
+    #[pyo3(get, set)]
+    slider_end_hits: u32,
+    #[pyo3(get, set)]
     n_geki: u32,
     #[pyo3(get, set)]
     n_katu: u32,
@@ -41,49 +47,18 @@ impl PyScoreState {
         };
 
         for (key, value) in kwargs {
-            match key.extract()? {
-                "max_combo" => {
-                    this.max_combo = value
-                        .extract()
-                        .map_err(|_| PyTypeError::new_err("kwarg 'max_combo': must be an int"))?
-                }
-                "n_geki" => {
-                    this.n_geki = value
-                        .extract()
-                        .map_err(|_| PyTypeError::new_err("kwarg 'n_geki': must be an int"))?
-                }
-                "n_katu" => {
-                    this.n_katu = value
-                        .extract()
-                        .map_err(|_| PyTypeError::new_err("kwarg 'n_katu': must be an int"))?
-                }
-                "n300" => {
-                    this.n300 = value
-                        .extract()
-                        .map_err(|_| PyTypeError::new_err("kwarg 'n300': must be an int"))?
-                }
-                "n100" => {
-                    this.n100 = value
-                        .extract()
-                        .map_err(|_| PyTypeError::new_err("kwarg 'n100': must be an int"))?
-                }
-                "n50" => {
-                    this.n50 = value
-                        .extract()
-                        .map_err(|_| PyTypeError::new_err("kwarg 'n50': must be an int"))?
-                }
-                "misses" => {
-                    this.misses = value
-                        .extract()
-                        .map_err(|_| PyTypeError::new_err("kwarg 'misses': must be an int"))?
-                }
-                kwarg => {
-                    let err = format!(
-                        "unexpected kwarg '{kwarg}': expected 'max_combo', \n\
-                            'n_geki', 'n_katu', 'n300', 'n100', 'n50' or 'misses'",
-                    );
-
-                    return Err(ArgsError::new_err(err));
+            extract_args! {
+                this.key = value {
+                    max_combo: int,
+                    osu_large_tick_hits: int,
+                    osu_small_tick_hits: int,
+                    slider_end_hits: int,
+                    n_geki: int,
+                    n_katu: int,
+                    n300: int,
+                    n100: int,
+                    n50: int,
+                    misses: int,
                 }
             }
         }
@@ -100,6 +75,9 @@ impl Debug for PyScoreState {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         let Self {
             max_combo,
+            osu_large_tick_hits,
+            osu_small_tick_hits,
+            slider_end_hits,
             n_geki,
             n_katu,
             n300,
@@ -110,6 +88,9 @@ impl Debug for PyScoreState {
 
         f.debug_struct("ScoreState")
             .field("max_combo", max_combo)
+            .field("osu_large_tick_hits", osu_large_tick_hits)
+            .field("osu_small_tick_hits", osu_small_tick_hits)
+            .field("slider_end_hits", slider_end_hits)
             .field("n_geki", n_geki)
             .field("n_katu", n_katu)
             .field("n300", n300)
@@ -130,6 +111,9 @@ impl From<&PyScoreState> for ScoreState {
     fn from(state: &PyScoreState) -> Self {
         Self {
             max_combo: state.max_combo,
+            osu_large_tick_hits: state.osu_large_tick_hits,
+            osu_small_tick_hits: state.osu_small_tick_hits,
+            slider_end_hits: state.slider_end_hits,
             n_geki: state.n_geki,
             n_katu: state.n_katu,
             n300: state.n300,
@@ -144,6 +128,9 @@ impl From<ScoreState> for PyScoreState {
     fn from(state: ScoreState) -> Self {
         Self {
             max_combo: state.max_combo,
+            osu_large_tick_hits: state.osu_large_tick_hits,
+            osu_small_tick_hits: state.osu_small_tick_hits,
+            slider_end_hits: state.slider_end_hits,
             n_geki: state.n_geki,
             n_katu: state.n_katu,
             n300: state.n300,

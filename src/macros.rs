@@ -76,3 +76,36 @@ macro_rules! define_class {
         Option<$ty>
     };
 }
+
+macro_rules! extract_args {
+    ( $this:ident . $key:ident = $value:ident {
+        $( $field:ident: $ty:ident, )+
+    } ) => {
+        match $key.extract()? {
+            $(
+                stringify!($field) => {
+                    $this.$field = $value
+                        .extract()
+                        .map_err(|_| PyTypeError::new_err(concat!(
+                            "kwarg '",
+                            stringify!($field),
+                            "': must be ",
+                            stringify!($ty),
+                        )))?
+                }
+            ),*
+            kwarg => {
+                return Err(ArgsError::new_err(extract_args!(
+                    @ERR kwarg: $( $field ),*
+                )));
+            }
+        }
+    };
+    (@ERR $kwarg:ident: $first_field:ident $(, $field:ident )*) => {
+        format!(concat!(
+            "unexpected kwarg '{}': expected ",
+            stringify!($first_field),
+            $( ", ", stringify!($field), )*
+        ), $kwarg)
+    };
+}
