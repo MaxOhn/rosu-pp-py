@@ -94,9 +94,9 @@ jobs:
           # windows
           - os: windows
             target: x86_64
-          - os: windows
-            target: aarch64
-            interpreter: 3.11 3.12 3.13
+          # - os: windows
+          #   target: aarch64
+          #   interpreter: 3.11 3.12 3.13
 
         exclude:
           # Disabled for now.
