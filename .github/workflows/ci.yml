@@ -162,7 +162,7 @@ jobs:
           path: dist
 
       - name: Install & test
-        uses: uraimo/run-on-arch-action@v2.7.1
+        uses: uraimo/run-on-arch-action@v2.8.1
         with:
           arch: ${{ matrix.target }}
           distro: ${{ matrix.distro }}
