@@ -18,6 +18,8 @@ pub struct PyScoreState {
     #[pyo3(get, set)]
     osu_large_tick_hits: u32,
     #[pyo3(get, set)]
+    osu_small_tick_hits: u32,
+    #[pyo3(get, set)]
     slider_end_hits: u32,
     #[pyo3(get, set)]
     n_geki: u32,
@@ -49,6 +51,7 @@ impl PyScoreState {
                 this.key = value {
                     max_combo: int,
                     osu_large_tick_hits: int,
+                    osu_small_tick_hits: int,
                     slider_end_hits: int,
                     n_geki: int,
                     n_katu: int,
@@ -73,6 +76,7 @@ impl Debug for PyScoreState {
         let Self {
             max_combo,
             osu_large_tick_hits,
+            osu_small_tick_hits,
             slider_end_hits,
             n_geki,
             n_katu,
@@ -85,6 +89,7 @@ impl Debug for PyScoreState {
         f.debug_struct("ScoreState")
             .field("max_combo", max_combo)
             .field("osu_large_tick_hits", osu_large_tick_hits)
+            .field("osu_small_tick_hits", osu_small_tick_hits)
             .field("slider_end_hits", slider_end_hits)
             .field("n_geki", n_geki)
             .field("n_katu", n_katu)
@@ -107,6 +112,7 @@ impl From<&PyScoreState> for ScoreState {
         Self {
             max_combo: state.max_combo,
             osu_large_tick_hits: state.osu_large_tick_hits,
+            osu_small_tick_hits: state.osu_small_tick_hits,
             slider_end_hits: state.slider_end_hits,
             n_geki: state.n_geki,
             n_katu: state.n_katu,
@@ -123,6 +129,7 @@ impl From<ScoreState> for PyScoreState {
         Self {
             max_combo: state.max_combo,
             osu_large_tick_hits: state.osu_large_tick_hits,
+            osu_small_tick_hits: state.osu_small_tick_hits,
             slider_end_hits: state.slider_end_hits,
             n_geki: state.n_geki,
             n_katu: state.n_katu,

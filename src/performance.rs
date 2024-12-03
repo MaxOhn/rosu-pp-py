@@ -36,6 +36,7 @@ pub struct PyPerformance {
     pub(crate) accuracy: Option<f64>,
     pub(crate) combo: Option<u32>,
     pub(crate) large_tick_hits: Option<u32>,
+    pub(crate) small_tick_hits: Option<u32>,
     pub(crate) slider_end_hits: Option<u32>,
     pub(crate) n_geki: Option<u32>,
     pub(crate) n_katu: Option<u32>,
@@ -76,6 +77,7 @@ impl PyPerformance {
                     accuracy: float,
                     combo: int,
                     large_tick_hits: int,
+                    small_tick_hits: int,
                     slider_end_hits: int,
                     n_geki: int,
                     n_katu: int,
@@ -215,6 +217,11 @@ impl PyPerformance {
         self.large_tick_hits = n_large_ticks;
     }
 
+    #[pyo3(signature = (n_small_ticks=None))]
+    fn set_small_tick_hits(&mut self, n_small_ticks: Option<u32>) {
+        self.small_tick_hits = n_small_ticks;
+    }
+
     #[pyo3(signature = (n_slider_ends=None))]
     fn set_slider_end_hits(&mut self, n_slider_ends: Option<u32>) {
         self.slider_end_hits = n_slider_ends;
@@ -264,6 +271,18 @@ impl PyPerformance {
 
         if let Some(combo) = self.combo {
             perf = perf.combo(combo);
+        }
+
+        if let Some(slider_end_hits) = self.slider_end_hits {
+            perf = perf.slider_end_hits(slider_end_hits);
+        }
+
+        if let Some(large_tick_hits) = self.large_tick_hits {
+            perf = perf.large_tick_hits(large_tick_hits);
+        }
+
+        if let Some(small_tick_hits) = self.small_tick_hits {
+            perf = perf.small_tick_hits(small_tick_hits);
         }
 
         if let Some(n_geki) = self.n_geki {

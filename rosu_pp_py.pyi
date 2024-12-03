@@ -366,13 +366,17 @@ class Performance:
               slider ticks and repeats
             - if set on osu!lazer *with* `CL`, this value is the amount of hit
               slider heads, ticks, and repeats
+        `'small_tick_hits': int`
+            The amount of "small tick" hits.
+
+            These are essentially the slider end hits for lazer scores without
+            slider accuracy.
+
+            Only relevant for osu!standard.
         `'slider_end_hits': int`
             The amount of slider end hits.
             
-            Only relevant for osu!standard.
-            
-            osu! calls this value "slider tail hits" without the classic
-            mod and "small tick hits" with the classic mod.
+            Only relevant for osu!standard in lazer.
         `'n_geki': int`
             Specify the amount of gekis of a play.
             
@@ -482,6 +486,8 @@ class Performance:
     def set_combo(self, combo: Optional[int]) -> None: ...
 
     def set_large_tick_hits(self, n_large_ticks: Optional[int]) -> None: ...
+
+    def set_small_tick_hits(self, n_large_ticks: Optional[int]) -> None: ...
 
     def set_slider_end_hits(self, n_slider_ends: Optional[int]) -> None: ...
 
@@ -713,6 +719,14 @@ class ScoreState:
       slider ticks and repeats
     - if set on osu!lazer *with* `CL`, this field is the amount of hit
       slider heads, ticks, and repeats
+    """
+
+    osu_small_tick_hits: int
+    """
+    "Small tick" hits for osu!standard.
+
+    These are essentially the slider end hits for lazer scores without
+    slider accuracy.
     """
 
     slider_end_hits: int
