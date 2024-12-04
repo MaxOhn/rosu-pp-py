@@ -1,3 +1,37 @@
+## Upcoming
+
+Updated all modes' difficulty and performance calculation. See osu!'s newspost for more info: <https://osu.ppy.sh/home/news/2024-10-28-performance-points-star-rating-updates>
+
+rosu-pp changelog: <https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v200-2024-12-03>
+
+- __Breaking changes:__
+  - Renamed some properties:
+    - `BeatmapAttributes.od_hit_window` -> `od_great_hit_window`
+    - `DifficultyAttributes.hit_window` -> `great_hit_window`
+    - `BeatmapAttributes.ar_hitwindow` -> `ar_hit_window`
+
+- __Additions:__
+  - `Difficulty` and `Performance` now accept the kwarg `lazer: bool` (defaults to `true` if unspecified);
+    Performance calculation for osu!standard and osu!mania now differs between lazer and stable so this is
+    important to specify.
+  - `Performance` now accepts the kwargs `large_tick_hits: int`, `small_tick_hits: int`, `slider_end_hits: int`;
+    each of them being necessary to specify for osu!standard scores on lazer.
+  - `ScoreState` now has the additional properties
+    - `osu_large_tick_hits: int`
+    - `osu_small_tick_hits: int`
+    - `slider_end_hits: int`
+  - The method `Beatmap.convert` now takes an optional second argument for gamemods
+  - Added the property `BeatmapAttributes.od_ok_hit_window`
+  - Added properties to `DifficultyAttributes`:
+    - `aim_difficult_strain_count` (osu!standard)
+    - `speed_difficult_strain_count` (osu!standard)
+    - `mono_stamina_factor` (osu!taiko)
+    - `n_hold_notes` (osu!mania)
+    - `n_large_ticks` (osu!standard)
+    - `ok_hit_window` (osu!taiko)
+  - Added the property `PerformanceAttributes.estimated_unstable_rate` (osu!taiko)
+  - Added the property `Strains.single_color_stamina` (osu!taiko)
+
 # v1.1.0 (2024-07-12)
 
 - Updated to [rosu-pp v1.1.0](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v110-2024-07-10)
