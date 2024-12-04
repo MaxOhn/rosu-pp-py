@@ -1,4 +1,4 @@
-## Upcoming
+# v2.0.0 (2024-12-04)
 
 Updated all modes' difficulty and performance calculation. See osu!'s newspost for more info: <https://osu.ppy.sh/home/news/2024-10-28-performance-points-star-rating-updates>
 
@@ -32,7 +32,7 @@ rosu-pp changelog: <https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v20
   - Added the property `PerformanceAttributes.estimated_unstable_rate` (osu!taiko)
   - Added the property `Strains.single_color_stamina` (osu!taiko)
 
-# v1.1.0 (2024-07-12)
+## v1.1.0 (2024-07-12)
 
 - Updated to [rosu-pp v1.1.0](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v110-2024-07-10)
 - Mods can now be specified through more types than just `int` ([#9]). Instead, it has to coincide with the following alias defintions:

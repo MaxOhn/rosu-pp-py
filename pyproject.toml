@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "rosu-pp-py"
-version = "1.1.0"
+version = "2.0.0"
 requires-python = ">=3.7"
 description = "Difficulty and performance calculation for osu!"
 classifiers = [
