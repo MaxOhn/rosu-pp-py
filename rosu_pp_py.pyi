@@ -1190,19 +1190,19 @@ class BeatmapAttributes:
     def clock_rate(self) -> float: ...
 
     @property
-    def ar_hitwindow(self) -> float:
+    def ar_hit_window(self) -> float:
         """
         Hit window for approach rate i.e. TimePreempt in milliseconds.
         """
 
     @property
-    def od_great_hitwindow(self) -> float:
+    def od_great_hit_window(self) -> float:
         """
         Hit window for overall difficulty i.e. time to hit a 300 ("Great") in milliseconds.
         """
 
     @property
-    def od_ok_hitwindow(self) -> float:
+    def od_ok_hit_window(self) -> float:
         """
         Hit window for overall difficulty i.e. time to hit a 100 ("Ok") in milliseconds.
 
