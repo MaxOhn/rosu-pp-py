@@ -160,7 +160,9 @@ mods = json.loads(mods_json) # Traceable, HalfTime
 
 Installing rosu-pp-py requires a [supported version of Python and Rust](https://github.com/PyO3/PyO3#usage).
 
-Once [Python] and [Rust](https://www.rust-lang.org/learn/get-started) are ready to go, you can install the project with pip:
+If a [pre-built wheel](https://pypi.org/project/rosu-pp-py/#files) is available for your architecture, you can even skip the Rust part.
+
+Once [Python] and (optionally) [Rust](https://www.rust-lang.org/learn/get-started) are ready to go, you can install the project with pip:
 
 ```sh
 $ pip install rosu-pp-py
