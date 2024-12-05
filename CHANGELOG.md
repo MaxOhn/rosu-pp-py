@@ -1,10 +1,10 @@
-## Upcoming
+# v2.0.1 (2024-12-05)
 
 - Fixed the `lazer` argument not being passed to the calculation ([#12])
 - Fixed the type error when passing mods to `Beatmap.convert` ([#13])
 - The `settings` property for mods can now be `None` ([#13])
 
-# v2.0.0 (2024-12-04)
+## v2.0.0 (2024-12-04)
 
 Updated all modes' difficulty and performance calculation. See osu!'s newspost for more info: <https://osu.ppy.sh/home/news/2024-10-28-performance-points-star-rating-updates>
 
