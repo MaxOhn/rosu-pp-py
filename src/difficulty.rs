@@ -48,7 +48,7 @@ impl PyDifficulty {
         for (key, value) in kwargs {
             extract_args! {
                 this.key = value {
-                    mods: "GameMods",
+                    mods: "type that matches GameMods alias",
                     clock_rate: "float",
                     ar: "float",
                     ar_with_mods: "bool",
