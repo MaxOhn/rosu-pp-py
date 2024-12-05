@@ -1,13 +1,13 @@
 from enum import Enum
-from typing import List, Optional, Union
+from typing import List, Mapping, Optional, Union
 from collections.abc import Iterator
 
 GameMods = Union[int, str, GameMod, List[Union[GameMod, str, int]]]
-GameMod = dict[str, Union[str, GameModSettings]]
+GameMod = Mapping[str, Union[str, Optional[GameModSettings]]]
 """
 Must contain item `'acronym': str` and optionally `'settings': GameModSettings`
 """
-GameModSettings = dict[str, Union[bool, float, str]]
+GameModSettings = Mapping[str, Union[bool, float, str]]
 
 class GameMode(Enum):
     """
