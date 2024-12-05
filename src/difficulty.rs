@@ -48,19 +48,19 @@ impl PyDifficulty {
         for (key, value) in kwargs {
             extract_args! {
                 this.key = value {
-                    mods: GameMods,
-                    clock_rate: float,
-                    ar: float,
-                    ar_with_mods: bool,
-                    cs: float,
-                    cs_with_mods: bool,
-                    hp: float,
-                    hp_with_mods: bool,
-                    od: float,
-                    od_with_mods: bool,
-                    passed_objects: int,
-                    hardrock_offsets: bool,
-                    lazer: bool,
+                    mods: "GameMods",
+                    clock_rate: "float",
+                    ar: "float",
+                    ar_with_mods: "bool",
+                    cs: "float",
+                    cs_with_mods: "bool",
+                    hp: "float",
+                    hp_with_mods: "bool",
+                    od: "float",
+                    od_with_mods: "bool",
+                    passed_objects: "int",
+                    hardrock_offsets: "bool",
+                    lazer: "bool",
                 }
             }
         }

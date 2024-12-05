@@ -79,7 +79,7 @@ macro_rules! define_class {
 
 macro_rules! extract_args {
     ( $this:ident . $key:ident = $value:ident {
-        $( $field:ident: $ty:ident, )+
+        $( $field:ident: $expected:literal, )+
     } ) => {
         match $key.extract()? {
             $(
@@ -90,7 +90,7 @@ macro_rules! extract_args {
                             "kwarg '",
                             stringify!($field),
                             "': must be ",
-                            stringify!($ty),
+                            $expected,
                         )))?
                 }
             ),*

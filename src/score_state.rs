@@ -49,16 +49,16 @@ impl PyScoreState {
         for (key, value) in kwargs {
             extract_args! {
                 this.key = value {
-                    max_combo: int,
-                    osu_large_tick_hits: int,
-                    osu_small_tick_hits: int,
-                    slider_end_hits: int,
-                    n_geki: int,
-                    n_katu: int,
-                    n300: int,
-                    n100: int,
-                    n50: int,
-                    misses: int,
+                    max_combo: "int",
+                    osu_large_tick_hits: "int",
+                    osu_small_tick_hits: "int",
+                    slider_end_hits: "int",
+                    n_geki: "int",
+                    n_katu: "int",
+                    n300: "int",
+                    n100: "int",
+                    n50: "int",
+                    misses: "int",
                 }
             }
         }
