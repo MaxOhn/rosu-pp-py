@@ -207,6 +207,10 @@ impl PyDifficulty {
             difficulty = difficulty.hardrock_offsets(hardrock_offsets);
         }
 
+        if let Some(lazer) = self.lazer {
+            difficulty = difficulty.lazer(lazer);
+        }
+
         difficulty
     }
 }
