@@ -126,7 +126,11 @@ impl<'py> FromPyObject<'py> for PyGameMod<'py> {
 
         Ok(PyGameMod {
             acronym: extract_struct_field(&acronym, "PyGameMod", "acronym")?,
-            settings: settings.as_ref().map(PyAnyMethods::extract).transpose()?,
+            settings: settings
+                .as_ref()
+                .map(PyAnyMethods::extract::<Option<Bound<'_, PyDict>>>)
+                .transpose()?
+                .flatten(),
         })
     }
 }
