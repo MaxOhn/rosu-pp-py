@@ -21,6 +21,7 @@ define_class! {
         pub pp_speed: f64?,
         pub pp_accuracy: f64?,
         pub effective_miss_count: f64?,
+        pub speed_deviation: f64?,
         pub estimated_unstable_rate: f64?,
         pub pp_difficulty: f64?,
     }
@@ -36,6 +37,7 @@ impl From<OsuPerformanceAttributes> for PyPerformanceAttributes {
             pp_flashlight,
             pp_speed,
             effective_miss_count,
+            speed_deviation,
         } = attrs;
 
         Self {
@@ -46,6 +48,7 @@ impl From<OsuPerformanceAttributes> for PyPerformanceAttributes {
             pp_flashlight: Some(pp_flashlight),
             pp_speed: Some(pp_speed),
             effective_miss_count: Some(effective_miss_count),
+            speed_deviation,
             ..Self::default()
         }
     }

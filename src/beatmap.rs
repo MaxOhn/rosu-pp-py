@@ -4,11 +4,11 @@ use pyo3::{
     exceptions::PyTypeError,
     pyclass, pymethods,
     types::{PyAnyMethods, PyDict},
-    Bound, PyResult,
+    Bound, Py, PyAny, PyResult, Python,
 };
 use rosu_pp::{
     model::{hit_object::HitObjectKind, mode::GameMode},
-    Beatmap, GameMods,
+    Beatmap,
 };
 
 use crate::{
@@ -99,12 +99,17 @@ impl PyBeatmap {
     }
 
     #[pyo3(signature = (mode, mods=None))]
-    fn convert(&mut self, mode: PyGameMode, mods: Option<PyGameMods>) -> PyResult<()> {
-        let mods = match mods {
-            None => GameMods::default(),
-            Some(PyGameMods::Lazer(mods)) => mods.into(),
-            Some(PyGameMods::Intermode(mods)) => mods.into(),
-            Some(PyGameMods::Legacy(mods)) => mods.into(),
+    fn convert(
+        &mut self,
+        mode: PyGameMode,
+        mods: Option<Py<PyAny>>,
+        py: Python<'_>,
+    ) -> PyResult<()> {
+        let mods = match PyGameMods::extract(mods.as_ref(), mode.into(), py) {
+            Ok(PyGameMods::Lazer(mods)) => mods.into(),
+            Ok(PyGameMods::Intermode(mods)) => mods.into(),
+            Ok(PyGameMods::Legacy(mods)) => mods.into(),
+            Err(err) => return Err(err),
         };
 
         let mode = GameMode::from(mode);
