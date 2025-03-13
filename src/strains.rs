@@ -18,6 +18,7 @@ define_class! {
         pub speed: DoubleList?,
         pub flashlight: DoubleList?,
         pub color: DoubleList?,
+        pub reading: DoubleList?,
         pub rhythm: DoubleList?,
         pub stamina: DoubleList?,
         pub single_color_stamina: DoubleList?,
@@ -51,6 +52,7 @@ impl From<TaikoStrains> for PyStrains {
     fn from(strains: TaikoStrains) -> Self {
         let TaikoStrains {
             color,
+            reading,
             rhythm,
             stamina,
             single_color_stamina,
@@ -60,6 +62,7 @@ impl From<TaikoStrains> for PyStrains {
             mode: PyGameMode::Taiko,
             section_length: TaikoStrains::SECTION_LEN,
             color: Some(color),
+            reading: Some(reading),
             rhythm: Some(rhythm),
             stamina: Some(stamina),
             single_color_stamina: Some(single_color_stamina),
