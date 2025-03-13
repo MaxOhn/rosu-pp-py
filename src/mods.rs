@@ -71,7 +71,7 @@ impl<'py> FromPyObject<'py> for PyGameMods {
                     let seed = GameModSeed::GuessMode;
 
                     let res = list
-                        .iter()?
+                        .try_iter()?
                         .try_fold(GameModsLazer::new(), |mut mods, item| {
                             let res = match item?.extract::<PyGameModUnion<'_>>()? {
                                 PyGameModUnion::Mod(gamemod) => seed.deserialize(gamemod),

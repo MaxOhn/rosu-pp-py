@@ -51,9 +51,9 @@ fn rosu_pp_py(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyPerformanceAttributes>()?;
     m.add_class::<PyStrains>()?;
 
-    m.add("ParseError", py.get_type_bound::<ParseError>())?;
-    m.add("ArgsError", py.get_type_bound::<ArgsError>())?;
-    m.add("ConvertError", py.get_type_bound::<ConvertError>())?;
+    m.add("ParseError", py.get_type::<ParseError>())?;
+    m.add("ArgsError", py.get_type::<ArgsError>())?;
+    m.add("ConvertError", py.get_type::<ConvertError>())?;
 
     Ok(())
 }
