@@ -1,4 +1,26 @@
-# v2.0.1 (2024-12-05)
+# v3.0.0 (2025-04-07)
+
+Updated all modes' difficulty and performance calculation. See osu!'s newspost for more info: <https://osu.ppy.sh/home/news/2025-03-06-performance-points-star-rating-updates>
+
+rosu-pp changelog: <https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v300-2025-04-07>
+
+- Removed properties:
+  - `DifficultyAttributes.od`
+  - `DifficultyAttributes.peak`
+
+- Added properties:
+  - `DifficultyAttributes.aim_difficult_slider_count` (osu!standard)
+  - `DifficultyAttributes.reading` (osu!taiko)
+  - `DifficultyAttributes.meh_hit_window` (osu!standard)
+  - `PerformanceAttributes.speed_deviation` (osu!standard)
+  - `Strains.reading` (osu!taiko)
+  - `BeatmapAttributes.od_meh_hit_window` (osu!standard)
+
+- Adjustments:
+  - The property `DifficultyAttributes.great_hit_window` is no longer available for osu!mania but it is now available for osu!standard
+  - The property `DifficultyAttributes.ok_hit_window` is now also available for osu!standard
+
+## v2.0.1 (2024-12-05)
 
 - Fixed the `lazer` argument not being passed to the calculation ([#12])
 - Fixed the type error when passing mods to `Beatmap.convert` ([#13])

@@ -161,7 +161,7 @@ dependencies = [
 
 [[package]]
 name = "rosu-pp-py"
-version = "2.0.1"
+version = "3.0.0"
 dependencies = [
  "pyo3",
  "rosu-mods",
