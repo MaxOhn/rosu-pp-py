@@ -798,6 +798,14 @@ class DifficultyAttributes:
         """
 
     @property
+    def aim_difficult_slider_count(self) -> Optional[float]:
+        """
+        The number of sliders weighted by difficulty.
+        
+        Only available for osu!.
+        """
+
+    @property
     def speed(self) -> Optional[float]:
         """
         The difficulty of the speed skill.
@@ -846,14 +854,6 @@ class DifficultyAttributes:
         """
 
     @property
-    def od(self) -> Optional[float]:
-        """
-        The overall difficulty
-        
-        Only available for osu!.
-        """
-
-    @property
     def hp(self) -> Optional[float]:
         """
         The health drain rate.
@@ -886,10 +886,10 @@ class DifficultyAttributes:
         
         The meaning depends on the kind of score:
         - if set on osu!stable, this value is irrelevant and can be `0`
-        - if set on osu!lazer *without* `CL`, this value is the amount of hit
-          slider ticks and repeats
-        - if set on osu!lazer *with* `CL`, this value is the amount of hit
-          slider heads, ticks, and repeats
+        - if set on osu!lazer *with* slider accuracy, this value is the amount
+          of hit slider ticks and repeats
+        - if set on osu!lazer *without* slider accuracy, this value is the
+          amount of hit slider heads, ticks, and repeats
         """
 
     @property
@@ -917,6 +917,14 @@ class DifficultyAttributes:
         """
 
     @property
+    def reading(self) -> Optional[float]:
+        """
+        The difficulty of the reading skill.
+        
+        Only available for osu!taiko.
+        """
+
+    @property
     def rhythm(self) -> Optional[float]:
         """
         The difficulty of the rhythm skill.
@@ -928,14 +936,6 @@ class DifficultyAttributes:
     def color(self) -> Optional[float]:
         """
         The difficulty of the color skill.
-        
-        Only available for osu!taiko.
-        """
-
-    @property
-    def peak(self) -> Optional[float]:
-        """
-        The difficulty of the hardest parts of the map.
         
         Only available for osu!taiko.
         """
@@ -993,7 +993,7 @@ class DifficultyAttributes:
         """
         The perceived hit window for an n300 inclusive of rate-adjusting mods (DT/HT/etc)
         
-        Only available for osu!taiko and osu!mania.
+        Only available for osu! and osu!taiko.
         """
 
     @property
@@ -1001,7 +1001,15 @@ class DifficultyAttributes:
         """
         The perceived hit window for an n100 inclusive of rate-adjusting mods (DT/HT/etc)
         
-        Only available for osu!taiko.
+        Only available for osu! and osu!taiko.
+        """
+
+    @property
+    def meh_hit_window(self) -> Optional[float]:
+        """
+        The perceived hit window for an n50 inclusive of rate-adjusting mods (DT/HT/etc)
+        
+        Only available for osu!.
         """
 
     @property
@@ -1065,6 +1073,14 @@ class PerformanceAttributes:
         Scaled miss count based on total hits.
         
         Only available for osu! and osu!taiko.
+        """
+
+    @property
+    def speed_deviation(self) -> Optional[float]:
+        """
+        Approximated unstable-rate
+        
+        Only available for osu!.
         """
 
     @property
@@ -1140,6 +1156,12 @@ class Strains:
         """
 
     @property
+    def reading(self) -> Optional[List[float]]:
+        """
+        Strain peaks of the reading skill in osu!taiko.
+        """
+
+    @property
     def rhythm(self) -> Optional[List[float]]:
         """
         Strain peaks of the rhythm skill in osu!taiko.
@@ -1207,4 +1229,12 @@ class BeatmapAttributes:
         Hit window for overall difficulty i.e. time to hit a 100 ("Ok") in milliseconds.
 
         Not available for osu!mania.
+        """
+
+    @property
+    def od_meh_hit_window(self) -> float:
+        """
+        Hit window for overall difficulty i.e. time to hit a 50 ("Meh") in milliseconds.
+
+        Only available for osu!.
         """

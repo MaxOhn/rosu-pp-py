@@ -2,9 +2,9 @@ use pyo3::{
     exceptions::PyTypeError,
     pyclass, pymethods,
     types::{PyAnyMethods, PyDict},
-    Bound, PyResult,
+    Bound, Py, PyAny, PyResult, Python,
 };
-use rosu_pp::Difficulty;
+use rosu_pp::{model::mode::GameMode, Difficulty};
 
 use crate::{
     attributes::difficulty::PyDifficultyAttributes,
@@ -19,7 +19,7 @@ use crate::{
 #[pyclass(name = "Difficulty")]
 #[derive(Default)]
 pub struct PyDifficulty {
-    pub(crate) mods: PyGameMods,
+    pub(crate) mods: Option<Py<PyAny>>,
     pub(crate) clock_rate: Option<f64>,
     pub(crate) ar: Option<f32>,
     pub(crate) ar_with_mods: bool,
@@ -68,15 +68,21 @@ impl PyDifficulty {
         Ok(this)
     }
 
-    fn calculate(&self, map: &PyBeatmap) -> PyDifficultyAttributes {
-        self.as_difficulty().calculate(&map.inner).into()
+    fn calculate(&self, map: &PyBeatmap, py: Python<'_>) -> PyResult<PyDifficultyAttributes> {
+        Ok(self
+            .as_difficulty(map.inner.mode, py)?
+            .calculate(&map.inner)
+            .into())
     }
 
-    fn strains(&self, map: &PyBeatmap) -> PyStrains {
-        self.as_difficulty().strains(&map.inner).into()
+    fn strains(&self, map: &PyBeatmap, py: Python<'_>) -> PyResult<PyStrains> {
+        Ok(self
+            .as_difficulty(map.inner.mode, py)?
+            .strains(&map.inner)
+            .into())
     }
 
-    fn performance(&self) -> PyPerformance {
+    fn performance(&self, py: Python<'_>) -> PyPerformance {
         let Self {
             mods,
             clock_rate,
@@ -94,7 +100,7 @@ impl PyDifficulty {
         } = self;
 
         PyPerformance {
-            mods: mods.clone(),
+            mods: mods.as_ref().map(|mods| mods.clone_ref(py)),
             clock_rate: *clock_rate,
             ar: *ar,
             ar_with_mods: *ar_with_mods,
@@ -111,17 +117,21 @@ impl PyDifficulty {
         }
     }
 
-    fn gradual_difficulty(&self, map: &PyBeatmap) -> PyGradualDifficulty {
-        PyGradualDifficulty::new(self, map)
+    fn gradual_difficulty(&self, map: &PyBeatmap, py: Python<'_>) -> PyResult<PyGradualDifficulty> {
+        PyGradualDifficulty::new(self, map, py)
     }
 
-    fn gradual_performance(&self, map: &PyBeatmap) -> PyGradualPerformance {
-        PyGradualPerformance::new(self, map)
+    fn gradual_performance(
+        &self,
+        map: &PyBeatmap,
+        py: Python<'_>,
+    ) -> PyResult<PyGradualPerformance> {
+        PyGradualPerformance::new(self, map, py)
     }
 
     #[pyo3(signature = (mods=None))]
-    fn set_mods(&mut self, mods: Option<PyGameMods>) {
-        self.mods = mods.unwrap_or_default();
+    fn set_mods(&mut self, mods: Option<Py<PyAny>>) {
+        self.mods = mods;
     }
 
     #[pyo3(signature = (lazer=None))]
@@ -170,13 +180,14 @@ impl PyDifficulty {
 }
 
 impl PyDifficulty {
-    pub fn as_difficulty(&self) -> Difficulty {
+    pub fn as_difficulty(&self, mode: GameMode, py: Python<'_>) -> PyResult<Difficulty> {
         let mut difficulty = Difficulty::new();
 
-        difficulty = match self.mods {
-            PyGameMods::Lazer(ref mods) => difficulty.mods(mods.clone()),
-            PyGameMods::Intermode(ref mods) => difficulty.mods(mods),
-            PyGameMods::Legacy(mods) => difficulty.mods(mods),
+        difficulty = match PyGameMods::extract(self.mods.as_ref(), mode, py) {
+            Ok(PyGameMods::Lazer(ref mods)) => difficulty.mods(mods.clone()),
+            Ok(PyGameMods::Intermode(ref mods)) => difficulty.mods(mods),
+            Ok(PyGameMods::Legacy(mods)) => difficulty.mods(mods),
+            Err(err) => return Err(err),
         };
 
         if let Some(passed_objects) = self.passed_objects {
@@ -211,6 +222,6 @@ impl PyDifficulty {
             difficulty = difficulty.lazer(lazer);
         }
 
-        difficulty
+        Ok(difficulty)
     }
 }

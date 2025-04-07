@@ -2,7 +2,7 @@ use pyo3::{
     exceptions::PyTypeError,
     pyclass, pymethods,
     types::{PyAnyMethods, PyDict},
-    Bound, PyRef, PyResult,
+    Bound, Py, PyAny, PyRef, PyResult, Python,
 };
 use rosu_pp::model::beatmap::{BeatmapAttributes, BeatmapAttributesBuilder, HitWindows};
 
@@ -13,7 +13,7 @@ use crate::{beatmap::PyBeatmap, error::ArgsError, mode::PyGameMode, mods::PyGame
 pub struct PyBeatmapAttributesBuilder {
     mode: Option<PyGameMode>,
     is_convert: bool,
-    mods: PyGameMods,
+    mods: Option<Py<PyAny>>,
     clock_rate: Option<f64>,
     ar: Option<f32>,
     ar_with_mods: bool,
@@ -131,14 +131,17 @@ impl PyBeatmapAttributesBuilder {
         Ok(this)
     }
 
-    fn build(&self) -> PyBeatmapAttributes {
+    fn build(&self, py: Python<'_>) -> PyResult<PyBeatmapAttributes> {
         let mut builder = BeatmapAttributesBuilder::new();
 
-        builder = match self.mods {
-            PyGameMods::Lazer(ref mods) => builder.mods(mods.clone()),
-            PyGameMods::Intermode(ref mods) => builder.mods(mods),
-            PyGameMods::Legacy(mods) => builder.mods(mods),
-        };
+        builder =
+            match PyGameMods::extract(self.mods.as_ref(), self.mode.unwrap_or_default().into(), py)
+            {
+                Ok(PyGameMods::Lazer(ref mods)) => builder.mods(mods.clone()),
+                Ok(PyGameMods::Intermode(ref mods)) => builder.mods(mods),
+                Ok(PyGameMods::Legacy(mods)) => builder.mods(mods),
+                Err(err) => return Err(err),
+            };
 
         if let Some(mode) = self.mode {
             builder = builder.mode(mode.into(), self.is_convert);
@@ -164,7 +167,7 @@ impl PyBeatmapAttributesBuilder {
             builder = builder.od(od, self.od_with_mods);
         }
 
-        builder.build().into()
+        Ok(builder.build().into())
     }
 
     fn set_map(&mut self, map: PyRef<'_, PyBeatmap>) {
@@ -185,8 +188,8 @@ impl PyBeatmapAttributesBuilder {
     }
 
     #[pyo3(signature = (mods=None))]
-    fn set_mods(&mut self, mods: Option<PyGameMods>) {
-        self.mods = mods.unwrap_or_default();
+    fn set_mods(&mut self, mods: Option<Py<PyAny>>) {
+        self.mods = mods;
     }
 
     #[pyo3(signature = (clock_rate=None))]
@@ -231,6 +234,7 @@ define_class! {
         pub ar_hit_window: f64!,
         pub od_great_hit_window: f64!,
         pub od_ok_hit_window: f64?,
+        pub od_meh_hit_window: f64?,
     }
 }
 
@@ -247,6 +251,7 @@ impl From<BeatmapAttributes> for PyBeatmapAttributes {
                     ar: ar_hit_window,
                     od_great: od_great_hit_window,
                     od_ok: od_ok_hit_window,
+                    od_meh: od_meh_hit_window,
                 },
         } = attrs;
 
@@ -259,6 +264,7 @@ impl From<BeatmapAttributes> for PyBeatmapAttributes {
             ar_hit_window,
             od_great_hit_window,
             od_ok_hit_window,
+            od_meh_hit_window,
         }
     }
 }

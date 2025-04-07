@@ -13,9 +13,11 @@ use pyo3::{
         iter::BoundDictIterator, PyAnyMethods, PyDict, PyDictMethods, PyList, PyString,
         PyStringMethods,
     },
-    Bound, FromPyObject, PyAny, PyResult,
+    Bound, FromPyObject, Py, PyAny, PyResult, Python,
 };
-use rosu_mods::{serde::GameModSeed, GameMods as GameModsLazer, GameModsIntermode, GameModsLegacy};
+use rosu_mods::{
+    serde::GameModSeed, GameMode, GameMods as GameModsLazer, GameModsIntermode, GameModsLegacy,
+};
 use serde::de::{
     value::{BorrowedStrDeserializer, CowStrDeserializer, MapAccessDeserializer, U32Deserializer},
     DeserializeSeed, Deserializer, Error as DeError, MapAccess, Unexpected, Visitor,
@@ -30,14 +32,19 @@ pub enum PyGameMods {
     Legacy(GameModsLegacy),
 }
 
-impl Default for PyGameMods {
-    fn default() -> Self {
-        Self::Legacy(GameModsLegacy::NoMod)
-    }
-}
+impl PyGameMods {
+    pub(crate) fn extract<'py>(
+        mods: Option<&Py<PyAny>>,
+        mode: rosu_pp::model::mode::GameMode,
+        py: Python<'py>,
+    ) -> PyResult<Self> {
+        let Some(mods) = mods else {
+            return Ok(Self::default());
+        };
 
-impl<'py> FromPyObject<'py> for PyGameMods {
-    fn extract_bound(obj: &Bound<'py, PyAny>) -> PyResult<Self> {
+        let obj = mods.bind(py);
+        let mode = GameMode::from(mode as u8);
+
         let errors = [
             match extract_tuple_struct_field(obj, "PyInt", 0) {
                 Ok(bits) => return Ok(Self::Legacy(GameModsLegacy::from_bits(bits))),
@@ -60,21 +67,31 @@ impl<'py> FromPyObject<'py> for PyGameMods {
                 Err(err) => err,
             },
             match extract_tuple_struct_field::<PyGameMod<'py>>(obj, "PyGameMod", 0) {
-                Ok(gamemod) => match GameModSeed::GuessMode.deserialize(gamemod) {
-                    Ok(gamemod) => return Ok(Self::Lazer(gamemod.into())),
-                    Err(DeserializeError(err)) => ParseError::new_err(err),
-                },
+                Ok(gamemod) => {
+                    let seed = GameModSeed::Mode {
+                        mode,
+                        deny_unknown_fields: false,
+                    };
+
+                    match seed.deserialize(&gamemod) {
+                        Ok(gamemod) => return Ok(Self::Lazer(gamemod.into())),
+                        Err(DeserializeError(err)) => ParseError::new_err(err),
+                    }
+                }
                 Err(err) => err,
             },
             match extract_tuple_struct_field::<Bound<'py, PyList>>(obj, "PyList", 0) {
                 Ok(list) => {
-                    let seed = GameModSeed::GuessMode;
+                    let seed = GameModSeed::Mode {
+                        mode,
+                        deny_unknown_fields: false,
+                    };
 
                     let res = list
                         .try_iter()?
                         .try_fold(GameModsLazer::new(), |mut mods, item| {
                             let res = match item?.extract::<PyGameModUnion<'_>>()? {
-                                PyGameModUnion::Mod(gamemod) => seed.deserialize(gamemod),
+                                PyGameModUnion::Mod(gamemod) => seed.deserialize(&gamemod),
                                 PyGameModUnion::Acronym(acronym) => seed.deserialize(
                                     CowStrDeserializer::new(acronym.to_string_lossy()),
                                 ),
@@ -107,6 +124,12 @@ impl<'py> FromPyObject<'py> for PyGameMods {
             &["int", "str", "GameMod", "List[GameMod | str | int]"],
             &errors,
         ))
+    }
+}
+
+impl Default for PyGameMods {
+    fn default() -> Self {
+        Self::Legacy(GameModsLegacy::NoMod)
     }
 }
 
@@ -159,7 +182,7 @@ impl Display for DeserializeError {
 
 impl StdError for DeserializeError {}
 
-impl<'de> Deserializer<'de> for PyGameMod<'de> {
+impl<'de> Deserializer<'de> for &'de PyGameMod<'de> {
     type Error = DeserializeError;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
@@ -382,8 +405,8 @@ impl<'de> Deserializer<'de> for PyGameMod<'de> {
 }
 
 enum PyGameModMap<'py> {
-    Full(PyGameMod<'py>),
-    Settings(Bound<'py, PyDict>),
+    Full(&'py PyGameMod<'py>),
+    Settings(&'py Bound<'py, PyDict>),
     Done,
 }
 
@@ -412,7 +435,7 @@ impl<'de> MapAccess<'de> for PyGameModMap<'de> {
             PyGameModMap::Full(gamemod) => {
                 let acronym = gamemod.acronym.to_string_lossy();
                 let res = seed.deserialize(CowStrDeserializer::new(acronym));
-                *self = gamemod.settings.take().map_or(Self::Done, Self::Settings);
+                *self = gamemod.settings.as_ref().map_or(Self::Done, Self::Settings);
 
                 res
             }
@@ -473,7 +496,7 @@ impl<'de> MapAccess<'de> for DictAccess<'de> {
 #[derive(FromPyObject)]
 enum PyValue<'py> {
     Bool(bool),
-    Number(f32),
+    Number(f64),
     String(Bound<'py, PyString>),
 }
 
@@ -486,7 +509,7 @@ impl<'de> Deserializer<'de> for PyValue<'de> {
     {
         match self {
             PyValue::Bool(v) => visitor.visit_bool(v),
-            PyValue::Number(v) => visitor.visit_f32(v),
+            PyValue::Number(v) => visitor.visit_f64(v),
             PyValue::String(v) => visitor.visit_string(v.to_string_lossy().into_owned()),
         }
     }
@@ -497,10 +520,7 @@ impl<'de> Deserializer<'de> for PyValue<'de> {
     {
         match self {
             Self::Bool(v) => visitor.visit_bool(v),
-            Self::Number(v) => Err(DeError::invalid_type(
-                Unexpected::Float(f64::from(v)),
-                &visitor,
-            )),
+            Self::Number(v) => Err(DeError::invalid_type(Unexpected::Float(v), &visitor)),
             Self::String(v) => Err(DeError::invalid_type(
                 Unexpected::Str(v.to_string_lossy().as_ref()),
                 &visitor,
@@ -564,25 +584,25 @@ impl<'de> Deserializer<'de> for PyValue<'de> {
         unimplemented!()
     }
 
-    fn deserialize_f32<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    fn deserialize_f32<V>(self, _: V) -> Result<V::Value, Self::Error>
+    where
+        V: Visitor<'de>,
+    {
+        unimplemented!()
+    }
+
+    fn deserialize_f64<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
         match self {
             Self::Bool(v) => Err(DeError::invalid_type(Unexpected::Bool(v), &visitor)),
-            Self::Number(v) => visitor.visit_f32(v),
+            Self::Number(v) => visitor.visit_f64(v),
             Self::String(v) => Err(DeError::invalid_type(
                 Unexpected::Str(v.to_string_lossy().as_ref()),
                 &visitor,
             )),
         }
-    }
-
-    fn deserialize_f64<V>(self, _: V) -> Result<V::Value, Self::Error>
-    where
-        V: Visitor<'de>,
-    {
-        unimplemented!()
     }
 
     fn deserialize_char<V>(self, _: V) -> Result<V::Value, Self::Error>
@@ -598,10 +618,7 @@ impl<'de> Deserializer<'de> for PyValue<'de> {
     {
         match self {
             Self::Bool(v) => Err(DeError::invalid_type(Unexpected::Bool(v), &visitor)),
-            Self::Number(v) => Err(DeError::invalid_type(
-                Unexpected::Float(f64::from(v)),
-                &visitor,
-            )),
+            Self::Number(v) => Err(DeError::invalid_type(Unexpected::Float(v), &visitor)),
             Self::String(v) => visitor.visit_str(v.to_string_lossy().as_ref()),
         }
     }
@@ -612,10 +629,7 @@ impl<'de> Deserializer<'de> for PyValue<'de> {
     {
         match self {
             Self::Bool(v) => Err(DeError::invalid_type(Unexpected::Bool(v), &visitor)),
-            Self::Number(v) => Err(DeError::invalid_type(
-                Unexpected::Float(f64::from(v)),
-                &visitor,
-            )),
+            Self::Number(v) => Err(DeError::invalid_type(Unexpected::Float(v), &visitor)),
             Self::String(v) => visitor.visit_string(v.to_string_lossy().into_owned()),
         }
     }

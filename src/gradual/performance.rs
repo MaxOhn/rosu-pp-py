@@ -1,4 +1,4 @@
-use pyo3::{pyclass, pymethods};
+use pyo3::{pyclass, pymethods, PyResult, Python};
 use rosu_pp::GradualPerformance;
 
 use crate::{
@@ -14,10 +14,12 @@ pub struct PyGradualPerformance {
 #[pymethods]
 impl PyGradualPerformance {
     #[new]
-    pub fn new(difficulty: &PyDifficulty, map: &PyBeatmap) -> Self {
-        Self {
-            inner: GradualPerformance::new(difficulty.as_difficulty(), &map.inner),
-        }
+    pub fn new(difficulty: &PyDifficulty, map: &PyBeatmap, py: Python<'_>) -> PyResult<Self> {
+        let difficulty = difficulty.as_difficulty(map.inner.mode, py)?;
+
+        Ok(Self {
+            inner: GradualPerformance::new(difficulty, &map.inner),
+        })
     }
 
     fn next(&mut self, state: &PyScoreState) -> Option<PyPerformanceAttributes> {
