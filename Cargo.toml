@@ -15,8 +15,7 @@ crate-type = ["cdylib"]
 [dependencies]
 pyo3 = { version = "0.24", features = ["extension-module", "macros"] }
 rosu-mods = { version = "0.3.0", default-features = false, features = ["serde"] }
-# rosu-pp = { version = "2.0.0", features = ["sync"] }
-rosu-pp = { git = "https://github.com/MaxOhn/rosu-pp", branch = "pp-update", features = ["sync"] }
+rosu-pp = { version = "3.0.0", features = ["sync"] }
 serde = { version = "1.0.203" }
 
 [profile.release]
