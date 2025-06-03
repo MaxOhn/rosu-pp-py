@@ -1,4 +1,17 @@
-# v3.0.0 (2025-04-07)
+# v3.1.0 (2025-06-03)
+
+Bumped to [`rosu-pp v3.1.0`](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v310-2025-06-03):
+- Added the method `Beatmap.is_suspicious`. 
+  Some maps are not meant to be played but just test the limits of osu! itself.
+  Calculating attributes on these maps may be very expensive so it is
+  recommended to always check an unknown map's suspicion before difficulty
+  and/or performance calculation.
+- Added the variant `HitResultPriority.Fastest`.
+  It is highly recommended to specify this variant for performance calculation
+  if only accuracy is given but no specific hitresults. Otherwise, generating
+  hitresults that best match the given accuracy may be very slow.
+
+## v3.0.0 (2025-04-07)
 
 Updated all modes' difficulty and performance calculation. See osu!'s newspost for more info: <https://osu.ppy.sh/home/news/2025-03-06-performance-points-star-rating-updates>
 
