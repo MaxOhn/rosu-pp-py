@@ -380,6 +380,7 @@ pub enum PyHitResultPriority {
     #[default]
     BestCase,
     WorstCase,
+    Fastest,
 }
 
 impl From<PyHitResultPriority> for HitResultPriority {
@@ -387,6 +388,7 @@ impl From<PyHitResultPriority> for HitResultPriority {
         match priority {
             PyHitResultPriority::BestCase => Self::BestCase,
             PyHitResultPriority::WorstCase => Self::WorstCase,
+            PyHitResultPriority::Fastest => Self::Fastest,
         }
     }
 }

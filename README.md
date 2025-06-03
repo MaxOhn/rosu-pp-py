@@ -37,12 +37,22 @@ map = rosu.Beatmap(path = "/path/to/file.osu")
 # Optionally convert to a specific mode for optionally given mods
 map.convert(rosu.GameMode.Mania, "6K")
 
+# Whereas osu! simply times out on malicious maps, rosu-pp does not. To
+# prevent potential performance/memory issues, it is recommended to check
+# beforehand whether a map is too suspicious for further calculation.
+if map.is_suspicious():
+    exit()
+
 perf = rosu.Performance(
     # various kwargs available
     accuracy = 98.76,
+    lazer = False, # defaults to True if not specified
     misses = 2,
     combo = 700,
-    hitresult_priority = rosu.HitResultPriority.WorstCase, # favors bad hitresults
+    # If only accuracy is given but no specific hitresults, it is recommended
+    # to generate hitresults via `HitResultPriority.Fastest`. Otherwise,
+    # finding the best hitresults can be very slow.
+    hitresult_priority=rosu.HitResultPriority.Fastest,
 )
 
 # Each kwarg can also be specified afterwards through setters

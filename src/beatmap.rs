@@ -121,6 +121,11 @@ impl PyBeatmap {
         Ok(())
     }
 
+    #[pyo3()]
+    fn is_suspicious(&self) -> bool {
+        self.inner.check_suspicion().is_err()
+    }
+
     #[getter]
     fn bpm(&self) -> f64 {
         self.inner.bpm()

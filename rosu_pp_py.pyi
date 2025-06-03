@@ -26,6 +26,7 @@ class HitResultPriority(Enum):
 
     BestCase = 0
     WorstCase = 1
+    Fastest = 2
 
 class Beatmap:
     """
@@ -46,7 +47,6 @@ class Beatmap:
     """
 
     def __init__(self, **kwargs) -> None: ...
-
     def convert(self, mode: GameMode, mods: Optional[GameMods]) -> None:
         """
         Convert the beatmap to the specified mode
@@ -56,54 +56,48 @@ class Beatmap:
         Throws an exception if conversion fails or mods are invalid
         """
 
+    def is_suspicious(self) -> bool:
+        """
+        Check whether hitobjects appear too suspicious for further calculation.
+
+        Sometimes a beatmap isn't created for gameplay but rather to test
+        the limits of osu! itself. Difficulty- and/or performance calculation
+        should likely be avoided on these maps due to potential performance
+        issues.
+        """
+
     @property
     def bpm(self) -> float: ...
-
     @property
     def version(self) -> int: ...
-
     @property
     def is_convert(self) -> bool: ...
-
     @property
     def stack_leniency(self) -> float: ...
-
     @property
     def ar(self) -> float: ...
-
     @property
     def cs(self) -> float: ...
-
     @property
     def hp(self) -> float: ...
-
     @property
     def od(self) -> float: ...
-
     @property
     def slider_multiplier(self) -> float: ...
-
     @property
     def slider_tick_rate(self) -> float: ...
-
     @property
     def mode(self) -> GameMode: ...
-
     @property
     def n_breaks(self) -> int: ...
-
     @property
     def n_objects(self) -> int: ...
-
     @property
     def n_circles(self) -> int: ...
-
     @property
     def n_sliders(self) -> int: ...
-
     @property
     def n_spinners(self) -> int: ...
-
     @property
     def n_holds(self) -> int: ...
 
@@ -123,18 +117,18 @@ class Difficulty:
                     item `'settings': GameModSettings`
 
                 `GameModSettings = dict[str, Union[bool, float, str]]`
-            
+
             See https://github.com/ppy/osu-api/wiki#mods
         `'clock_rate': float`
             Adjust the clock rate used in the calculation.
-            
+
             If none is specified, it will take the clock rate based on the mods
             i.e. 1.5 for DT, 0.75 for HT and 1.0 otherwise.
-            
+
             Clamped between 0.01 and 100.
         `'ar': float`
             Override a beatmap's set AR.
-            
+
             Only relevant for osu! and osu!catch.
 
             Clamped between -20 and 20.
@@ -144,7 +138,7 @@ class Difficulty:
             used as is and on `false` it will be modified based on the mods.
         `'cs': float`
             Override a beatmap's set CS.
-            
+
             Only relevant for osu! and osu!catch.
 
             Clamped between -20 and 20.
@@ -170,7 +164,7 @@ class Difficulty:
             used as is and on `false` it will be modified based on the mods.
         `'passed_objects': int`
             Amount of passed objects for partial plays, e.g. a fail.
-            
+
             If you want to calculate the difficulty after every few objects,
             instead of using `Difficulty` multiple times with different
             `passed_objects`, you should use `GradualDifficulty`.
@@ -181,12 +175,11 @@ class Difficulty:
         `'lazer': bool`
             Whether the calculated attributes belong to an osu!lazer or
             osu!stable score.
-    
+
             Defaults to `true`.
     """
 
     def __init__(self, **kwargs) -> None: ...
-
     def calculate(self, map: Beatmap) -> DifficultyAttributes:
         """
         Perform the difficulty calculation
@@ -196,7 +189,7 @@ class Difficulty:
         """
         Perform the difficulty calculation but instead of evaluating strain
         values, return them as is.
-        
+
         Suitable to plot the difficulty over time.
         """
 
@@ -216,13 +209,11 @@ class Difficulty:
         """
 
     def set_mods(self, mods: Optional[GameMods]) -> None: ...
-
     def set_clock_rate(self, clock_rate: Optional[float]) -> None: ...
-
     def set_ar(self, ar: Optional[float], with_mods: bool) -> None:
         """
         Override a beatmap's set AR.
-            
+
         Only relevant for osu! and osu!catch.
 
         Clamped between -20 and 20.
@@ -235,7 +226,7 @@ class Difficulty:
     def set_cs(self, cs: Optional[float], with_mods: bool) -> None:
         """
         Override a beatmap's set CS.
-            
+
         Only relevant for osu! and osu!catch.
 
         Clamped between -20 and 20.
@@ -268,9 +259,7 @@ class Difficulty:
         """
 
     def set_passed_objects(self, passed_objects: Optional[int]) -> None: ...
-
     def set_hardrock_offsets(self, hardrock_offsets: Optional[bool]) -> None: ...
-
     def set_lazer(self, lazer: Optional[bool]) -> None: ...
 
 class Performance:
@@ -289,18 +278,18 @@ class Performance:
                     item `'settings': GameModSettings`
 
                 `GameModSettings = dict[str, Union[bool, float, str]]`
-            
+
             See https://github.com/ppy/osu-api/wiki#mods
         `'clock_rate': float`
             Adjust the clock rate used in the calculation.
-            
+
             If none is specified, it will take the clock rate based on the mods
             i.e. 1.5 for DT, 0.75 for HT and 1.0 otherwise.
-            
+
             Clamped between 0.01 and 100.
         `'ar': float`
             Override a beatmap's set AR.
-            
+
             Only relevant for osu! and osu!catch.
 
             Clamped between -20 and 20.
@@ -310,7 +299,7 @@ class Performance:
             used as is and on `false` it will be modified based on the mods.
         `'cs': float`
             Override a beatmap's set CS.
-            
+
             Only relevant for osu! and osu!catch.
 
             Clamped between -20 and 20.
@@ -336,7 +325,7 @@ class Performance:
             used as is and on `false` it will be modified based on the mods.
         `'passed_objects': int`
             Amount of passed objects for partial plays, e.g. a fail.
-            
+
             If you want to calculate the difficulty after every few objects,
             instead of using `Difficulty` multiple times with different
             `passed_objects`, you should use `GradualDifficulty`.
@@ -347,13 +336,13 @@ class Performance:
         `'lazer': bool`
             Whether the calculated attributes belong to an osu!lazer or
             osu!stable score.
-    
+
             Defaults to `true`.
         `'accuracy': float`
             Set the accuracy between `0.0` and `100.0`.
         `'combo': int`
             Specify the max combo of the play.
-            
+
             Irrelevant for osu!mania.
         `'large_tick_hits': int`
             The amount of "large tick" hits.
@@ -375,11 +364,11 @@ class Performance:
             Only relevant for osu!standard.
         `'slider_end_hits': int`
             The amount of slider end hits.
-            
+
             Only relevant for osu!standard in lazer.
         `'n_geki': int`
             Specify the amount of gekis of a play.
-            
+
             Only relevant for osu!mania for which it repesents the amount of n320.
         `'n_katu': int`
             Specify the amount of katus of a play.
@@ -392,27 +381,28 @@ class Performance:
             Specify the amount of 100s of a play.
         `'n50': int`
             Specify the amount of 50s of a play.
-            
+
             Irrelevant for osu!taiko.
         `'misses': int`
             Specify the amount of misses of a play.
         `'hitresult_priority': HitResultPriority`
             Specify how hitresults should be generated.
-            
+
             Defaults to `HitResultPriority.BestCase`.
     """
 
     def __init__(self, **kwargs) -> None: ...
-
-    def calculate(self, arg: Union[DifficultyAttributes, PerformanceAttributes, Beatmap]) -> PerformanceAttributes:
+    def calculate(
+        self, arg: Union[DifficultyAttributes, PerformanceAttributes, Beatmap]
+    ) -> PerformanceAttributes:
         """
         Calculate performance attributes.
-        
+
         If a beatmap is passed as argument, difficulty attributes will have to
         be calculated internally which is a comparably expensive task. Hence,
         passing previously calculated attributes should be prefered whenever
         available.
-        
+
         However, be careful that the passed attributes have been calculated
         for the same difficulty settings like mods, clock rate, beatmap,
         custom ar, ... otherwise the final attributes will be incorrect.
@@ -424,13 +414,11 @@ class Performance:
         """
 
     def set_mods(self, mods: Optional[GameMods]) -> None: ...
-
     def set_clock_rate(self, clock_rate: Optional[float]) -> None: ...
-
     def set_ar(self, ar: Optional[float], with_mods: bool) -> None:
         """
         Override a beatmap's set AR.
-            
+
         Only relevant for osu! and osu!catch.
 
         Clamped between -20 and 20.
@@ -443,7 +431,7 @@ class Performance:
     def set_cs(self, cs: Optional[float], with_mods: bool) -> None:
         """
         Override a beatmap's set CS.
-            
+
         Only relevant for osu! and osu!catch.
 
         Clamped between -20 and 20.
@@ -476,34 +464,22 @@ class Performance:
         """
 
     def set_passed_objects(self, passed_objects: Optional[int]) -> None: ...
-
     def set_hardrock_offsets(self, hardrock_offsets: Optional[bool]) -> None: ...
-
     def set_lazer(self, lazer: Optional[bool]) -> None: ...
-
     def set_accuracy(self, accuracy: Optional[float]) -> None: ...
-
     def set_combo(self, combo: Optional[int]) -> None: ...
-
     def set_large_tick_hits(self, n_large_ticks: Optional[int]) -> None: ...
-
     def set_small_tick_hits(self, n_large_ticks: Optional[int]) -> None: ...
-
     def set_slider_end_hits(self, n_slider_ends: Optional[int]) -> None: ...
-
     def set_n_geki(self, n_geki: Optional[int]) -> None: ...
-
     def set_n_katu(self, n_katu: Optional[int]) -> None: ...
-
     def set_n300(self, n300: Optional[int]) -> None: ...
-
     def set_n100(self, n100: Optional[int]) -> None: ...
-
     def set_n50(self, n50: Optional[int]) -> None: ...
-
     def set_misses(self, misses: Optional[int]) -> None: ...
-
-    def set_hitresult_priority(self, hitresult_priority: Optional[HitResultPriority]) -> None: ...
+    def set_hitresult_priority(
+        self, hitresult_priority: Optional[HitResultPriority]
+    ) -> None: ...
 
 class GradualDifficulty(Iterator):
     """
@@ -511,7 +487,6 @@ class GradualDifficulty(Iterator):
     """
 
     def __init__(self, difficulty: Difficulty, map: Beatmap) -> None: ...
-
     def next(self) -> Optional[DifficultyAttributes]:
         """
         Advances the iterator and returns the next attributes.
@@ -520,7 +495,7 @@ class GradualDifficulty(Iterator):
     def nth(self, n: int) -> Optional[DifficultyAttributes]:
         """
         Returns the `n`th attributes of the iterator.
-        
+
         Note that the count starts from zero, so `nth(0)` returns the first
         value, `nth(1)` the second, and so on.
         """
@@ -537,7 +512,6 @@ class GradualPerformance:
     """
 
     def __init__(self, difficulty: Difficulty, map: Beatmap) -> None: ...
-
     def next(self, state: ScoreState) -> Optional[PerformanceAttributes]:
         """
         Process the next hit object and calculate the performance attributes
@@ -562,7 +536,7 @@ class GradualPerformance:
 class BeatmapAttributesBuilder:
     """
     Calculator for beatmap attributes considering various settings
-    
+
     The kwargs may include any of the following:
         `'mode': GameMode`
             Specify a gamemode
@@ -579,18 +553,18 @@ class BeatmapAttributesBuilder:
                     item `'settings': GameModSettings`
 
                 `GameModSettings = dict[str, Union[bool, float, str]]`
-            
+
             See https://github.com/ppy/osu-api/wiki#mods
         `'clock_rate': float`
             Adjust the clock rate used in the calculation.
-            
+
             If none is specified, it will take the clock rate based on the mods
             i.e. 1.5 for DT, 0.75 for HT and 1.0 otherwise.
-            
+
             Clamped between 0.01 and 100.
         `'ar': float`
             Override a beatmap's set AR.
-            
+
             Only relevant for osu! and osu!catch.
 
             Clamped between -20 and 20.
@@ -600,7 +574,7 @@ class BeatmapAttributesBuilder:
             used as is and on `false` it will be modified based on the mods.
         `'cs': float`
             Override a beatmap's set CS.
-            
+
             Only relevant for osu! and osu!catch.
 
             Clamped between -20 and 20.
@@ -627,7 +601,6 @@ class BeatmapAttributesBuilder:
     """
 
     def __init__(self, **kwargs) -> None: ...
-
     def build(self) -> BeatmapAttributes:
         """
         Calculate the beatmap attributes
@@ -639,15 +612,12 @@ class BeatmapAttributesBuilder:
         """
 
     def set_mode(self, mode: Optional[GameMode], is_convert: bool) -> None: ...
-
     def set_mods(self, mods: Optional[GameMods]) -> None: ...
-
     def set_clock_rate(self, clock_rate: Optional[float]) -> None: ...
-
     def set_ar(self, ar: Optional[float], with_mods: bool) -> None:
         """
         Override a beatmap's set AR.
-            
+
         Only relevant for osu! and osu!catch.
 
         Clamped between -20 and 20.
@@ -660,7 +630,7 @@ class BeatmapAttributesBuilder:
     def set_cs(self, cs: Optional[float], with_mods: bool) -> None:
         """
         Override a beatmap's set CS.
-            
+
         Only relevant for osu! and osu!catch.
 
         Clamped between -20 and 20.
@@ -698,7 +668,7 @@ class ScoreState:
     """
 
     def __init__(self, **kwargs) -> None: ...
-    
+
     max_combo: int
     """
     Maximum combo that the score has had so far. **Not** the maximum
@@ -793,7 +763,7 @@ class DifficultyAttributes:
     def aim(self) -> Optional[float]:
         """
         The difficulty of the aim skill.
-        
+
         Only available for osu!.
         """
 
@@ -801,7 +771,7 @@ class DifficultyAttributes:
     def aim_difficult_slider_count(self) -> Optional[float]:
         """
         The number of sliders weighted by difficulty.
-        
+
         Only available for osu!.
         """
 
@@ -809,7 +779,7 @@ class DifficultyAttributes:
     def speed(self) -> Optional[float]:
         """
         The difficulty of the speed skill.
-        
+
         Only available for osu!.
         """
 
@@ -817,7 +787,7 @@ class DifficultyAttributes:
     def flashlight(self) -> Optional[float]:
         """
         The difficulty of the flashlight skill.
-        
+
         Only available for osu!.
         """
 
@@ -825,7 +795,7 @@ class DifficultyAttributes:
     def slider_factor(self) -> Optional[float]:
         """
         The ratio of the aim strain with and without considering sliders
-        
+
         Only available for osu!.
         """
 
@@ -833,7 +803,7 @@ class DifficultyAttributes:
     def speed_note_count(self) -> Optional[float]:
         """
         The number of clickable objects weighted by difficulty.
-        
+
         Only available for osu!.
         """
 
@@ -849,7 +819,7 @@ class DifficultyAttributes:
     def speed_difficult_strain_count(self) -> Optional[float]:
         """
         Weighted sum of speed strains.
-        
+
         Only available for osu!.
         """
 
@@ -857,7 +827,7 @@ class DifficultyAttributes:
     def hp(self) -> Optional[float]:
         """
         The health drain rate.
-        
+
         Only available for osu!.
         """
 
@@ -865,7 +835,7 @@ class DifficultyAttributes:
     def n_circles(self) -> Optional[int]:
         """
         The amount of circles.
-        
+
         Only available for osu!.
         """
 
@@ -873,7 +843,7 @@ class DifficultyAttributes:
     def n_sliders(self) -> Optional[int]:
         """
         The amount of sliders.
-        
+
         Only available for osu!.
         """
 
@@ -881,9 +851,9 @@ class DifficultyAttributes:
     def n_large_ticks(self) -> Optional[int]:
         """
         The amount of "large tick" hits.
-        
+
         Only relevant for osu!standard.
-        
+
         The meaning depends on the kind of score:
         - if set on osu!stable, this value is irrelevant and can be `0`
         - if set on osu!lazer *with* slider accuracy, this value is the amount
@@ -896,7 +866,7 @@ class DifficultyAttributes:
     def n_spinners(self) -> Optional[int]:
         """
         The amount of spinners.
-        
+
         Only available for osu!.
         """
 
@@ -904,7 +874,7 @@ class DifficultyAttributes:
     def stamina(self) -> Optional[float]:
         """
         The difficulty of the stamina skill.
-        
+
         Only available for osu!taiko.
         """
 
@@ -912,7 +882,7 @@ class DifficultyAttributes:
     def single_color_stamina(self) -> Optional[float]:
         """
         The difficulty of the single color stamina skill.
-        
+
         Only available for osu!taiko.
         """
 
@@ -920,7 +890,7 @@ class DifficultyAttributes:
     def reading(self) -> Optional[float]:
         """
         The difficulty of the reading skill.
-        
+
         Only available for osu!taiko.
         """
 
@@ -928,7 +898,7 @@ class DifficultyAttributes:
     def rhythm(self) -> Optional[float]:
         """
         The difficulty of the rhythm skill.
-        
+
         Only available for osu!taiko.
         """
 
@@ -936,7 +906,7 @@ class DifficultyAttributes:
     def color(self) -> Optional[float]:
         """
         The difficulty of the color skill.
-        
+
         Only available for osu!taiko.
         """
 
@@ -944,7 +914,7 @@ class DifficultyAttributes:
     def n_fruits(self) -> Optional[int]:
         """
         The amount of fruits.
-        
+
         Only available for osu!catch.
         """
 
@@ -952,7 +922,7 @@ class DifficultyAttributes:
     def n_droplets(self) -> Optional[int]:
         """
         The amount of droplets.
-        
+
         Only available for osu!catch.
         """
 
@@ -960,7 +930,7 @@ class DifficultyAttributes:
     def n_tiny_droplets(self) -> Optional[int]:
         """
         The amount of tiny droplets.
-        
+
         Only available for osu!catch.
         """
 
@@ -968,7 +938,7 @@ class DifficultyAttributes:
     def n_objects(self) -> Optional[int]:
         """
         The amount of hitobjects in the map.
-        
+
         Only available for osu!mania.
         """
 
@@ -976,7 +946,7 @@ class DifficultyAttributes:
     def n_hold_notes(self) -> Optional[int]:
         """
         The amount of hold notes in the map.
-        
+
         Only available for osu!mania.
         """
 
@@ -984,7 +954,7 @@ class DifficultyAttributes:
     def ar(self) -> Optional[float]:
         """
         The approach rate.
-        
+
         Only available for osu! and osu!catch.
         """
 
@@ -992,7 +962,7 @@ class DifficultyAttributes:
     def great_hit_window(self) -> Optional[float]:
         """
         The perceived hit window for an n300 inclusive of rate-adjusting mods (DT/HT/etc)
-        
+
         Only available for osu! and osu!taiko.
         """
 
@@ -1000,7 +970,7 @@ class DifficultyAttributes:
     def ok_hit_window(self) -> Optional[float]:
         """
         The perceived hit window for an n100 inclusive of rate-adjusting mods (DT/HT/etc)
-        
+
         Only available for osu! and osu!taiko.
         """
 
@@ -1008,7 +978,7 @@ class DifficultyAttributes:
     def meh_hit_window(self) -> Optional[float]:
         """
         The perceived hit window for an n50 inclusive of rate-adjusting mods (DT/HT/etc)
-        
+
         Only available for osu!.
         """
 
@@ -1039,7 +1009,7 @@ class PerformanceAttributes:
     def pp_aim(self) -> Optional[float]:
         """
         The aim portion of the final pp.
-        
+
         Only available for osu!.
         """
 
@@ -1047,7 +1017,7 @@ class PerformanceAttributes:
     def pp_flashlight(self) -> Optional[float]:
         """
         The flashlight portion of the final pp.
-        
+
         Only available for osu!.
         """
 
@@ -1055,7 +1025,7 @@ class PerformanceAttributes:
     def pp_speed(self) -> Optional[float]:
         """
         The speed portion of the final pp.
-        
+
         Only available for osu!.
         """
 
@@ -1063,7 +1033,7 @@ class PerformanceAttributes:
     def pp_accuracy(self) -> Optional[float]:
         """
         The accuracy portion of the final pp.
-        
+
         Only available for osu! and osu!taiko.
         """
 
@@ -1071,7 +1041,7 @@ class PerformanceAttributes:
     def effective_miss_count(self) -> Optional[float]:
         """
         Scaled miss count based on total hits.
-        
+
         Only available for osu! and osu!taiko.
         """
 
@@ -1079,7 +1049,7 @@ class PerformanceAttributes:
     def speed_deviation(self) -> Optional[float]:
         """
         Approximated unstable-rate
-        
+
         Only available for osu!.
         """
 
@@ -1095,7 +1065,7 @@ class PerformanceAttributes:
     def pp_difficulty(self) -> Optional[float]:
         """
         The strain portion of the final pp.
-        
+
         Only available for osu!taiko and osu!mania.
         """
 
@@ -1103,14 +1073,14 @@ class PerformanceAttributes:
     def state(self) -> Optional[ScoreState]:
         """
         The hitresult score state that was used for performance calculation.
-        
+
         Only available if *not* created through gradual calculation.
         """
 
 class Strains:
     """
     The result of calculating the strains of a beatmap.
-    
+
     Suitable to plot the difficulty over time.
     """
     @property
@@ -1140,7 +1110,7 @@ class Strains:
     @property
     def speed(self) -> Optional[List[float]]:
         """
-         Strain peaks of the speed skill in osu!
+        Strain peaks of the speed skill in osu!
         """
 
     @property
@@ -1198,19 +1168,14 @@ class BeatmapAttributes:
 
     @property
     def ar(self) -> float: ...
-
     @property
     def od(self) -> float: ...
-
     @property
     def cs(self) -> float: ...
-
     @property
     def hp(self) -> float: ...
-
     @property
     def clock_rate(self) -> float: ...
-
     @property
     def ar_hit_window(self) -> float:
         """
