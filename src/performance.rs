@@ -374,7 +374,7 @@ impl PyPerformance {
     }
 }
 
-#[pyclass(eq, eq_int, name = "HitResultPriority")]
+#[pyclass(eq, eq_int, name = "HitResultPriority", from_py_object)]
 #[derive(Copy, Clone, Default, PartialEq)]
 pub enum PyHitResultPriority {
     #[default]

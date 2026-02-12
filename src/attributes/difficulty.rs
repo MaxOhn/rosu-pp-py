@@ -7,7 +7,7 @@ use rosu_pp::{
 use crate::{error::ParseError, mode::PyGameMode};
 
 define_class! {
-    #[pyclass(name = "DifficultyAttributes", frozen)]
+    #[pyclass(name = "DifficultyAttributes", frozen, from_py_object)]
     #[derive(Clone, Default)]
     pub struct PyDifficultyAttributes {
         pub mode: PyGameMode!,

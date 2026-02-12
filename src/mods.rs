@@ -4,17 +4,12 @@ use std::{
     ops::Deref,
 };
 
-use pyo3::{
-    impl_::frompyobject::{
-        extract_struct_field, extract_tuple_struct_field, failed_to_extract_enum,
-    },
-    intern,
-    types::{
-        iter::BoundDictIterator, PyAnyMethods, PyDict, PyDictMethods, PyList, PyString,
-        PyStringMethods,
-    },
-    Bound, FromPyObject, Py, PyAny, PyResult, Python,
-};
+use pyo3::{impl_::frompyobject::{
+    extract_struct_field, extract_tuple_struct_field, failed_to_extract_enum,
+}, intern, types::{
+    iter::BoundDictIterator, PyAnyMethods, PyDict, PyDictMethods, PyList, PyString,
+    PyStringMethods,
+}, Borrowed, Bound, FromPyObject, Py, PyAny, PyErr, PyResult, Python};
 use rosu_mods::{
     serde::GameModSeed, GameMode, GameMods as GameModsLazer, GameModsIntermode, GameModsLegacy,
 };
@@ -138,8 +133,9 @@ struct PyGameMod<'py> {
     settings: Option<Bound<'py, PyDict>>,
 }
 
-impl<'py> FromPyObject<'py> for PyGameMod<'py> {
-    fn extract_bound(obj: &Bound<'py, PyAny>) -> PyResult<Self> {
+impl<'py> FromPyObject<'_, 'py> for PyGameMod<'py> {
+    type Error = PyErr;
+    fn extract(obj: Borrowed<'_, 'py, PyAny>) -> Result<Self, Self::Error> {
         let py = obj.py();
         let dict: Bound<'_, PyDict> = obj.extract()?;
 
