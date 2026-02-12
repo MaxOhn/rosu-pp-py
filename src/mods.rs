@@ -4,12 +4,17 @@ use std::{
     ops::Deref,
 };
 
-use pyo3::{impl_::frompyobject::{
-    extract_struct_field, extract_tuple_struct_field, failed_to_extract_enum,
-}, intern, types::{
-    iter::BoundDictIterator, PyAnyMethods, PyDict, PyDictMethods, PyList, PyString,
-    PyStringMethods,
-}, Borrowed, Bound, FromPyObject, Py, PyAny, PyErr, PyResult, Python};
+use pyo3::{
+    impl_::frompyobject::{
+        extract_struct_field, extract_tuple_struct_field, failed_to_extract_enum,
+    },
+    intern,
+    types::{
+        iter::BoundDictIterator, PyAnyMethods, PyDict, PyDictMethods, PyList, PyString,
+        PyStringMethods,
+    },
+    Borrowed, Bound, FromPyObject, Py, PyAny, PyErr, PyResult, Python,
+};
 use rosu_mods::{
     serde::GameModSeed, GameMode, GameMods as GameModsLazer, GameModsIntermode, GameModsLegacy,
 };
