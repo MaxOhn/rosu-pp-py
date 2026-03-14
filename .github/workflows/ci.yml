@@ -8,7 +8,7 @@ on:
       - main
       - next
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - "v[0-9]+.[0-9]+.[0-9]+"
   pull_request:
   workflow_dispatch:
 
@@ -19,10 +19,12 @@ jobs:
 
     steps:
       - name: Checkout project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install stable toolchain
         uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
 
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2
@@ -30,13 +32,16 @@ jobs:
       - name: Run clippy
         run: cargo clippy --all-targets
 
+      - name: Run rustfmt
+        run: cargo fmt --check
+
   build-sdist:
     name: Build sdist
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Build wheels
         uses: PyO3/maturin-action@v1
@@ -46,7 +51,7 @@ jobs:
           rust-toolchain: stable
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: pypi_files_sdist
           path: dist
@@ -59,7 +64,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [linux, macos, windows]
-        target: [x86_64, aarch64]
+        target: [undefined]
         manylinux: [auto]
         include:
           # manylinux
@@ -69,10 +74,15 @@ jobs:
           - os: linux
             manylinux: auto
             target: armv7
-            interpreter: 3.9 3.10 3.11 3.12 3.13
+            interpreter: "3.11 3.12 3.13 3.14"
           - os: linux
             manylinux: auto
             target: x86_64
+          - os: linux_aarch64
+            manylinux: auto
+            target: armv7
+            runs-on: ubuntu-24.04-arm
+            python-architecture: arm64
 
           # musllinux
           - os: linux
@@ -94,26 +104,26 @@ jobs:
           # windows
           - os: windows
             target: x86_64
-          # - os: windows
-          #   target: aarch64
-          #   interpreter: 3.11 3.12 3.13
-
-        exclude:
-          # Disabled for now.
           - os: windows
             target: aarch64
+            runs-on: windows-11-arm
+            interpreter: "3.11 3.12 3.13 3.14"
 
-    runs-on: ${{ (matrix.os == 'linux' && 'ubuntu') || matrix.os }}-latest
+        exclude:
+          # was just a dummy variable to set a default value for target
+          - target: undefined
+
+    runs-on: ${{ matrix.runs-on || format('{0}-latest', (matrix.os == 'linux' && 'ubuntu') || matrix.os) }}
 
     steps:
       - name: Checkout project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
-          python-version: '3.13'
-          architecture: x64
+          python-version: "3.13"
+          architecture: ${{ matrix.python-architecture || 'x64' }}
 
       - run: pip install -U twine 'ruff==0.5.0' typing_extensions
 
@@ -122,7 +132,7 @@ jobs:
         with:
           target: ${{ matrix.target }}
           manylinux: ${{ matrix.manylinux }}
-          args: --release --out dist --interpreter ${{ matrix.interpreter || '3.9 3.10 3.11 3.12 3.13 pypy3.9 pypy3.10' }}
+          args: --release --out dist --interpreter ${{ matrix.interpreter || '3.11 3.12 3.13 3.14 pypy3.11' }}
           rust-toolchain: stable
           docker-options: -e CI
 
@@ -131,7 +141,7 @@ jobs:
       - run: twine check --strict dist/*
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: pypi_files_${{ matrix.os }}_${{ matrix.target }}_${{ matrix.interpreter || 'all' }}_${{ matrix.manylinux }}
           path: dist
@@ -144,25 +154,25 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [aarch64, armv7]
-        distro: ['ubuntu22.04']
+        target: [armv7]
+        distro: ["ubuntu22.04"]
         include:
           - target: aarch64
             distro: alpine_latest
 
     steps:
       - name: Checkout project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Get artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           pattern: pypi_files_linux_*
           merge-multiple: true
           path: dist
 
       - name: Install & test
-        uses: uraimo/run-on-arch-action@v2.8.1
+        uses: uraimo/run-on-arch-action@v3.0.1
         with:
           arch: ${{ matrix.target }}
           distro: ${{ matrix.distro }}
@@ -172,51 +182,57 @@ jobs:
             if command -v apt-get &> /dev/null; then
               echo "installing python & pip with apt-get..."
               apt-get update
-              apt-get install -y --no-install-recommends python3 python3-pip python3-venv git
+              apt-get install -y --no-install-recommends python3.11 python3-pip python3.11-venv git curl
             else
               echo "installing python & pip with apk..."
               apk update
-              apk add python3 py3-pip git
+              apk add python3 py3-pip git curl
             fi
+          env: |
+            UV_NO_PROGRESS: '1'
           run: |
             set -x
-            # typing-extensions isn't automatically installed because of `--no-index --no-deps`
-            python3 -m venv venv
-            source venv/bin/activate
-            python3 -m pip install -U pip typing-extensions
-            python3 -m pip install rosu_pp_py --no-index --no-deps --find-links dist --force-reinstall
-            python3 -c "import rosu_pp_py"
+            curl -LsSf https://astral.sh/uv/install.sh | sh
+            source $HOME/.local/bin/env
+            uv sync --no-install-project
+            uv pip install rosu_pp_py --no-index --no-deps --find-links dist --force-reinstall
+            uv run --no-sync python -c 'import rosu_pp_py;'
 
   test-builds-os:
-    name: Test build on ${{ matrix.os }}
+    name: Test build on ${{ matrix.platform.os }}
     needs: [build]
 
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu, macos, windows]
+        platform:
+          [
+            { os: linux, runs-on: ubuntu-latest },
+            { os: linux_aarch64, runs-on: ubuntu-24.04-arm },
+            { os: windows, runs-on: windows-latest },
+            { os: windows_aarch64, runs-on: windows-11-arm },
+            { os: macos, runs-on: macos-latest },
+          ]
 
-    runs-on: ${{ matrix.os }}-latest
+    runs-on: ${{ matrix.platform.runs-on }}
+
     steps:
       - name: Checkout project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - name: Set up python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
 
       - name: Get artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           pattern: pypi_files_*
           merge-multiple: true
           path: dist
 
-      - run: |
-          pip install typing-extensions
-          pip install rosu_pp_py --no-index --no-deps --find-links dist --force-reinstall
-          python -c "import rosu_pp_py"
+      - run: uv sync
+      - run: uv pip install rosu_pp_py --no-index --no-deps --find-links dist --force-reinstall
+      - run: uv run --no-sync python -c 'import rosu_pp_py;'
 
   release:
     name: Release
@@ -224,25 +240,33 @@ jobs:
     if: success() && startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
 
+    environment:
+      name: release
+
+    permissions:
+      id-token: write
+      contents: write
+
     steps:
       - name: Checkout project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - name: Set up python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
 
       - run: pip install -U twine
 
       - name: Get artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           pattern: pypi_files_*
           merge-multiple: true
           path: dist
 
-      - run: twine check --strict dist/*
+      - name: Test wheels integrity
+        run: for whl in dist/*.whl; do unzip -qt "$whl"; done
+
+      - run: uv publish --trusted-publishing always
 
       - name: Upload to PyPI
         run: twine upload dist/*
