@@ -33,6 +33,8 @@ pub struct PyScoreState {
     n50: u32,
     #[pyo3(get, set)]
     misses: u32,
+    #[pyo3(get, set)]
+    legacy_total_score: Option<u32>,
 }
 
 #[pyo3::pymethods]
@@ -84,6 +86,7 @@ impl Debug for PyScoreState {
             n100,
             n50,
             misses,
+            legacy_total_score,
         } = self;
 
         f.debug_struct("ScoreState")
@@ -97,6 +100,7 @@ impl Debug for PyScoreState {
             .field("n100", n100)
             .field("n50", n50)
             .field("misses", misses)
+            .field("legacy_total_score", legacy_total_score)
             .finish()
     }
 }
@@ -120,6 +124,7 @@ impl From<&PyScoreState> for ScoreState {
             n100: state.n100,
             n50: state.n50,
             misses: state.misses,
+            legacy_total_score: state.legacy_total_score,
         }
     }
 }
@@ -137,6 +142,7 @@ impl From<ScoreState> for PyScoreState {
             n100: state.n100,
             n50: state.n50,
             misses: state.misses,
+            legacy_total_score: state.legacy_total_score,
         }
     }
 }

@@ -46,6 +46,7 @@ pub struct PyPerformance {
     pub(crate) n50: Option<u32>,
     pub(crate) misses: Option<u32>,
     pub(crate) hitresult_priority: PyHitResultPriority,
+    pub(crate) hitresult_generators: [Option<PyHitResultGenerator>; 4],
 }
 
 #[pymethods]
@@ -380,7 +381,6 @@ pub enum PyHitResultPriority {
     #[default]
     BestCase,
     WorstCase,
-    Fastest,
 }
 
 impl From<PyHitResultPriority> for HitResultPriority {
@@ -388,7 +388,14 @@ impl From<PyHitResultPriority> for HitResultPriority {
         match priority {
             PyHitResultPriority::BestCase => Self::BestCase,
             PyHitResultPriority::WorstCase => Self::WorstCase,
-            PyHitResultPriority::Fastest => Self::Fastest,
         }
     }
+}
+
+#[pyclass(eq, eq_int, name = "HitResultGenerator", from_py_object)]
+#[derive(Copy, Clone, Default, PartialEq)]
+pub enum PyHitResultGenerator {
+    #[default]
+    Fast,
+    Closest,
 }
