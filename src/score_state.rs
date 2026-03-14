@@ -10,7 +10,7 @@ use rosu_pp::any::ScoreState;
 
 use crate::error::ArgsError;
 
-#[pyclass(name = "ScoreState")]
+#[pyclass(name = "ScoreState", skip_from_py_object)]
 #[derive(Clone, Default)]
 pub struct PyScoreState {
     #[pyo3(get, set)]

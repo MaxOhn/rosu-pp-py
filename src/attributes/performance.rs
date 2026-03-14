@@ -10,7 +10,7 @@ use crate::score_state::PyScoreState;
 use super::difficulty::PyDifficultyAttributes;
 
 define_class! {
-    #[pyclass(name = "PerformanceAttributes", frozen)]
+    #[pyclass(name = "PerformanceAttributes", frozen, from_py_object)]
     #[derive(Clone, Default)]
     pub struct PyPerformanceAttributes {
         pub difficulty: PyDifficultyAttributes!,

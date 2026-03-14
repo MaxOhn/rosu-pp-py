@@ -223,7 +223,7 @@ impl PyBeatmapAttributesBuilder {
 }
 
 define_class! {
-    #[pyclass(name = "BeatmapAttributes", frozen)]
+    #[pyclass(name = "BeatmapAttributes", frozen, skip_from_py_object)]
     #[derive(Clone)]
     pub struct PyBeatmapAttributes {
         pub ar: f64!,
