@@ -1,6 +1,6 @@
+from collections.abc import Iterator
 from enum import Enum
 from typing import List, Mapping, Optional, Union
-from collections.abc import Iterator
 
 GameMods = Union[int, str, GameMod, List[Union[GameMod, str, int]]]
 GameMod = Mapping[str, Union[str, Optional[GameModSettings]]]
@@ -26,7 +26,14 @@ class HitResultPriority(Enum):
 
     BestCase = 0
     WorstCase = 1
-    Fastest = 2
+
+class HitResultGenerator(Enum):
+    """
+    A specific implementation of hitresult generation.
+    """
+
+    Fast = 0
+    Closest = 1
 
 class Beatmap:
     """
@@ -385,6 +392,10 @@ class Performance:
             Irrelevant for osu!taiko.
         `'misses': int`
             Specify the amount of misses of a play.
+        `'legacy_total_score': int`
+            Specify the legacy total score of a play.
+
+            Only relevant for osu!standard.
         `'hitresult_priority': HitResultPriority`
             Specify how hitresults should be generated.
 
@@ -477,6 +488,7 @@ class Performance:
     def set_n100(self, n100: Optional[int]) -> None: ...
     def set_n50(self, n50: Optional[int]) -> None: ...
     def set_misses(self, misses: Optional[int]) -> None: ...
+    def set_legacy_total_score(self, legacy_total_score: Optional[int]) -> None: ...
     def set_hitresult_priority(
         self, hitresult_priority: Optional[HitResultPriority]
     ) -> None: ...
@@ -673,16 +685,16 @@ class ScoreState:
     """
     Maximum combo that the score has had so far. **Not** the maximum
     possible combo of the map so far.
-    
+
     Note that for osu!catch only fruits and droplets are considered for combo.
-    
+
     Irrelevant for osu!mania.
     """
 
     osu_large_tick_hits: int
     """
     "Large tick" hits for osu!standard.
-    
+
     The meaning depends on the kind of score:
     - if set on osu!stable, this field is irrelevant and can be `0`
     - if set on osu!lazer *without* `CL`, this field is the amount of hit
@@ -702,7 +714,7 @@ class ScoreState:
     slider_end_hits: int
     """
     Amount of successfully hit slider ends.
-    
+
     Only relevant for osu!standard in lazer.
     """
 
@@ -734,6 +746,13 @@ class ScoreState:
     misses: int
     """
     Amount of current misses (fruits + droplets for osu!catch).
+    """
+
+    legacy_total_score: int
+    """
+    Legacy total score.
+
+    Only relevant for osu!standard.
     """
 
 class DifficultyAttributes:
@@ -800,6 +819,24 @@ class DifficultyAttributes:
         """
 
     @property
+    def aim_top_weighted_slider_factor(self) -> Optional[float]:
+        """
+        Describes how much of aim's difficult strain count is contributed to by
+        sliders.
+
+        Only available for osu!.
+        """
+
+    @property
+    def speed_top_weighted_slider_factor(self) -> Optional[float]:
+        """
+        Describes how much of speed's difficult strain count is contributed to
+        by sliders.
+
+        Only available for osu!.
+        """
+
+    @property
     def speed_note_count(self) -> Optional[float]:
         """
         The number of clickable objects weighted by difficulty.
@@ -820,6 +857,24 @@ class DifficultyAttributes:
         """
         Weighted sum of speed strains.
 
+        Only available for osu!.
+        """
+
+    @property
+    def nested_score_per_object(self) -> Optional[float]:
+        """
+        Only available for osu!.
+        """
+
+    @property
+    def legacy_score_base_multiplier(self) -> Optional[float]:
+        """
+        Only available for osu!.
+        """
+
+    @property
+    def maximum_legacy_combo_score(self) -> Optional[float]:
+        """
         Only available for osu!.
         """
 
@@ -955,7 +1010,15 @@ class DifficultyAttributes:
         """
         The approach rate.
 
-        Only available for osu! and osu!catch.
+        Only available for osu!.
+        """
+
+    @property
+    def preempt(self) -> Optional[float]:
+        """
+        Time preempt (AR time window).
+
+        Only available for osu!catch.
         """
 
     @property
@@ -980,6 +1043,33 @@ class DifficultyAttributes:
         The perceived hit window for an n50 inclusive of rate-adjusting mods (DT/HT/etc)
 
         Only available for osu!.
+        """
+
+    @property
+    def mono_stamina_factor(self) -> Optional[float]:
+        """
+        The ratio of stamina difficulty from mono-color (single color)
+        streams to total stamina difficulty.
+
+        Only available for osu!taiko.
+        """
+
+    @property
+    def mechanical_difficulty(self) -> Optional[float]:
+        """
+        The difficulty corresponding to the mechanical skills.
+
+        This includes color and stamina combined.
+
+        Only available for osu!taiko.
+        """
+
+    @property
+    def consistency_factor(self) -> Optional[float]:
+        """
+        The factor corresponding to the consistency of a map.
+
+        Only available for osu!taiko.
         """
 
     @property
@@ -1042,7 +1132,7 @@ class PerformanceAttributes:
         """
         Scaled miss count based on total hits.
 
-        Only available for osu! and osu!taiko.
+        Only available for osu!.
         """
 
     @property
@@ -1067,6 +1157,30 @@ class PerformanceAttributes:
         The strain portion of the final pp.
 
         Only available for osu!taiko and osu!mania.
+        """
+
+    @property
+    def combo_based_estimated_miss_count(self) -> Optional[float]:
+        """
+        Only available for osu!.
+        """
+
+    @property
+    def score_based_estimated_miss_count(self) -> Optional[float]:
+        """
+        Only *optionally* available for osu!.
+        """
+
+    @property
+    def aim_estimated_slider_breaks(self) -> Optional[float]:
+        """
+        Only available for osu!.
+        """
+
+    @property
+    def speed_estimated_slider_breaks(self) -> Optional[float]:
+        """
+        Only available for osu!.
         """
 
     @property

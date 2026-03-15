@@ -49,10 +49,7 @@ perf = rosu.Performance(
     lazer = False, # defaults to True if not specified
     misses = 2,
     combo = 700,
-    # If only accuracy is given but no specific hitresults, it is recommended
-    # to generate hitresults via `HitResultPriority.Fastest`. Otherwise,
-    # finding the best hitresults can be very slow.
-    hitresult_priority=rosu.HitResultPriority.Fastest,
+    hitresult_priority=rosu.HitResultPriority.BestCase,
 )
 
 # Each kwarg can also be specified afterwards through setters
@@ -64,6 +61,13 @@ perf.set_clock_rate(1.4)
 # `True`: mods already considered; `False`: value should still be adjusted
 perf.set_ar(10.5, True)
 perf.set_od(5, False)
+
+# The 'Closest' hitresult generation may be significantly slower but provides
+# hitresults that match the given accuracy as close as possible.
+perf.set_hitresult_generator(rosu.HitResultGenerator.Closest, rosu.GameMode.Osu)
+# Especially for mania, 'Closest' might be too slow in general so let's use
+# 'Fast' instead (which is the default anyway for all modes if unspecified).
+perf.set_hitresult_generator(rosu.HitResultGenerator.Fast, rosu.GameMode.Mania)
 
 # Calculate for the map
 attrs = perf.calculate(map)
