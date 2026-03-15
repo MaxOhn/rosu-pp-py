@@ -5,7 +5,10 @@ use pyo3::{
     Bound, Py, PyAny, PyRef, PyResult, Python,
 };
 use rosu_pp::{
-    any::{DifficultyAttributes, HitResultPriority},
+    any::{
+        hitresult_generator::{Closest, Composable, Fast},
+        DifficultyAttributes, HitResultPriority,
+    },
     model::mode::GameMode,
     Difficulty, Performance,
 };
@@ -15,6 +18,7 @@ use crate::{
     beatmap::PyBeatmap,
     difficulty::PyDifficulty,
     error::ArgsError,
+    mode::PyGameMode,
     mods::PyGameMods,
 };
 
@@ -267,6 +271,15 @@ impl PyPerformance {
     fn set_hitresult_priority(&mut self, hitresult_priority: Option<PyHitResultPriority>) {
         self.hitresult_priority = hitresult_priority.unwrap_or_default();
     }
+
+    #[pyo3(signature = (hitresult_generator, mode))]
+    fn set_hitresult_generator(
+        &mut self,
+        hitresult_generator: Option<PyHitResultGenerator>,
+        mode: PyGameMode,
+    ) {
+        self.hitresult_generators[mode as usize] = hitresult_generator;
+    }
 }
 
 impl PyPerformance {
@@ -314,6 +327,37 @@ impl PyPerformance {
         if let Some(misses) = self.misses {
             perf = perf.misses(misses);
         }
+
+        // Bridging runtime values to compile-time types
+        macro_rules! apply_hitresult_generator {
+            // Entry: pass all 4 indices as a "remaining" list
+            () => {
+                apply_hitresult_generator!(@step [0, 1, 2, 3] [])
+            };
+
+            // Still have indices to process
+            ( @step [$i:tt $(, $rest:tt)*] [$($acc:ty),*] ) => {
+                match self.hitresult_generators[$i] {
+                    None | Some(PyHitResultGenerator::Fast) => {
+                        apply_hitresult_generator!(
+                            @step [$($rest),*] [$($acc,)* Fast]
+                        )
+                    }
+                    Some(PyHitResultGenerator::Closest) => {
+                        apply_hitresult_generator!(
+                            @step [$($rest),*] [$($acc,)* Closest]
+                        )
+                    }
+                }
+            };
+
+            // No indices left: emit the call
+            ( @step [] [$osu:ty, $taiko:ty, $catch:ty, $mania:ty] ) => {
+                perf.hitresult_generator::<Composable<$osu, $taiko, $catch, $mania>>()
+            };
+        }
+
+        perf = apply_hitresult_generator!();
 
         let mode = match perf {
             Performance::Osu(_) => GameMode::Osu,
