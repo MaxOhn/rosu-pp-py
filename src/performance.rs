@@ -49,6 +49,7 @@ pub struct PyPerformance {
     pub(crate) n100: Option<u32>,
     pub(crate) n50: Option<u32>,
     pub(crate) misses: Option<u32>,
+    pub(crate) legacy_total_score: Option<u32>,
     pub(crate) hitresult_priority: PyHitResultPriority,
     pub(crate) hitresult_generators: [Option<PyHitResultGenerator>; 4],
 }
@@ -91,6 +92,7 @@ impl PyPerformance {
                     n100: "int",
                     n50: "int",
                     misses: "int",
+                    legacy_total_score: "int",
                     hitresult_priority: "HitResultPriority",
                 }
             }
@@ -267,18 +269,27 @@ impl PyPerformance {
         self.misses = misses;
     }
 
+    #[pyo3(signature = (legacy_total_score=None))]
+    fn set_legacy_total_score(&mut self, legacy_total_score: Option<u32>) {
+        self.legacy_total_score = legacy_total_score;
+    }
+
     #[pyo3(signature = (hitresult_priority=None))]
     fn set_hitresult_priority(&mut self, hitresult_priority: Option<PyHitResultPriority>) {
         self.hitresult_priority = hitresult_priority.unwrap_or_default();
     }
 
-    #[pyo3(signature = (hitresult_generator, mode))]
+    #[pyo3(signature = (hitresult_generator, mode=None))]
     fn set_hitresult_generator(
         &mut self,
         hitresult_generator: Option<PyHitResultGenerator>,
-        mode: PyGameMode,
+        mode: Option<PyGameMode>,
     ) {
-        self.hitresult_generators[mode as usize] = hitresult_generator;
+        if let Some(mode) = mode {
+            self.hitresult_generators[mode as usize] = hitresult_generator;
+        } else {
+            self.hitresult_generators = [hitresult_generator; 4];
+        }
     }
 }
 
@@ -326,6 +337,10 @@ impl PyPerformance {
 
         if let Some(misses) = self.misses {
             perf = perf.misses(misses);
+        }
+
+        if let Some(legacy_total_score) = self.legacy_total_score {
+            perf = perf.legacy_total_score(legacy_total_score);
         }
 
         // Bridging runtime values to compile-time types

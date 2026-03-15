@@ -61,6 +61,7 @@ impl PyScoreState {
                     n100: "int",
                     n50: "int",
                     misses: "int",
+                    legacy_total_score: "int",
                 }
             }
         }
