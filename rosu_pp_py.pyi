@@ -1261,11 +1261,19 @@ class BeatmapAttributes:
     @property
     def ar(self) -> float: ...
     @property
-    def base_ar(self) -> float: ...
+    def base_ar(self) -> float:
+        """
+        The base approach rate without considering clock rate.
+        """
+
     @property
     def od(self) -> float: ...
     @property
-    def base_od(self) -> float: ...
+    def base_od(self) -> float:
+        """
+        The base overall difficulty without considering clock rate.
+        """
+
     @property
     def cs(self) -> float: ...
     @property
