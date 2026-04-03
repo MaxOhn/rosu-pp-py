@@ -22,6 +22,7 @@ The library exposes multiple classes:
   - [`PerformanceAttributes`](https://github.com/MaxOhn/rosu-pp-py/blob/15470e5d75615cf58b90cae739a67794e4cca851/rosu_pp_py.pyi#L1021-L1108)
   - [`BeatmapAttributes`](https://github.com/MaxOhn/rosu-pp-py/blob/15470e5d75615cf58b90cae739a67794e4cca851/rosu_pp_py.pyi#L1194-L1240)
 - [`HitResultPriority`](https://github.com/MaxOhn/rosu-pp-py/blob/e3a15a8364be630176d29459cd4caa3ef6775561/rosu_pp_py.pyi#L22-L29): Passed to `Performance`, decides whether specified accuracy should be realized through good or bad hitresults
+- [`HitResultGenerator`](https://github.com/MaxOhn/rosu-pp-py/blob/e3a15a8364be630176d29459cd4caa3ef6775561/rosu_pp_py.pyi#L123-L456): Passed to `Performance`, decides how hitresults are being generated
 - [`ScoreState`](https://github.com/MaxOhn/rosu-pp-py/blob/5c7c2f90dd904d01ec163a9a26b2efcb525db13a/rosu_pp_py.pyi#L695-L767): Hitresults and max combo of a score, found in `PerformanceAttributes` and passed to gradual calculators
 
 ## Example
@@ -57,7 +58,7 @@ perf.set_accuracy(99.11) # override previously specified accuracy
 perf.set_mods(8 + 64)    # HDDT
 perf.set_clock_rate(1.4)
 
-# Second argument of map attributes specifies whether mods still need to be accounted for
+# Second arg of map attributes specifies whether mods still need to be accounted for.
 # `True`: mods already considered; `False`: value should still be adjusted
 perf.set_ar(10.5, True)
 perf.set_od(5, False)
