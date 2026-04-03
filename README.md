@@ -102,7 +102,7 @@ diff = rosu.Difficulty(
     mods = 16 + 1024, # HRFL
     clock_rate = 1.1,
     ar = 10.2,
-    ar_with_mods = True,
+    fixed_ar = True,
 )
 
 # Gradually calculating *difficulty* attributes

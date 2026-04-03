@@ -9,12 +9,7 @@ impl std::fmt::Debug for BoolFormatter {
 macro_rules! extract {
     ( $kwarg:ident = $value:ident as $ty:literal ) => {
         $value.extract().map_err(|_| {
-            PyTypeError::new_err(concat!(
-                "kwarg '",
-                stringify!($kwarg),
-                "': must be ",
-                stringify!($ty)
-            ))
+            PyTypeError::new_err(concat!("kwarg '", stringify!($kwarg), "': must be ", $ty))
         })?
     };
 }

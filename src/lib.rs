@@ -14,7 +14,7 @@ use self::{
     error::{ArgsError, ParseError},
     gradual::{difficulty::PyGradualDifficulty, performance::PyGradualPerformance},
     mode::PyGameMode,
-    performance::PyPerformance,
+    performance::{PyHitResultGenerator, PyPerformance},
     score_state::PyScoreState,
     strains::PyStrains,
 };
@@ -45,6 +45,7 @@ fn rosu_pp_py(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyGameMode>()?;
     m.add_class::<PyScoreState>()?;
     m.add_class::<PyHitResultPriority>()?;
+    m.add_class::<PyHitResultGenerator>()?;
 
     m.add_class::<PyBeatmapAttributes>()?;
     m.add_class::<PyDifficultyAttributes>()?;
