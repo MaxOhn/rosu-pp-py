@@ -36,41 +36,25 @@ impl PyBeatmap {
         let mut map_res = None;
 
         for (key, value) in kwargs {
-            match key.extract()? {
-                "path" => {
-                    let path = value
-                        .extract::<&str>()
-                        .map_err(|_| PyTypeError::new_err("kwarg 'path': must be a str"))?;
+            extract_args! {
+                match key {
+                    "path" => {
+                        let path: &str = extract!(path = value as "str");
+                        map_res = Some(Beatmap::from_path(path));
+                    },
+                    "content" => {
+                        let bytes = if let Ok(content) = value.extract::<&str>() {
+                            content.as_bytes()
+                        } else {
+                            extract!(content = value as "str or bytearray")
+                        };
 
-                    map_res = Some(Beatmap::from_path(path));
-                }
-                "content" => {
-                    let bytes = if let Ok(content) = value.extract::<&str>() {
-                        content.as_bytes()
-                    } else if let Ok(bytes) = value.extract::<&[u8]>() {
-                        bytes
-                    } else {
-                        return Err(PyTypeError::new_err(
-                            "kwarg 'content': must be a str or a bytearray",
-                        ));
-                    };
-
-                    map_res = Some(Beatmap::from_bytes(bytes));
-                }
-                "bytes" => {
-                    let bytes = value
-                        .extract::<&[u8]>()
-                        .map_err(|_| PyTypeError::new_err("kwarg 'bytes': must be a bytearray"))?;
-
-                    map_res = Some(Beatmap::from_bytes(bytes));
-                }
-                kwarg => {
-                    let err = format!(
-                        "unexpected kwarg '{kwarg}': expected 'path', \
-                        'content', or 'bytes'"
-                    );
-
-                    return Err(ArgsError::new_err(err));
+                        map_res = Some(Beatmap::from_bytes(bytes));
+                    },
+                    "bytes" => {
+                        let bytes = extract!(bytes = value as "bytearray");
+                        map_res = Some(Beatmap::from_bytes(bytes));
+                    },
                 }
             }
         }

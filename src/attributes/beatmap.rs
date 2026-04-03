@@ -5,10 +5,7 @@ use pyo3::{
     Bound, Py, PyAny, PyRef, PyResult, Python,
 };
 use rosu_pp::model::{
-    beatmap::{
-        AdjustedBeatmapAttributes, BeatmapAttribute, BeatmapAttributes, BeatmapAttributesBuilder,
-        HitWindows,
-    },
+    beatmap::{AdjustedBeatmapAttributes, BeatmapAttributes, BeatmapAttributesBuilder, HitWindows},
     mode::GameMode,
 };
 
@@ -34,143 +31,65 @@ impl PyBeatmapAttributesBuilder {
         };
 
         let mut mode: Option<PyGameMode> = None;
-        let mut is_convert: Option<bool> = None;
+        let mut is_convert = false;
 
-        let mut ar = BeatmapAttribute::None;
-        let mut cs = BeatmapAttribute::None;
-        let mut hp = BeatmapAttribute::None;
-        let mut od = BeatmapAttribute::None;
+        let mut ar: Option<f32> = None;
+        let mut fixed_ar = false;
 
-        let set_attr = |attr: &mut BeatmapAttribute, value| match attr {
-            BeatmapAttribute::None | BeatmapAttribute::Value(_) => {
-                *attr = BeatmapAttribute::Given(value)
-            }
-            BeatmapAttribute::Given(old) => *old = value,
-            BeatmapAttribute::Fixed(old) => *old = value,
-        };
+        let mut cs: Option<f32> = None;
+        let mut fixed_cs = false;
 
-        let fix_attr = |attr: &mut BeatmapAttribute, fixed: bool| {
-            if fixed {
-                match attr {
-                    BeatmapAttribute::None => {
-                        *attr = BeatmapAttribute::Fixed(BeatmapAttribute::DEFAULT)
-                    }
-                    BeatmapAttribute::Value(old) | BeatmapAttribute::Given(old) => {
-                        *attr = BeatmapAttribute::Fixed(*old)
-                    }
-                    BeatmapAttribute::Fixed(_) => {}
-                }
-            } else {
-                match attr {
-                    BeatmapAttribute::None => {
-                        *attr = BeatmapAttribute::Given(BeatmapAttribute::DEFAULT)
-                    }
-                    BeatmapAttribute::Value(old) | BeatmapAttribute::Fixed(old) => {
-                        *attr = BeatmapAttribute::Given(*old)
-                    }
-                    BeatmapAttribute::Given(_) => {}
-                }
-            }
-        };
+        let mut hp: Option<f32> = None;
+        let mut fixed_hp = false;
+
+        let mut od: Option<f32> = None;
+        let mut fixed_od = false;
 
         for (key, value) in kwargs {
-            macro_rules! extract {
-                ( $kwarg:ident: $ty:literal ) => {
-                    value.extract().map_err(|_| {
-                        PyTypeError::new_err(concat!(
-                            "kwarg '",
-                            stringify!($kwarg),
-                            "': must be ",
-                            stringify!($ty)
-                        ))
-                    })?
-                };
-            }
+            extract_args! {
+                match key {
+                    "map" => {
+                        let map = value
+                            .extract::<PyRef<'_, PyBeatmap>>()
+                            .map_err(|_| PyTypeError::new_err("kwarg 'map': must be a Beatmap"))?;
 
-            macro_rules! attr {
-                ( set $attr:ident ) => {
-                    set_attr(&mut $attr, extract!($attr: "float"))
-                };
-                ( fix $attr:ident ) => {
-                    fix_attr(
-                        &mut $attr,
-                        value.extract().map_err(|_| PyTypeError::new_err(
-                            concat!("kwarg 'fixed_", stringify!($attr), "': must be a bool")
-                        ))?,
-                    )
-                };
-            }
-
-            macro_rules! extract_args {
-                ( $(
-                    $key:literal => $handler:expr,
-                )* ) => {
-                    match key.extract()? {
-                        $( $key => $handler, )*
-                        kwarg => {
-                            return Err(ArgsError::new_err(extract_args!(
-                                @ERR kwarg: $( $key ),*
-                            )));
-                        }
-                    }
-                };
-                (@ERR $kwarg:ident: $first_field:literal $(, $field:literal )*) => {
-                    format!(concat!(
-                        "unexpected kwarg '{}': expected ",
-                        $first_field,
-                        $( ", ", $field, )*
-                    ), $kwarg)
-                };
-            }
-
-            extract_args!(
-                "map" => {
-                    let map = value
-                        .extract::<PyRef<'_, PyBeatmap>>()
-                        .map_err(|_| PyTypeError::new_err("kwarg 'map': must be a Beatmap"))?;
-
-                    this.set_map(map);
-                },
-                "mode" => mode = Some(extract!(mode: "GameMode")),
-                "is_convert" => is_convert = Some(extract!(is_convert: "bool")),
-                "mods" => this.mods = Some(extract!(mods: "type that matches GameMods alias")),
-                "clock_rate" => {
-                    this.inner.clock_rate(extract!(clock_rate: "float"));
-                },
-                "ar" => attr!(set ar),
-                "fixed_ar" => attr!(fix ar),
-                "cs" => attr!(set cs),
-                "fixed_cs" => attr!(fix cs),
-                "hp" => attr!(set hp),
-                "fixed_hp" => attr!(fix hp),
-                "od" => attr!(set od),
-                "fixed_od" => attr!(fix od),
-            );
-        }
-
-        if mode.is_some() || is_convert.is_some() {
-            this.mode = mode.unwrap_or_default().into();
-            this.inner.mode(this.mode, is_convert.unwrap_or_default());
-        }
-
-        macro_rules! apply_attr {
-            ( $attr:ident ) => {
-                match $attr {
-                    BeatmapAttribute::None | BeatmapAttribute::Value(_) => {}
-                    BeatmapAttribute::Given(value) => {
-                        this.inner.$attr(value, false);
-                    }
-                    BeatmapAttribute::Fixed(value) => {
-                        this.inner.$attr(value, true);
-                    }
+                        this.set_map(map);
+                    },
+                    "mode" => mode = Some(extract!(mode = value as "GameMode")),
+                    "is_convert" => is_convert = extract!(is_convert = value as "bool"),
+                    "mods" => this.mods = Some(extract!(mods = value as "type that matches GameMods alias")),
+                    "clock_rate" => {
+                        this.inner.clock_rate(extract!(clock_rate = value as "float"));
+                    },
+                    "ar" => ar = extract!(ar = value as "float"),
+                    "fixed_ar" => fixed_ar = extract!(fixed_ar = value as "bool"),
+                    "cs" => cs = extract!(cs = value as "float"),
+                    "fixed_cs" => fixed_cs = extract!(fixed_cs = value as "bool"),
+                    "hp" => hp = extract!(hp = value as "float"),
+                    "fixed_hp" => fixed_hp = extract!(fixed_hp = value as "bool"),
+                    "od" => od = extract!(od = value as "float"),
+                    "fixed_od" => fixed_od = extract!(fixed_od = value as "bool"),
                 }
             };
         }
 
-        apply_attr!(ar);
-        apply_attr!(cs);
-        apply_attr!(hp);
-        apply_attr!(od);
+        if let Some(mode) = mode {
+            this.mode = mode.into();
+            this.inner.mode(this.mode, is_convert);
+        }
+
+        macro_rules! set_attr {
+            ( $attr:ident, $fixed:ident ) => {
+                if let Some(value) = $attr {
+                    this.inner.$attr(value, $fixed);
+                }
+            };
+        }
+
+        set_attr!(ar, fixed_ar);
+        set_attr!(cs, fixed_cs);
+        set_attr!(hp, fixed_hp);
+        set_attr!(od, fixed_od);
 
         Ok(this)
     }

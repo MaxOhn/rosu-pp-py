@@ -49,19 +49,25 @@ impl PyScoreState {
         };
 
         for (key, value) in kwargs {
+            macro_rules! set {
+                ( $field:ident: $ty:literal) => {
+                    this.$field = extract!($field = value as $ty)
+                };
+            }
+
             extract_args! {
-                this.key = value {
-                    max_combo: "int",
-                    osu_large_tick_hits: "int",
-                    osu_small_tick_hits: "int",
-                    slider_end_hits: "int",
-                    n_geki: "int",
-                    n_katu: "int",
-                    n300: "int",
-                    n100: "int",
-                    n50: "int",
-                    misses: "int",
-                    legacy_total_score: "int",
+                match key {
+                    "max_combo" => set!(max_combo: "int"),
+                    "osu_large_tick_hits" => set!(osu_large_tick_hits: "int"),
+                    "osu_small_tick_hits" => set!(osu_small_tick_hits: "int"),
+                    "slider_end_hits" => set!(slider_end_hits: "int"),
+                    "n_geki" => set!(n_geki: "int"),
+                    "n_katu" => set!(n_katu: "int"),
+                    "n300" => set!(n300: "int"),
+                    "n100" => set!(n100: "int"),
+                    "n50" => set!(n50: "int"),
+                    "misses" => set!(misses: "int"),
+                    "legacy_total_score" => set!(legacy_total_score: "int"),
                 }
             }
         }

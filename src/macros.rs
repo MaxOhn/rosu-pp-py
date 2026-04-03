@@ -6,6 +6,19 @@ impl std::fmt::Debug for BoolFormatter {
     }
 }
 
+macro_rules! extract {
+    ( $kwarg:ident = $value:ident as $ty:literal ) => {
+        $value.extract().map_err(|_| {
+            PyTypeError::new_err(concat!(
+                "kwarg '",
+                stringify!($kwarg),
+                "': must be ",
+                stringify!($ty)
+            ))
+        })?
+    };
+}
+
 macro_rules! define_class {
     (
         #[pyclass(name = $py_name:literal $(, $py_meta:meta)* )]
@@ -78,34 +91,25 @@ macro_rules! define_class {
 }
 
 macro_rules! extract_args {
-    ( $this:ident . $key:ident = $value:ident {
-        $( $field:ident: $expected:literal, )+
-    } ) => {
+    (
+        match $key:ident {
+            $( $arm:literal => $handler:expr, )*
+        }
+    ) => {
         match $key.extract()? {
-            $(
-                stringify!($field) => {
-                    $this.$field = $value
-                        .extract()
-                        .map_err(|_| PyTypeError::new_err(concat!(
-                            "kwarg '",
-                            stringify!($field),
-                            "': must be ",
-                            $expected,
-                        )))?
-                }
-            ),*
+            $( $arm=> $handler, )*
             kwarg => {
                 return Err(ArgsError::new_err(extract_args!(
-                    @ERR kwarg: $( $field ),*
+                    @ERR kwarg: $( $arm ),*
                 )));
             }
         }
     };
-    (@ERR $kwarg:ident: $first_field:ident $(, $field:ident )*) => {
+    (@ERR $kwarg:ident: $first_field:literal $(, $field:literal )*) => {
         format!(concat!(
             "unexpected kwarg '{}': expected ",
-            stringify!($first_field),
-            $( ", ", stringify!($field), )*
+            $first_field,
+            $( ", ", $field, )*
         ), $kwarg)
     };
 }

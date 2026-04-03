@@ -10,7 +10,7 @@ use rosu_pp::{
         DifficultyAttributes, HitResultPriority,
     },
     model::mode::GameMode,
-    Difficulty, Performance,
+    Performance,
 };
 
 use crate::{
@@ -19,25 +19,12 @@ use crate::{
     difficulty::PyDifficulty,
     error::ArgsError,
     mode::PyGameMode,
-    mods::PyGameMods,
 };
 
 #[pyclass(name = "Performance")]
 #[derive(Default)]
 pub struct PyPerformance {
-    pub(crate) mods: Option<Py<PyAny>>,
-    pub(crate) clock_rate: Option<f64>,
-    pub(crate) ar: Option<f32>,
-    pub(crate) ar_with_mods: bool,
-    pub(crate) cs: Option<f32>,
-    pub(crate) cs_with_mods: bool,
-    pub(crate) hp: Option<f32>,
-    pub(crate) hp_with_mods: bool,
-    pub(crate) od: Option<f32>,
-    pub(crate) od_with_mods: bool,
-    pub(crate) passed_objects: Option<u32>,
-    pub(crate) hardrock_offsets: Option<bool>,
-    pub(crate) lazer: Option<bool>,
+    pub(crate) difficulty: PyDifficulty,
     pub(crate) accuracy: Option<f64>,
     pub(crate) combo: Option<u32>,
     pub(crate) large_tick_hits: Option<u32>,
@@ -65,38 +52,69 @@ impl PyPerformance {
             return Ok(this);
         };
 
+        let mut ar: Option<f32> = None;
+        let mut fixed_ar = false;
+
+        let mut cs: Option<f32> = None;
+        let mut fixed_cs = false;
+
+        let mut hp: Option<f32> = None;
+        let mut fixed_hp = false;
+
+        let mut od: Option<f32> = None;
+        let mut fixed_od = false;
+
         for (key, value) in kwargs {
+            macro_rules! set {
+                ( $field:ident: $ty:literal) => {
+                    this.$field = extract!($field = value as $ty)
+                };
+            }
+
             extract_args! {
-                this.key = value {
-                    mods: "type that matches GameMods alias",
-                    clock_rate: "float",
-                    ar: "float",
-                    ar_with_mods: "bool",
-                    cs: "float",
-                    cs_with_mods: "bool",
-                    hp: "float",
-                    hp_with_mods: "bool",
-                    od: "float",
-                    od_with_mods: "bool",
-                    passed_objects: "int",
-                    hardrock_offsets: "bool",
-                    lazer: "bool",
-                    accuracy: "float",
-                    combo: "int",
-                    large_tick_hits: "int",
-                    small_tick_hits: "int",
-                    slider_end_hits: "int",
-                    n_geki: "int",
-                    n_katu: "int",
-                    n300: "int",
-                    n100: "int",
-                    n50: "int",
-                    misses: "int",
-                    legacy_total_score: "int",
-                    hitresult_priority: "HitResultPriority",
+                match key {
+                    "mods" => this.difficulty.set_mods(Some(extract!(mods = value as "type that matches GameMods alias"))),
+                    "clock_rate" => this.difficulty.set_clock_rate(extract!(clock_rate = value as "float")),
+                    "passed_objects" => this.difficulty.set_passed_objects(extract!(passed_objects = value as "int")),
+                    "hardrock_offsets" => this.difficulty.set_hardrock_offsets(extract!(hardrock_offsets = value as "bool")),
+                    "lazer" => this.difficulty.set_lazer(extract!(lazer = value as "bool")),
+                    "ar" => ar = extract!(ar = value as "float"),
+                    "fixed_ar" => fixed_ar = extract!(fixed_ar = value as "bool"),
+                    "cs" => cs = extract!(cs = value as "float"),
+                    "fixed_cs" => fixed_cs = extract!(fixed_cs = value as "bool"),
+                    "hp" => hp = extract!(hp = value as "float"),
+                    "fixed_hp" => fixed_hp = extract!(fixed_hp = value as "bool"),
+                    "od" => od = extract!(od = value as "float"),
+                    "fixed_od" => fixed_od = extract!(fixed_od = value as "bool"),
+                    "accuracy" => set!(accuracy: "float"),
+                    "combo" => set!(combo: "int"),
+                    "large_tick_hits" => set!(large_tick_hits: "int"),
+                    "small_tick_hits" => set!(small_tick_hits: "int"),
+                    "slider_end_hits" => set!(slider_end_hits: "int"),
+                    "n_geki" => set!(n_geki: "int"),
+                    "n_katu" => set!(n_katu: "int"),
+                    "n300" => set!(n300: "int"),
+                    "n100" => set!(n100: "int"),
+                    "n50" => set!(n50: "int"),
+                    "misses" => set!(misses: "int"),
+                    "legacy_total_score" => set!(legacy_total_score: "int"),
+                    "hitresult_priority" => set!(hitresult_priority: "HitResultPriority"),
                 }
             }
         }
+
+        macro_rules! set_attr {
+            ( $setter:ident ( $attr:ident, $fixed:ident ) ) => {
+                if let Some(value) = $attr {
+                    this.difficulty.$setter(value, $fixed)
+                }
+            };
+        }
+
+        set_attr!(set_ar(ar, fixed_ar));
+        set_attr!(set_cs(cs, fixed_cs));
+        set_attr!(set_hp(hp, fixed_hp));
+        set_attr!(set_od(od, fixed_od));
 
         Ok(this)
     }
@@ -131,87 +149,52 @@ impl PyPerformance {
     }
 
     fn difficulty(&self, py: Python<'_>) -> PyDifficulty {
-        let Self {
-            mods,
-            clock_rate,
-            ar,
-            ar_with_mods,
-            cs,
-            cs_with_mods,
-            hp,
-            hp_with_mods,
-            od,
-            od_with_mods,
-            passed_objects,
-            hardrock_offsets,
-            lazer,
-            ..
-        } = self;
-
-        PyDifficulty {
-            mods: mods.as_ref().map(|mods| mods.clone_ref(py)),
-            clock_rate: *clock_rate,
-            ar: *ar,
-            ar_with_mods: *ar_with_mods,
-            cs: *cs,
-            cs_with_mods: *cs_with_mods,
-            hp: *hp,
-            hp_with_mods: *hp_with_mods,
-            od: *od,
-            od_with_mods: *od_with_mods,
-            passed_objects: *passed_objects,
-            hardrock_offsets: *hardrock_offsets,
-            lazer: *lazer,
-        }
+        self.difficulty.clone_py(py)
     }
 
     #[pyo3(signature = (mods=None))]
     fn set_mods(&mut self, mods: Option<Py<PyAny>>) {
-        self.mods = mods;
+        self.difficulty.set_mods(mods);
     }
 
-    #[pyo3(signature = (lazer=None))]
-    fn set_lazer(&mut self, lazer: Option<bool>) {
-        self.lazer = lazer;
+    #[pyo3(signature = (lazer))]
+    fn set_lazer(&mut self, lazer: bool) {
+        self.difficulty.set_lazer(lazer);
     }
 
-    #[pyo3(signature = (clock_rate=None))]
-    fn set_clock_rate(&mut self, clock_rate: Option<f64>) {
-        self.clock_rate = clock_rate;
+    #[pyo3(signature = (clock_rate))]
+    fn set_clock_rate(&mut self, clock_rate: f64) {
+        self.difficulty.set_clock_rate(clock_rate);
     }
 
-    #[pyo3(signature = (ar, ar_with_mods))]
-    fn set_ar(&mut self, ar: Option<f32>, ar_with_mods: bool) {
-        self.ar = ar;
-        self.ar_with_mods = ar_with_mods;
+    #[pyo3(signature = (ar, fixed))]
+    fn set_ar(&mut self, ar: f32, fixed: bool) {
+        self.difficulty.set_ar(ar, fixed);
     }
 
-    #[pyo3(signature = (cs, cs_with_mods))]
-    fn set_cs(&mut self, cs: Option<f32>, cs_with_mods: bool) {
-        self.cs = cs;
-        self.cs_with_mods = cs_with_mods;
+    #[pyo3(signature = (cs, fixed))]
+    fn set_cs(&mut self, cs: f32, fixed: bool) {
+        self.difficulty.set_cs(cs, fixed);
     }
 
-    #[pyo3(signature = (hp, hp_with_mods))]
-    fn set_hp(&mut self, hp: Option<f32>, hp_with_mods: bool) {
-        self.hp = hp;
-        self.hp_with_mods = hp_with_mods;
+    #[pyo3(signature = (hp, fixed))]
+    fn set_hp(&mut self, hp: f32, fixed: bool) {
+        self.difficulty.set_hp(hp, fixed);
     }
 
-    #[pyo3(signature = (od, od_with_mods))]
-    fn set_od(&mut self, od: Option<f32>, od_with_mods: bool) {
-        self.od = od;
-        self.od_with_mods = od_with_mods;
+    #[pyo3(signature = (od, fixed))]
+    fn set_od(&mut self, od: f32, fixed: bool) {
+        self.difficulty.set_od(od, fixed);
     }
 
-    #[pyo3(signature = (passed_objects=None))]
-    fn set_passed_objects(&mut self, passed_objects: Option<u32>) {
-        self.passed_objects = passed_objects;
+    #[pyo3(signature = (passed_objects))]
+    fn set_passed_objects(&mut self, passed_objects: u32) {
+        self.difficulty.set_passed_objects(passed_objects);
     }
 
-    #[pyo3(signature = (hardrock_offsets=None))]
-    fn set_hardrock_offsets(&mut self, hardrock_offsets: Option<bool>) {
-        self.hardrock_offsets = hardrock_offsets;
+    #[pyo3(signature = (hardrock_offsets))]
+    fn set_hardrock_offsets(&mut self, hardrock_offsets: bool) {
+        self.difficulty.set_hardrock_offsets(hardrock_offsets);
     }
 
     #[pyo3(signature = (accuracy=None))]
@@ -295,52 +278,80 @@ impl PyPerformance {
 
 impl PyPerformance {
     fn apply<'a>(&self, mut perf: Performance<'a>, py: Python<'_>) -> PyResult<Performance<'a>> {
-        if let Some(accuracy) = self.accuracy {
-            perf = perf.accuracy(accuracy);
+        let Self {
+            difficulty,
+            accuracy,
+            combo,
+            large_tick_hits,
+            small_tick_hits,
+            slider_end_hits,
+            n_geki,
+            n_katu,
+            n300,
+            n100,
+            n50,
+            misses,
+            legacy_total_score,
+            hitresult_priority,
+            hitresult_generators,
+        } = self;
+
+        let mode = match perf {
+            Performance::Osu(_) => GameMode::Osu,
+            Performance::Taiko(_) => GameMode::Taiko,
+            Performance::Catch(_) => GameMode::Catch,
+            Performance::Mania(_) => GameMode::Mania,
+        };
+
+        perf = perf.difficulty(difficulty.try_as_difficulty(mode, py)?);
+        perf = perf.hitresult_priority((*hitresult_priority).into());
+
+        if let Some(accuracy) = accuracy {
+            perf = perf.accuracy(*accuracy);
         }
 
-        if let Some(combo) = self.combo {
-            perf = perf.combo(combo);
+        if let Some(combo) = combo {
+            perf = perf.combo(*combo);
         }
 
-        if let Some(slider_end_hits) = self.slider_end_hits {
-            perf = perf.slider_end_hits(slider_end_hits);
+        if let Some(slider_end_hits) = slider_end_hits {
+            perf = perf.slider_end_hits(*slider_end_hits);
         }
 
-        if let Some(large_tick_hits) = self.large_tick_hits {
-            perf = perf.large_tick_hits(large_tick_hits);
+        if let Some(large_tick_hits) = large_tick_hits {
+            perf = perf.large_tick_hits(*large_tick_hits);
         }
 
-        if let Some(small_tick_hits) = self.small_tick_hits {
-            perf = perf.small_tick_hits(small_tick_hits);
+        if let Some(small_tick_hits) = small_tick_hits {
+            perf = perf.small_tick_hits(*small_tick_hits);
         }
 
-        if let Some(n_geki) = self.n_geki {
-            perf = perf.n_geki(n_geki);
+        if let Some(n_geki) = n_geki {
+            perf = perf.n_geki(*n_geki);
         }
 
-        if let Some(n_katu) = self.n_katu {
-            perf = perf.n_katu(n_katu);
+        if let Some(n_katu) = n_katu {
+            perf = perf.n_katu(*n_katu);
         }
 
-        if let Some(n300) = self.n300 {
-            perf = perf.n300(n300);
+        if let Some(n300) = n300 {
+            perf = perf.n300(*n300);
         }
 
-        if let Some(n100) = self.n100 {
-            perf = perf.n100(n100);
+        if let Some(n100) = n100 {
+            perf = perf.n100(*n100);
         }
 
-        if let Some(n50) = self.n50 {
-            perf = perf.n50(n50);
+        if let Some(n50) = n50 {
+            perf = perf.n50(*n50);
         }
 
-        if let Some(misses) = self.misses {
-            perf = perf.misses(misses);
+        if let Some(misses) = misses {
+            perf = perf.misses(*misses);
         }
 
-        if let Some(legacy_total_score) = self.legacy_total_score {
-            perf = perf.legacy_total_score(legacy_total_score);
+        if let Some(legacy_total_score) = legacy_total_score {
+            perf = perf.legacy_total_score(*legacy_total_score);
         }
 
         // Bridging runtime values to compile-time types
@@ -351,8 +362,8 @@ impl PyPerformance {
             };
 
             // Still have indices to process
-            ( @step [$i:tt $(, $rest:tt)*] [$($acc:ty),*] ) => {
-                match self.hitresult_generators[$i] {
+            ( @step [ $i:tt $(, $rest:tt )* ] [ $( $acc:ty ),* ] ) => {
+                match hitresult_generators[$i] {
                     None | Some(PyHitResultGenerator::Fast) => {
                         apply_hitresult_generator!(
                             @step [$($rest),*] [$($acc,)* Fast]
@@ -374,63 +385,7 @@ impl PyPerformance {
 
         perf = apply_hitresult_generator!();
 
-        let mode = match perf {
-            Performance::Osu(_) => GameMode::Osu,
-            Performance::Taiko(_) => GameMode::Taiko,
-            Performance::Catch(_) => GameMode::Catch,
-            Performance::Mania(_) => GameMode::Mania,
-        };
-
-        let difficulty = self.as_difficulty(mode, py)?;
-
-        Ok(perf
-            .hitresult_priority(self.hitresult_priority.into())
-            .difficulty(difficulty))
-    }
-
-    fn as_difficulty(&self, mode: GameMode, py: Python<'_>) -> PyResult<Difficulty> {
-        let mut difficulty = Difficulty::new();
-
-        difficulty = match PyGameMods::extract(self.mods.as_ref(), mode, py) {
-            Ok(PyGameMods::Lazer(ref mods)) => difficulty.mods(mods.clone()),
-            Ok(PyGameMods::Intermode(ref mods)) => difficulty.mods(mods),
-            Ok(PyGameMods::Legacy(mods)) => difficulty.mods(mods),
-            Err(err) => return Err(err),
-        };
-
-        if let Some(passed_objects) = self.passed_objects {
-            difficulty = difficulty.passed_objects(passed_objects);
-        }
-
-        if let Some(clock_rate) = self.clock_rate {
-            difficulty = difficulty.clock_rate(clock_rate);
-        }
-
-        if let Some(ar) = self.ar {
-            difficulty = difficulty.ar(ar, self.ar_with_mods);
-        }
-
-        if let Some(cs) = self.cs {
-            difficulty = difficulty.cs(cs, self.cs_with_mods);
-        }
-
-        if let Some(hp) = self.hp {
-            difficulty = difficulty.hp(hp, self.hp_with_mods);
-        }
-
-        if let Some(od) = self.od {
-            difficulty = difficulty.od(od, self.od_with_mods);
-        }
-
-        if let Some(hardrock_offsets) = self.hardrock_offsets {
-            difficulty = difficulty.hardrock_offsets(hardrock_offsets);
-        }
-
-        if let Some(lazer) = self.lazer {
-            difficulty = difficulty.lazer(lazer);
-        }
-
-        Ok(difficulty)
+        Ok(perf)
     }
 }
 
