@@ -249,8 +249,6 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v7
 
-      - run: pip install -U twine
-
       - name: Get artifacts
         uses: actions/download-artifact@v6
         with:
@@ -261,10 +259,5 @@ jobs:
       - name: Test wheels integrity
         run: for whl in dist/*.whl; do unzip -qt "$whl"; done
 
-      - run: uv publish --trusted-publishing always
-
       - name: Upload to PyPI
-        run: twine upload dist/*
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: uv publish --trusted-publishing always
