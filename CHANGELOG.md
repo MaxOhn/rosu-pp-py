@@ -1,4 +1,53 @@
-# v3.1.0 (2025-06-03)
+# v4.0.0 (2026-04-11)
+
+Updated all modes' difficulty and performance calculation. See osu!'s newspost for more info: <https://osu.ppy.sh/home/news/2025-10-29-performance-points-star-rating-updates>
+
+rosu-pp changelog: <https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v400-2026-04-11>
+
+### Breaking
+
+- Bumped pyo3 from 0.24 to 0.28. Minimum supported python version is 3.11.
+- Bumped rosu-mods from 0.3.1 to 0.4.0
+- Bumped rosu-pp from 3.1.0 to 4.0.0
+- Removed the variant `HitResultPriority.Fastest`
+- All kwargs `*_with_mods` have been renamed to `fixed_*` (e.g. `od_with_mods`
+  -> `fixed_od`)
+- Difficulty setters generally no longer accept `None` to unset a value. This
+  holds for the `Difficulty` type as well as the `Performance` type.
+- Property `DifficultyAttributes.ar` is no longer set for osu!catch
+- Property `PerformanceAttributes.effective_miss_count` is no longer set for
+  osu!taiko
+
+### Added
+
+- New enum `HitResultGenerator` with variants `Fast` (default) and `Closest`.
+- New method `Performance.set_hitresult_generator` which takes a
+  `HitResultGenerator` and optionally a `GameMode`. If no mode is given, the
+  generator will be used for all modes.
+- `Performance` has a new kwarg and setter for `legacy_score_total`
+- Added the property `ScoreState.legacy_total_score`. This is only relevant for
+  osu!standard scores on osu!stable (currently).
+- New properties for `DifficultyAttributes`
+  - `aim_top_weighted_slider_factor` (osu!)
+  - `speed_top_weighted_slider_factor` (osu!)
+  - `nested_score_per_object` (osu!)
+  - `legacy_score_base_multiplier` (osu!)
+  - `maximum_legacy_combo_score` (osu!)
+  - `preempt` (osu!catch)
+  - `mechanical_difficulty` (osu!taiko)
+  - `consistency_factor` (osu!taiko)
+- New properties for `PerformanceAttributes`
+  - `combo_based_estimated_miss_count` (osu!)
+  - `score_based_estimated_miss_count` (osu!)
+  - `aim_estimated_slider_breaks` (osu!)
+  - `speed_estimated_slider_breaks` (osu!)
+- New properties for `BeatmapAttributes`
+  - `base_ar` (approach rate without applied clock rate)
+  - `base_od` (overall difficulty without applied clock rate)
+  - `od_perfect_hit_window` (only available for osu!mania)
+  - `od_good_hit_window` (only available for osu!mania)
+
+## v3.1.0 (2025-06-03)
 
 Bumped to [`rosu-pp v3.1.0`](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v310-2025-06-03):
 - Added the method `Beatmap.is_suspicious`. 
