@@ -1,0 +1,28 @@
+name: Update README links
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - rosu_pp_py.pyi
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Update README
+        run: python scripts/update_readme.py
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update README links to latest commit"
+          file_pattern: README.md

@@ -14,7 +14,7 @@ pub struct PyGradualDifficulty {
 impl PyGradualDifficulty {
     #[new]
     pub fn new(difficulty: &PyDifficulty, map: &PyBeatmap, py: Python<'_>) -> PyResult<Self> {
-        let difficulty = difficulty.as_difficulty(map.inner.mode, py)?;
+        let difficulty = difficulty.try_as_difficulty(map.inner.mode, py)?;
 
         Ok(Self {
             inner: GradualDifficulty::new(difficulty, &map.inner),

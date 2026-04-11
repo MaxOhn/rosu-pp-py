@@ -1,6 +1,6 @@
+from collections.abc import Iterator
 from enum import Enum
 from typing import List, Mapping, Optional, Union
-from collections.abc import Iterator
 
 GameMods = Union[int, str, GameMod, List[Union[GameMod, str, int]]]
 GameMod = Mapping[str, Union[str, Optional[GameModSettings]]]
@@ -26,7 +26,14 @@ class HitResultPriority(Enum):
 
     BestCase = 0
     WorstCase = 1
-    Fastest = 2
+
+class HitResultGenerator(Enum):
+    """
+    A specific implementation of hitresult generation.
+    """
+
+    Fast = 0
+    Closest = 1
 
 class Beatmap:
     """
@@ -127,41 +134,37 @@ class Difficulty:
 
             Clamped between 0.01 and 100.
         `'ar': float`
-            Override a beatmap's set AR.
-
-            Only relevant for osu! and osu!catch.
+            Override a beatmap's approach rate.
 
             Clamped between -20 and 20.
-        `'ar_with_mods': bool`
-            Determines if the given AR value should be used before
-            or after accounting for mods, e.g. on `true` the value will be
-            used as is and on `false` it will be modified based on the mods.
+        `'fixed_ar': bool`
+            Determines if the given AR value should be used before or after
+            accounting for mods, e.g. on `true` the value will be used as is
+            and on `false` it will be modified based on the mods.
         `'cs': float`
-            Override a beatmap's set CS.
-
-            Only relevant for osu! and osu!catch.
+            Override a beatmap's circle size.
 
             Clamped between -20 and 20.
-        `'cs_with_mods': bool`
-            Determines if the given CS value should be used before
-            or after accounting for mods, e.g. on `true` the value will be
-            used as is and on `false` it will be modified based on the mods.
+        `'fixed_cs': bool`
+            Determines if the given CS value should be used before or after
+            accounting for mods, e.g. on `true` the value will be used as is and
+            on `false` it will be modified based on the mods.
         `'hp': float`
-            Override a beatmap's set HP.
+            Override a beatmap's drain rate.
 
             Clamped between -20 and 20.
-        `'hp_with_mods': bool`
-            Determines if the given HP value should be used before
-            or after accounting for mods, e.g. on `true` the value will be
-            used as is and on `false` it will be modified based on the mods.
+        `'fixed_hp': bool`
+            Determines if the given HP value should be used before or after
+            accounting for mods, e.g. on `true` the value will be used as is
+            and on `false` it will be modified based on the mods.
         `'od': float`
-            Override a beatmap's set OD.
+            Override a beatmap's overall difficulty.
 
             Clamped between -20 and 20.
-        `'od_with_mods': bool`
-            Determines if the given OD value should be used before
-            or after accounting for mods, e.g. on `true` the value will be
-            used as is and on `false` it will be modified based on the mods.
+        `'fixed_od': bool`
+            Determines if the given OD value should be used before or after
+            accounting for mods, e.g. on `true` the value will be used as is and
+            on `false` it will be modified based on the mods.
         `'passed_objects': int`
             Amount of passed objects for partial plays, e.g. a fail.
 
@@ -209,58 +212,56 @@ class Difficulty:
         """
 
     def set_mods(self, mods: Optional[GameMods]) -> None: ...
-    def set_clock_rate(self, clock_rate: Optional[float]) -> None: ...
-    def set_ar(self, ar: Optional[float], with_mods: bool) -> None:
+    def set_clock_rate(self, clock_rate: float) -> None: ...
+    def set_ar(self, ar: float, fixed: bool) -> None:
         """
-        Override a beatmap's set AR.
+        Override a beatmap's approach rate.
+
+        Clamped between -20 and 20.
+
+        `fixed` determines if the given AR value should be used before or after
+        accounting for mods, e.g. on `true` the value will be used as is and on
+        `false` it will be modified based on the mods.
+        """
+
+    def set_cs(self, cs: float, fixed: bool) -> None:
+        """
+        Override a beatmap's circle size.
 
         Only relevant for osu! and osu!catch.
 
         Clamped between -20 and 20.
 
-        `with_mods` determines if the given AR value should be used before
-        or after accounting for mods, e.g. on `true` the value will be
-        used as is and on `false` it will be modified based on the mods.
+        `fixed` determines if the given CS value should be used before or after
+        accounting for mods, e.g. on `true` the value will be used as is and on
+        `false` it will be modified based on the mods.
         """
 
-    def set_cs(self, cs: Optional[float], with_mods: bool) -> None:
+    def set_hp(self, hp: float, fixed: bool) -> None:
         """
-        Override a beatmap's set CS.
-
-        Only relevant for osu! and osu!catch.
+        Override a beatmap's drain rate.
 
         Clamped between -20 and 20.
 
-        `with_mods` determines if the given CS value should be used before
-        or after accounting for mods, e.g. on `true` the value will be
-        used as is and on `false` it will be modified based on the mods.
+        `fixed` determines if the given HP value should be used before or after
+        accounting for mods, e.g. on `true` the value will be used as is and on
+        `false` it will be modified based on the mods.
         """
 
-    def set_hp(self, hp: Optional[float], with_mods: bool) -> None:
+    def set_od(self, od: float, fixed: bool) -> None:
         """
-        Override a beatmap's set HP.
+        Override a beatmap's overall difficulty.
 
         Clamped between -20 and 20.
 
-        `with_mods` determines if the given HP value should be used before
-        or after accounting for mods, e.g. on `true` the value will be
-        used as is and on `false` it will be modified based on the mods.
+        `fixed` determines if the given OD value should be used before or after
+        accounting for mods, e.g. on `true` the value will be used as is and on
+        `false` it will be modified based on the mods.
         """
 
-    def set_od(self, od: Optional[float], with_mods: bool) -> None:
-        """
-        Override a beatmap's set OD.
-
-        Clamped between -20 and 20.
-
-        `with_mods` determines if the given OD value should be used before
-        or after accounting for mods, e.g. on `true` the value will be
-        used as is and on `false` it will be modified based on the mods.
-        """
-
-    def set_passed_objects(self, passed_objects: Optional[int]) -> None: ...
-    def set_hardrock_offsets(self, hardrock_offsets: Optional[bool]) -> None: ...
-    def set_lazer(self, lazer: Optional[bool]) -> None: ...
+    def set_passed_objects(self, passed_objects: int) -> None: ...
+    def set_hardrock_offsets(self, hardrock_offsets: bool) -> None: ...
+    def set_lazer(self, lazer: bool) -> None: ...
 
 class Performance:
     """
@@ -288,41 +289,37 @@ class Performance:
 
             Clamped between 0.01 and 100.
         `'ar': float`
-            Override a beatmap's set AR.
-
-            Only relevant for osu! and osu!catch.
+            Override a beatmap's approach rate.
 
             Clamped between -20 and 20.
-        `'ar_with_mods': bool`
-            Determines if the given AR value should be used before
-            or after accounting for mods, e.g. on `true` the value will be
-            used as is and on `false` it will be modified based on the mods.
+        `'fixed_ar': bool`
+            Determines if the given AR value should be used before or after
+            accounting for mods, e.g. on `true` the value will be used as is and
+            on `false` it will be modified based on the mods.
         `'cs': float`
-            Override a beatmap's set CS.
-
-            Only relevant for osu! and osu!catch.
+            Override a beatmap's circle size.
 
             Clamped between -20 and 20.
-        `'cs_with_mods': bool`
-            Determines if the given CS value should be used before
-            or after accounting for mods, e.g. on `true` the value will be
-            used as is and on `false` it will be modified based on the mods.
+        `'fixed_cs': bool`
+            Determines if the given CS value should be used before or after
+            accounting for mods, e.g. on `true` the value will be used as is and
+            on `false` it will be modified based on the mods.
         `'hp': float`
-            Override a beatmap's set HP.
+            Override a beatmap's drain rate.
 
             Clamped between -20 and 20.
-        `'hp_with_mods': bool`
-            Determines if the given HP value should be used before
-            or after accounting for mods, e.g. on `true` the value will be
-            used as is and on `false` it will be modified based on the mods.
+        `'fixed_hp': bool`
+            Determines if the given HP value should be used before or after
+            accounting for mods, e.g. on `true` the value will be used as is and
+            on `false` it will be modified based on the mods.
         `'od': float`
-            Override a beatmap's set OD.
+            Override a beatmap's overall difficulty.
 
             Clamped between -20 and 20.
-        `'od_with_mods': bool`
-            Determines if the given OD value should be used before
-            or after accounting for mods, e.g. on `true` the value will be
-            used as is and on `false` it will be modified based on the mods.
+        `'fixed_od': bool`
+            Determines if the given OD value should be used before or after
+            accounting for mods, e.g. on `true` the value will be used as is and
+            on `false` it will be modified based on the mods.
         `'passed_objects': int`
             Amount of passed objects for partial plays, e.g. a fail.
 
@@ -385,6 +382,10 @@ class Performance:
             Irrelevant for osu!taiko.
         `'misses': int`
             Specify the amount of misses of a play.
+        `'legacy_total_score': int`
+            Specify the legacy total score of a play.
+
+            Only relevant for osu!standard.
         `'hitresult_priority': HitResultPriority`
             Specify how hitresults should be generated.
 
@@ -414,58 +415,54 @@ class Performance:
         """
 
     def set_mods(self, mods: Optional[GameMods]) -> None: ...
-    def set_clock_rate(self, clock_rate: Optional[float]) -> None: ...
-    def set_ar(self, ar: Optional[float], with_mods: bool) -> None:
+    def set_clock_rate(self, clock_rate: float) -> None: ...
+    def set_ar(self, ar: float, fixed: bool) -> None:
         """
-        Override a beatmap's set AR.
-
-        Only relevant for osu! and osu!catch.
+        Override a beatmap's approach rate.
 
         Clamped between -20 and 20.
 
-        `with_mods` determines if the given AR value should be used before
-        or after accounting for mods, e.g. on `true` the value will be
-        used as is and on `false` it will be modified based on the mods.
+        `fixed` determines if the given AR value should be used before or after
+        accounting for mods, e.g. on `true` the value will be used as is and on
+        `false` it will be modified based on the mods.
         """
 
-    def set_cs(self, cs: Optional[float], with_mods: bool) -> None:
+    def set_cs(self, cs: float, fixed: bool) -> None:
         """
-        Override a beatmap's set CS.
-
-        Only relevant for osu! and osu!catch.
+        Override a beatmap's circle size.
 
         Clamped between -20 and 20.
 
-        `with_mods` determines if the given CS value should be used before
-        or after accounting for mods, e.g. on `true` the value will be
-        used as is and on `false` it will be modified based on the mods.
+        `fixed` determines if the given CS value should be used before or after
+        accounting for mods, e.g. on `true` the value will be used as is and on
+        `false` it will be modified based on the mods.
         """
 
-    def set_hp(self, hp: Optional[float], with_mods: bool) -> None:
+    def set_hp(self, hp: float, fixed: bool) -> None:
         """
-        Override a beatmap's set HP.
+        Override a beatmap's drain rate.
 
         Clamped between -20 and 20.
 
-        `with_mods` determines if the given HP value should be used before
-        or after accounting for mods, e.g. on `true` the value will be
-        used as is and on `false` it will be modified based on the mods.
+        `fixed` determines if the given HP value should be used before or after
+        accounting for mods, e.g. on `true` the value will be used as is and on
+        `false` it will be modified based on the mods.
         """
 
-    def set_od(self, od: Optional[float], with_mods: bool) -> None:
+    def set_od(self, od: float, fixed: bool) -> None:
         """
-        Override a beatmap's set OD.
+        Override a beatmap's overall difficulty.
 
         Clamped between -20 and 20.
 
-        `with_mods` determines if the given OD value should be used before
-        or after accounting for mods, e.g. on `true` the value will be
-        used as is and on `false` it will be modified based on the mods.
+        `fixed` determines if the given OD value should be used before or after
+        accounting for mods, e.g. on `true` the value will be used as is and on
+        `false` it will be modified based on the mods.
         """
 
-    def set_passed_objects(self, passed_objects: Optional[int]) -> None: ...
-    def set_hardrock_offsets(self, hardrock_offsets: Optional[bool]) -> None: ...
-    def set_lazer(self, lazer: Optional[bool]) -> None: ...
+    def set_passed_objects(self, passed_objects: int) -> None: ...
+    def set_hardrock_offsets(self, hardrock_offsets: bool) -> None: ...
+    def set_lazer(self, lazer: bool) -> None: ...
     def set_accuracy(self, accuracy: Optional[float]) -> None: ...
     def set_combo(self, combo: Optional[int]) -> None: ...
     def set_large_tick_hits(self, n_large_ticks: Optional[int]) -> None: ...
@@ -477,6 +474,7 @@ class Performance:
     def set_n100(self, n100: Optional[int]) -> None: ...
     def set_n50(self, n50: Optional[int]) -> None: ...
     def set_misses(self, misses: Optional[int]) -> None: ...
+    def set_legacy_total_score(self, legacy_total_score: Optional[int]) -> None: ...
     def set_hitresult_priority(
         self, hitresult_priority: Optional[HitResultPriority]
     ) -> None: ...
@@ -563,41 +561,37 @@ class BeatmapAttributesBuilder:
 
             Clamped between 0.01 and 100.
         `'ar': float`
-            Override a beatmap's set AR.
-
-            Only relevant for osu! and osu!catch.
+            Override a beatmap's approach rate.
 
             Clamped between -20 and 20.
-        `'ar_with_mods': bool`
-            Determines if the given AR value should be used before
-            or after accounting for mods, e.g. on `true` the value will be
-            used as is and on `false` it will be modified based on the mods.
+        `'fixed_ar': bool`
+            Determines if the given AR value should be used before or after
+            accounting for mods, e.g. on `true` the value will be used as is and
+            on `false` it will be modified based on the mods.
         `'cs': float`
-            Override a beatmap's set CS.
-
-            Only relevant for osu! and osu!catch.
+            Override a beatmap's circle size.
 
             Clamped between -20 and 20.
-        `'cs_with_mods': bool`
-            Determines if the given CS value should be used before
-            or after accounting for mods, e.g. on `true` the value will be
-            used as is and on `false` it will be modified based on the mods.
+        `'fixed_cs': bool`
+            Determines if the given CS value should be used before or after
+            accounting for mods, e.g. on `true` the value will be used as is and
+            on `false` it will be modified based on the mods.
         `'hp': float`
-            Override a beatmap's set HP.
+            Override a beatmap's drain rate.
 
             Clamped between -20 and 20.
-        `'hp_with_mods': bool`
-            Determines if the given HP value should be used before
-            or after accounting for mods, e.g. on `true` the value will be
-            used as is and on `false` it will be modified based on the mods.
+        `'fixed_hp': bool`
+            Determines if the given HP value should be used before or after
+            accounting for mods, e.g. on `true` the value will be used as is and
+            on `false` it will be modified based on the mods.
         `'od': float`
-            Override a beatmap's set OD.
+            Override a beatmap's overall difficulty.
 
             Clamped between -20 and 20.
-        `'od_with_mods': bool`
-            Determines if the given OD value should be used before
-            or after accounting for mods, e.g. on `true` the value will be
-            used as is and on `false` it will be modified based on the mods.
+        `'fixed_od': bool`
+            Determines if the given OD value should be used before or after
+            accounting for mods, e.g. on `true` the value will be used as is and
+            on `false` it will be modified based on the mods.
     """
 
     def __init__(self, **kwargs) -> None: ...
@@ -611,55 +605,51 @@ class BeatmapAttributesBuilder:
         Consider the map's attributes, mode, and convert status
         """
 
-    def set_mode(self, mode: Optional[GameMode], is_convert: bool) -> None: ...
+    def set_mode(self, mode: GameMode, is_convert: bool) -> None: ...
     def set_mods(self, mods: Optional[GameMods]) -> None: ...
-    def set_clock_rate(self, clock_rate: Optional[float]) -> None: ...
-    def set_ar(self, ar: Optional[float], with_mods: bool) -> None:
+    def set_clock_rate(self, clock_rate: float) -> None: ...
+    def set_ar(self, ar: float, fixed: bool) -> None:
         """
-        Override a beatmap's set AR.
-
-        Only relevant for osu! and osu!catch.
+        Override a beatmap's approach rate.
 
         Clamped between -20 and 20.
 
-        `with_mods` determines if the given AR value should be used before
-        or after accounting for mods, e.g. on `true` the value will be
-        used as is and on `false` it will be modified based on the mods.
+        `fixed` determines if the given AR value should be used before or after
+        accounting for mods, e.g. on `true` the value will be used as is and on
+        `false` it will be modified based on the mods.
         """
 
-    def set_cs(self, cs: Optional[float], with_mods: bool) -> None:
+    def set_cs(self, cs: float, fixed: bool) -> None:
         """
-        Override a beatmap's set CS.
-
-        Only relevant for osu! and osu!catch.
+        Override a beatmap's circle size.
 
         Clamped between -20 and 20.
 
-        `with_mods` determines if the given CS value should be used before
-        or after accounting for mods, e.g. on `true` the value will be
-        used as is and on `false` it will be modified based on the mods.
+        `fixed` determines if the given CS value should be used before or after
+        accounting for mods, e.g. on `true` the value will be used as is and on
+        `false` it will be modified based on the mods.
         """
 
-    def set_hp(self, hp: Optional[float], with_mods: bool) -> None:
+    def set_hp(self, hp: float, fixed: bool) -> None:
         """
-        Override a beatmap's set HP.
+        Override a beatmap's drain rate.
 
         Clamped between -20 and 20.
 
-        `with_mods` determines if the given HP value should be used before
-        or after accounting for mods, e.g. on `true` the value will be
-        used as is and on `false` it will be modified based on the mods.
+        `fixed` determines if the given HP value should be used before or after
+        accounting for mods, e.g. on `true` the value will be used as is and on
+        `false` it will be modified based on the mods.
         """
 
-    def set_od(self, od: Optional[float], with_mods: bool) -> None:
+    def set_od(self, od: float, fixed: bool) -> None:
         """
-        Override a beatmap's set OD.
+        Override a beatmap's overall difficulty.
 
         Clamped between -20 and 20.
 
-        `with_mods` determines if the given OD value should be used before
-        or after accounting for mods, e.g. on `true` the value will be
-        used as is and on `false` it will be modified based on the mods.
+        `fixed` determines if the given OD value should be used before or after
+        accounting for mods, e.g. on `true` the value will be used as is and on
+        `false` it will be modified based on the mods.
         """
 
 class ScoreState:
@@ -673,16 +663,16 @@ class ScoreState:
     """
     Maximum combo that the score has had so far. **Not** the maximum
     possible combo of the map so far.
-    
+
     Note that for osu!catch only fruits and droplets are considered for combo.
-    
+
     Irrelevant for osu!mania.
     """
 
     osu_large_tick_hits: int
     """
     "Large tick" hits for osu!standard.
-    
+
     The meaning depends on the kind of score:
     - if set on osu!stable, this field is irrelevant and can be `0`
     - if set on osu!lazer *without* `CL`, this field is the amount of hit
@@ -702,7 +692,7 @@ class ScoreState:
     slider_end_hits: int
     """
     Amount of successfully hit slider ends.
-    
+
     Only relevant for osu!standard in lazer.
     """
 
@@ -734,6 +724,13 @@ class ScoreState:
     misses: int
     """
     Amount of current misses (fruits + droplets for osu!catch).
+    """
+
+    legacy_total_score: int
+    """
+    Legacy total score.
+
+    Only relevant for osu!standard.
     """
 
 class DifficultyAttributes:
@@ -800,6 +797,24 @@ class DifficultyAttributes:
         """
 
     @property
+    def aim_top_weighted_slider_factor(self) -> Optional[float]:
+        """
+        Describes how much of aim's difficult strain count is contributed to by
+        sliders.
+
+        Only available for osu!.
+        """
+
+    @property
+    def speed_top_weighted_slider_factor(self) -> Optional[float]:
+        """
+        Describes how much of speed's difficult strain count is contributed to
+        by sliders.
+
+        Only available for osu!.
+        """
+
+    @property
     def speed_note_count(self) -> Optional[float]:
         """
         The number of clickable objects weighted by difficulty.
@@ -820,6 +835,24 @@ class DifficultyAttributes:
         """
         Weighted sum of speed strains.
 
+        Only available for osu!.
+        """
+
+    @property
+    def nested_score_per_object(self) -> Optional[float]:
+        """
+        Only available for osu!.
+        """
+
+    @property
+    def legacy_score_base_multiplier(self) -> Optional[float]:
+        """
+        Only available for osu!.
+        """
+
+    @property
+    def maximum_legacy_combo_score(self) -> Optional[float]:
+        """
         Only available for osu!.
         """
 
@@ -955,7 +988,15 @@ class DifficultyAttributes:
         """
         The approach rate.
 
-        Only available for osu! and osu!catch.
+        Only available for osu!.
+        """
+
+    @property
+    def preempt(self) -> Optional[float]:
+        """
+        Time preempt (AR time window).
+
+        Only available for osu!catch.
         """
 
     @property
@@ -980,6 +1021,33 @@ class DifficultyAttributes:
         The perceived hit window for an n50 inclusive of rate-adjusting mods (DT/HT/etc)
 
         Only available for osu!.
+        """
+
+    @property
+    def mono_stamina_factor(self) -> Optional[float]:
+        """
+        The ratio of stamina difficulty from mono-color (single color)
+        streams to total stamina difficulty.
+
+        Only available for osu!taiko.
+        """
+
+    @property
+    def mechanical_difficulty(self) -> Optional[float]:
+        """
+        The difficulty corresponding to the mechanical skills.
+
+        This includes color and stamina combined.
+
+        Only available for osu!taiko.
+        """
+
+    @property
+    def consistency_factor(self) -> Optional[float]:
+        """
+        The factor corresponding to the consistency of a map.
+
+        Only available for osu!taiko.
         """
 
     @property
@@ -1042,7 +1110,7 @@ class PerformanceAttributes:
         """
         Scaled miss count based on total hits.
 
-        Only available for osu! and osu!taiko.
+        Only available for osu!.
         """
 
     @property
@@ -1067,6 +1135,30 @@ class PerformanceAttributes:
         The strain portion of the final pp.
 
         Only available for osu!taiko and osu!mania.
+        """
+
+    @property
+    def combo_based_estimated_miss_count(self) -> Optional[float]:
+        """
+        Only available for osu!.
+        """
+
+    @property
+    def score_based_estimated_miss_count(self) -> Optional[float]:
+        """
+        Only *optionally* available for osu!.
+        """
+
+    @property
+    def aim_estimated_slider_breaks(self) -> Optional[float]:
+        """
+        Only available for osu!.
+        """
+
+    @property
+    def speed_estimated_slider_breaks(self) -> Optional[float]:
+        """
+        Only available for osu!.
         """
 
     @property
@@ -1169,7 +1261,19 @@ class BeatmapAttributes:
     @property
     def ar(self) -> float: ...
     @property
+    def base_ar(self) -> float:
+        """
+        The base approach rate without considering clock rate.
+        """
+
+    @property
     def od(self) -> float: ...
+    @property
+    def base_od(self) -> float:
+        """
+        The base overall difficulty without considering clock rate.
+        """
+
     @property
     def cs(self) -> float: ...
     @property
@@ -1180,26 +1284,51 @@ class BeatmapAttributes:
     def ar_hit_window(self) -> float:
         """
         Hit window for approach rate i.e. TimePreempt in milliseconds.
+
+        Only available for osu!standard and osu!catch.
+        """
+
+    @property
+    def od_perfect_hit_window(self) -> float:
+        """
+        Perfect hit window for overall difficulty i.e. time to hit a "Perfect"
+        in milliseconds.
+
+        Only available for osu!mania.
         """
 
     @property
     def od_great_hit_window(self) -> float:
         """
-        Hit window for overall difficulty i.e. time to hit a 300 ("Great") in milliseconds.
+        Great hit window for overall difficulty i.e. time to hit a 300 ("Great")
+        in milliseconds.
+
+        Only available for osu!standard, osu!taiko, and osu!mania.
+        """
+
+    @property
+    def od_good_hit_window(self) -> float:
+        """
+        Good hit window for overall difficulty i.e. time to hit a 200 ("Good")
+        in milliseconds.
+
+        Only available for osu!mania.
         """
 
     @property
     def od_ok_hit_window(self) -> float:
         """
-        Hit window for overall difficulty i.e. time to hit a 100 ("Ok") in milliseconds.
+        Ok hit window for overall difficulty i.e. time to hit a 100 ("Ok") in
+        milliseconds.
 
-        Not available for osu!mania.
+        Only available for osu!standard, osu!taiko, and osu!mania.
         """
 
     @property
     def od_meh_hit_window(self) -> float:
         """
-        Hit window for overall difficulty i.e. time to hit a 50 ("Meh") in milliseconds.
+        Meh hit window for overall difficulty i.e. time to hit a 50 ("Meh") in
+        milliseconds.
 
-        Only available for osu!.
+        Only available for osu! and osu!mania.
         """

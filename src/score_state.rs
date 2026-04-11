@@ -33,6 +33,8 @@ pub struct PyScoreState {
     n50: u32,
     #[pyo3(get, set)]
     misses: u32,
+    #[pyo3(get, set)]
+    legacy_total_score: Option<u32>,
 }
 
 #[pyo3::pymethods]
@@ -47,18 +49,25 @@ impl PyScoreState {
         };
 
         for (key, value) in kwargs {
+            macro_rules! set {
+                ( $field:ident: $ty:literal) => {
+                    this.$field = extract!($field = value as $ty)
+                };
+            }
+
             extract_args! {
-                this.key = value {
-                    max_combo: "int",
-                    osu_large_tick_hits: "int",
-                    osu_small_tick_hits: "int",
-                    slider_end_hits: "int",
-                    n_geki: "int",
-                    n_katu: "int",
-                    n300: "int",
-                    n100: "int",
-                    n50: "int",
-                    misses: "int",
+                match key {
+                    "max_combo" => set!(max_combo: "int"),
+                    "osu_large_tick_hits" => set!(osu_large_tick_hits: "int"),
+                    "osu_small_tick_hits" => set!(osu_small_tick_hits: "int"),
+                    "slider_end_hits" => set!(slider_end_hits: "int"),
+                    "n_geki" => set!(n_geki: "int"),
+                    "n_katu" => set!(n_katu: "int"),
+                    "n300" => set!(n300: "int"),
+                    "n100" => set!(n100: "int"),
+                    "n50" => set!(n50: "int"),
+                    "misses" => set!(misses: "int"),
+                    "legacy_total_score" => set!(legacy_total_score: "int"),
                 }
             }
         }
@@ -84,6 +93,7 @@ impl Debug for PyScoreState {
             n100,
             n50,
             misses,
+            legacy_total_score,
         } = self;
 
         f.debug_struct("ScoreState")
@@ -97,6 +107,7 @@ impl Debug for PyScoreState {
             .field("n100", n100)
             .field("n50", n50)
             .field("misses", misses)
+            .field("legacy_total_score", legacy_total_score)
             .finish()
     }
 }
@@ -120,6 +131,7 @@ impl From<&PyScoreState> for ScoreState {
             n100: state.n100,
             n50: state.n50,
             misses: state.misses,
+            legacy_total_score: state.legacy_total_score,
         }
     }
 }
@@ -137,6 +149,7 @@ impl From<ScoreState> for PyScoreState {
             n100: state.n100,
             n50: state.n50,
             misses: state.misses,
+            legacy_total_score: state.legacy_total_score,
         }
     }
 }
