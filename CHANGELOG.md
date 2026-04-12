@@ -1,4 +1,8 @@
-# v4.0.0 (2026-04-11)
+# v4.0.1 (2026-04-12)
+
+Fixed a bug about legacy score miss approximation
+
+## v4.0.0 (2026-04-11)
 
 Updated all modes' difficulty and performance calculation. See osu!'s newspost for more info: <https://osu.ppy.sh/home/news/2025-10-29-performance-points-star-rating-updates>
 
