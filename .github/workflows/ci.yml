@@ -81,7 +81,7 @@ jobs:
         uses: astral-sh/setup-uv@v7
 
       - name: Install maturin and pytest
-        run: uv tool install maturin pytest
+        run: uv tool install maturin && uv tool install pytest
 
       - name: Build and install
         run: maturin develop

@@ -26,6 +26,9 @@ features = ["pyo3/extension-module", "pyo3/generate-import-lib"]
 [project.optional-dependencies]
 dev = ["pytest>=8"]
 
+[dependency-groups]
+dev = ["pytest>=8"]
+
 [tool.maturin.dev-dependencies]
 pytest = ">=8"
 
