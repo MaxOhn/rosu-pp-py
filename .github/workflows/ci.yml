@@ -35,6 +35,63 @@ jobs:
       - name: Run rustfmt
         run: cargo fmt --check
 
+  ruff:
+    name: Ruff
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Install pyproject dependencies
+        run: uv sync --group dev
+
+      - name: Run ruff
+        run: uv run ruff check .
+
+  test:
+    name: Test on Python ${{ matrix.python }} (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Install maturin and pytest
+        run: uv tool install maturin pytest
+
+      - name: Build and install
+        run: maturin develop
+
+      - name: Run Rust tests
+        run: cargo test
+
+      - name: Run Python tests
+        run: pytest
+
   build-sdist:
     name: Build sdist
     runs-on: ubuntu-latest
@@ -231,7 +288,7 @@ jobs:
 
   release:
     name: Release
-    needs: [clippy, test-builds-arch, test-builds-os, build-sdist]
+    needs: [clippy, ruff, test, test-builds-arch, test-builds-os, build-sdist]
     if: success() && startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
 
