@@ -108,3 +108,22 @@ macro_rules! extract_args {
         ), $kwarg)
     };
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_bool_formatter_true() {
+        let formatter = BoolFormatter(true);
+        let debug = format!("{:?}", formatter);
+        assert_eq!(debug, "True");
+    }
+
+    #[test]
+    fn test_bool_formatter_false() {
+        let formatter = BoolFormatter(false);
+        let debug = format!("{:?}", formatter);
+        assert_eq!(debug, "False");
+    }
+}

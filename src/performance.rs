@@ -390,7 +390,7 @@ impl PyPerformance {
 }
 
 #[pyclass(eq, eq_int, name = "HitResultPriority", from_py_object)]
-#[derive(Copy, Clone, Default, PartialEq)]
+#[derive(Copy, Clone, Debug, Default, PartialEq)]
 pub enum PyHitResultPriority {
     #[default]
     BestCase,
@@ -407,7 +407,7 @@ impl From<PyHitResultPriority> for HitResultPriority {
 }
 
 #[pyclass(eq, eq_int, name = "HitResultGenerator", from_py_object)]
-#[derive(Copy, Clone, Default, PartialEq)]
+#[derive(Copy, Clone, Debug, Default, PartialEq)]
 pub enum PyHitResultGenerator {
     #[default]
     Fast,

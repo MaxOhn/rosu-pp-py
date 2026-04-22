@@ -40,3 +40,61 @@ impl From<GameMode> for PyGameMode {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rosu_pp::model::mode::GameMode as RustGameMode;
+
+    #[test]
+    fn test_py_to_rust_conversion() {
+        assert_eq!(RustGameMode::from(PyGameMode::Osu), RustGameMode::Osu);
+        assert_eq!(RustGameMode::from(PyGameMode::Taiko), RustGameMode::Taiko);
+        assert_eq!(RustGameMode::from(PyGameMode::Catch), RustGameMode::Catch);
+        assert_eq!(RustGameMode::from(PyGameMode::Mania), RustGameMode::Mania);
+    }
+
+    #[test]
+    fn test_rust_to_py_conversion() {
+        assert_eq!(PyGameMode::from(RustGameMode::Osu), PyGameMode::Osu);
+        assert_eq!(PyGameMode::from(RustGameMode::Taiko), PyGameMode::Taiko);
+        assert_eq!(PyGameMode::from(RustGameMode::Catch), PyGameMode::Catch);
+        assert_eq!(PyGameMode::from(RustGameMode::Mania), PyGameMode::Mania);
+    }
+
+    #[test]
+    fn test_roundtrip_conversion() {
+        for mode in [
+            RustGameMode::Osu,
+            RustGameMode::Taiko,
+            RustGameMode::Catch,
+            RustGameMode::Mania,
+        ] {
+            let py = PyGameMode::from(mode);
+            let back = RustGameMode::from(py);
+            assert_eq!(mode, back);
+        }
+    }
+
+    #[test]
+    fn test_equality() {
+        assert_eq!(PyGameMode::Osu, PyGameMode::Osu);
+        assert_eq!(PyGameMode::Taiko, PyGameMode::Taiko);
+        assert!(PyGameMode::Osu != PyGameMode::Taiko);
+    }
+
+    #[test]
+    fn test_default() {
+        let default = PyGameMode::default();
+        assert_eq!(default, PyGameMode::Osu);
+    }
+
+    #[test]
+    fn test_copy_clone() {
+        let mode = PyGameMode::Taiko;
+        let copied = mode;
+        let cloned = mode.clone();
+        assert_eq!(mode, copied);
+        assert_eq!(mode, cloned);
+    }
+}
