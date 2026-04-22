@@ -1,6 +1,6 @@
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 from enum import Enum
-from typing import List, Mapping, Optional, Self, Union
+from typing import Self
 
 class ArgsError(Exception):
     """Raised when an invalid argument is passed to a function."""
@@ -11,12 +11,13 @@ class ParseError(Exception):
 class ConvertError(Exception):
     """Raised when converting a beatmap to another game mode fails."""
 
-GameMods = Union[int, str, GameMod, List[Union[GameMod, str, int]]]
-GameMod = Mapping[str, Union[str, Optional[GameModSettings]]]
+GameMod = Mapping[str, str | GameModSettings | None]
 """
 Must contain item `'acronym': str` and optionally `'settings': GameModSettings`
 """
-GameModSettings = Mapping[str, Union[bool, float, str]]
+GameModSettings = Mapping[str, bool | float | str]
+
+GameMods = int | str | GameMod | list[GameMod | str | int]
 
 class GameMode(Enum):
     """
@@ -63,7 +64,7 @@ class Beatmap:
     """
 
     def __init__(self, **kwargs) -> None: ...
-    def convert(self, mode: GameMode, mods: Optional[GameMods]) -> None:
+    def convert(self, mode: GameMode, mods: GameMods | None) -> None:
         """
         Convert the beatmap to the specified mode
 
@@ -220,7 +221,7 @@ class Difficulty:
         Returns a gradual performance calculator for the current difficulty settings
         """
 
-    def set_mods(self, mods: Optional[GameMods]) -> None: ...
+    def set_mods(self, mods: GameMods | None) -> None: ...
     def set_clock_rate(self, clock_rate: float) -> None: ...
     def set_ar(self, ar: float, fixed: bool) -> None:
         """
@@ -403,7 +404,7 @@ class Performance:
 
     def __init__(self, **kwargs) -> None: ...
     def calculate(
-        self, arg: Union[DifficultyAttributes, PerformanceAttributes, Beatmap]
+        self, arg: DifficultyAttributes | PerformanceAttributes | Beatmap
     ) -> PerformanceAttributes:
         """
         Calculate performance attributes.
@@ -423,7 +424,7 @@ class Performance:
         Use the current difficulty settings to create a difficulty calculator
         """
 
-    def set_mods(self, mods: Optional[GameMods]) -> None: ...
+    def set_mods(self, mods: GameMods | None) -> None: ...
     def set_clock_rate(self, clock_rate: float) -> None: ...
     def set_ar(self, ar: float, fixed: bool) -> None:
         """
@@ -472,23 +473,23 @@ class Performance:
     def set_passed_objects(self, passed_objects: int) -> None: ...
     def set_hardrock_offsets(self, hardrock_offsets: bool) -> None: ...
     def set_lazer(self, lazer: bool) -> None: ...
-    def set_accuracy(self, accuracy: Optional[float]) -> None: ...
-    def set_combo(self, combo: Optional[int]) -> None: ...
-    def set_large_tick_hits(self, n_large_ticks: Optional[int]) -> None: ...
-    def set_small_tick_hits(self, n_large_ticks: Optional[int]) -> None: ...
-    def set_slider_end_hits(self, n_slider_ends: Optional[int]) -> None: ...
-    def set_n_geki(self, n_geki: Optional[int]) -> None: ...
-    def set_n_katu(self, n_katu: Optional[int]) -> None: ...
-    def set_n300(self, n300: Optional[int]) -> None: ...
-    def set_n100(self, n100: Optional[int]) -> None: ...
-    def set_n50(self, n50: Optional[int]) -> None: ...
-    def set_misses(self, misses: Optional[int]) -> None: ...
-    def set_legacy_total_score(self, legacy_total_score: Optional[int]) -> None: ...
+    def set_accuracy(self, accuracy: float | None) -> None: ...
+    def set_combo(self, combo: int | None) -> None: ...
+    def set_large_tick_hits(self, n_large_ticks: int | None) -> None: ...
+    def set_small_tick_hits(self, n_large_ticks: int | None) -> None: ...
+    def set_slider_end_hits(self, n_slider_ends: int | None) -> None: ...
+    def set_n_geki(self, n_geki: int | None) -> None: ...
+    def set_n_katu(self, n_katu: int | None) -> None: ...
+    def set_n300(self, n300: int | None) -> None: ...
+    def set_n100(self, n100: int | None) -> None: ...
+    def set_n50(self, n50: int | None) -> None: ...
+    def set_misses(self, misses: int | None) -> None: ...
+    def set_legacy_total_score(self, legacy_total_score: int | None) -> None: ...
     def set_hitresult_priority(
-        self, hitresult_priority: Optional[HitResultPriority]
+        self, hitresult_priority: HitResultPriority | None
     ) -> None: ...
     def set_hitresult_generator(
-        self, hitresult_generator: HitResultGenerator, mode: Optional[GameMode] = None
+        self, hitresult_generator: HitResultGenerator, mode: GameMode | None = None
     ) -> None: ...
 
 class GradualDifficulty(Iterator):
@@ -498,12 +499,12 @@ class GradualDifficulty(Iterator):
 
     def __init__(self, difficulty: Difficulty, map: Beatmap) -> None: ...
     def __iter__(self) -> Self: ...
-    def next(self) -> Optional[DifficultyAttributes]:
+    def next(self) -> DifficultyAttributes | None:
         """
         Advances the iterator and returns the next attributes.
         """
 
-    def nth(self, n: int) -> Optional[DifficultyAttributes]:
+    def nth(self, n: int) -> DifficultyAttributes | None:
         """
         Returns the `n`th attributes of the iterator.
 
@@ -523,13 +524,13 @@ class GradualPerformance:
     """
 
     def __init__(self, difficulty: Difficulty, map: Beatmap) -> None: ...
-    def next(self, state: ScoreState) -> Optional[PerformanceAttributes]:
+    def next(self, state: ScoreState) -> PerformanceAttributes | None:
         """
         Process the next hit object and calculate the performance attributes
         for the resulting score state.
         """
 
-    def nth(self, state: ScoreState, n: int) -> Optional[PerformanceAttributes]:
+    def nth(self, state: ScoreState, n: int) -> PerformanceAttributes | None:
         """
         Process everything up to the next `n`th hitobject and calculate the
         performance attributes for the resulting score state.
@@ -619,7 +620,7 @@ class BeatmapAttributesBuilder:
         """
 
     def set_mode(self, mode: GameMode, is_convert: bool) -> None: ...
-    def set_mods(self, mods: Optional[GameMods]) -> None: ...
+    def set_mods(self, mods: GameMods | None) -> None: ...
     def set_clock_rate(self, clock_rate: float) -> None: ...
     def set_ar(self, ar: float, fixed: bool) -> None:
         """
@@ -770,7 +771,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def aim(self) -> Optional[float]:
+    def aim(self) -> float | None:
         """
         The difficulty of the aim skill.
 
@@ -778,7 +779,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def aim_difficult_slider_count(self) -> Optional[float]:
+    def aim_difficult_slider_count(self) -> float | None:
         """
         The number of sliders weighted by difficulty.
 
@@ -786,7 +787,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def speed(self) -> Optional[float]:
+    def speed(self) -> float | None:
         """
         The difficulty of the speed skill.
 
@@ -794,7 +795,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def flashlight(self) -> Optional[float]:
+    def flashlight(self) -> float | None:
         """
         The difficulty of the flashlight skill.
 
@@ -802,7 +803,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def slider_factor(self) -> Optional[float]:
+    def slider_factor(self) -> float | None:
         """
         The ratio of the aim strain with and without considering sliders
 
@@ -810,7 +811,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def aim_top_weighted_slider_factor(self) -> Optional[float]:
+    def aim_top_weighted_slider_factor(self) -> float | None:
         """
         Describes how much of aim's difficult strain count is contributed to by
         sliders.
@@ -819,7 +820,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def speed_top_weighted_slider_factor(self) -> Optional[float]:
+    def speed_top_weighted_slider_factor(self) -> float | None:
         """
         Describes how much of speed's difficult strain count is contributed to
         by sliders.
@@ -828,7 +829,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def speed_note_count(self) -> Optional[float]:
+    def speed_note_count(self) -> float | None:
         """
         The number of clickable objects weighted by difficulty.
 
@@ -836,7 +837,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def aim_difficult_strain_count(self) -> Optional[float]:
+    def aim_difficult_strain_count(self) -> float | None:
         """
         Weighted sum of aim strains.
 
@@ -844,7 +845,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def speed_difficult_strain_count(self) -> Optional[float]:
+    def speed_difficult_strain_count(self) -> float | None:
         """
         Weighted sum of speed strains.
 
@@ -852,25 +853,25 @@ class DifficultyAttributes:
         """
 
     @property
-    def nested_score_per_object(self) -> Optional[float]:
+    def nested_score_per_object(self) -> float | None:
         """
         Only available for osu!.
         """
 
     @property
-    def legacy_score_base_multiplier(self) -> Optional[float]:
+    def legacy_score_base_multiplier(self) -> float | None:
         """
         Only available for osu!.
         """
 
     @property
-    def maximum_legacy_combo_score(self) -> Optional[float]:
+    def maximum_legacy_combo_score(self) -> float | None:
         """
         Only available for osu!.
         """
 
     @property
-    def hp(self) -> Optional[float]:
+    def hp(self) -> float | None:
         """
         The health drain rate.
 
@@ -878,7 +879,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def n_circles(self) -> Optional[int]:
+    def n_circles(self) -> int | None:
         """
         The amount of circles.
 
@@ -886,7 +887,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def n_sliders(self) -> Optional[int]:
+    def n_sliders(self) -> int | None:
         """
         The amount of sliders.
 
@@ -894,7 +895,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def n_large_ticks(self) -> Optional[int]:
+    def n_large_ticks(self) -> int | None:
         """
         The amount of "large tick" hits.
 
@@ -909,7 +910,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def n_spinners(self) -> Optional[int]:
+    def n_spinners(self) -> int | None:
         """
         The amount of spinners.
 
@@ -917,7 +918,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def stamina(self) -> Optional[float]:
+    def stamina(self) -> float | None:
         """
         The difficulty of the stamina skill.
 
@@ -925,7 +926,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def single_color_stamina(self) -> Optional[float]:
+    def single_color_stamina(self) -> float | None:
         """
         The difficulty of the single color stamina skill.
 
@@ -933,7 +934,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def reading(self) -> Optional[float]:
+    def reading(self) -> float | None:
         """
         The difficulty of the reading skill.
 
@@ -941,7 +942,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def rhythm(self) -> Optional[float]:
+    def rhythm(self) -> float | None:
         """
         The difficulty of the rhythm skill.
 
@@ -949,7 +950,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def color(self) -> Optional[float]:
+    def color(self) -> float | None:
         """
         The difficulty of the color skill.
 
@@ -957,7 +958,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def n_fruits(self) -> Optional[int]:
+    def n_fruits(self) -> int | None:
         """
         The amount of fruits.
 
@@ -965,7 +966,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def n_droplets(self) -> Optional[int]:
+    def n_droplets(self) -> int | None:
         """
         The amount of droplets.
 
@@ -973,7 +974,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def n_tiny_droplets(self) -> Optional[int]:
+    def n_tiny_droplets(self) -> int | None:
         """
         The amount of tiny droplets.
 
@@ -981,7 +982,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def n_objects(self) -> Optional[int]:
+    def n_objects(self) -> int | None:
         """
         The amount of hitobjects in the map.
 
@@ -989,7 +990,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def n_hold_notes(self) -> Optional[int]:
+    def n_hold_notes(self) -> int | None:
         """
         The amount of hold notes in the map.
 
@@ -997,7 +998,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def ar(self) -> Optional[float]:
+    def ar(self) -> float | None:
         """
         The approach rate.
 
@@ -1005,7 +1006,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def preempt(self) -> Optional[float]:
+    def preempt(self) -> float | None:
         """
         Time preempt (AR time window).
 
@@ -1013,7 +1014,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def great_hit_window(self) -> Optional[float]:
+    def great_hit_window(self) -> float | None:
         """
         The perceived hit window for an n300 inclusive of rate-adjusting mods (DT/HT/etc)
 
@@ -1021,7 +1022,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def ok_hit_window(self) -> Optional[float]:
+    def ok_hit_window(self) -> float | None:
         """
         The perceived hit window for an n100 inclusive of rate-adjusting mods (DT/HT/etc)
 
@@ -1029,7 +1030,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def meh_hit_window(self) -> Optional[float]:
+    def meh_hit_window(self) -> float | None:
         """
         The perceived hit window for an n50 inclusive of rate-adjusting mods (DT/HT/etc)
 
@@ -1037,7 +1038,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def mono_stamina_factor(self) -> Optional[float]:
+    def mono_stamina_factor(self) -> float | None:
         """
         The ratio of stamina difficulty from mono-color (single color)
         streams to total stamina difficulty.
@@ -1046,7 +1047,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def mechanical_difficulty(self) -> Optional[float]:
+    def mechanical_difficulty(self) -> float | None:
         """
         The difficulty corresponding to the mechanical skills.
 
@@ -1056,7 +1057,7 @@ class DifficultyAttributes:
         """
 
     @property
-    def consistency_factor(self) -> Optional[float]:
+    def consistency_factor(self) -> float | None:
         """
         The factor corresponding to the consistency of a map.
 
@@ -1087,7 +1088,7 @@ class PerformanceAttributes:
         """
 
     @property
-    def pp_aim(self) -> Optional[float]:
+    def pp_aim(self) -> float | None:
         """
         The aim portion of the final pp.
 
@@ -1095,7 +1096,7 @@ class PerformanceAttributes:
         """
 
     @property
-    def pp_flashlight(self) -> Optional[float]:
+    def pp_flashlight(self) -> float | None:
         """
         The flashlight portion of the final pp.
 
@@ -1103,7 +1104,7 @@ class PerformanceAttributes:
         """
 
     @property
-    def pp_speed(self) -> Optional[float]:
+    def pp_speed(self) -> float | None:
         """
         The speed portion of the final pp.
 
@@ -1111,7 +1112,7 @@ class PerformanceAttributes:
         """
 
     @property
-    def pp_accuracy(self) -> Optional[float]:
+    def pp_accuracy(self) -> float | None:
         """
         The accuracy portion of the final pp.
 
@@ -1119,7 +1120,7 @@ class PerformanceAttributes:
         """
 
     @property
-    def effective_miss_count(self) -> Optional[float]:
+    def effective_miss_count(self) -> float | None:
         """
         Scaled miss count based on total hits.
 
@@ -1127,7 +1128,7 @@ class PerformanceAttributes:
         """
 
     @property
-    def speed_deviation(self) -> Optional[float]:
+    def speed_deviation(self) -> float | None:
         """
         Approximated unstable-rate
 
@@ -1135,7 +1136,7 @@ class PerformanceAttributes:
         """
 
     @property
-    def estimated_unstable_rate(self) -> Optional[float]:
+    def estimated_unstable_rate(self) -> float | None:
         """
         Upper bound on the player's tap deviation.
 
@@ -1143,7 +1144,7 @@ class PerformanceAttributes:
         """
 
     @property
-    def pp_difficulty(self) -> Optional[float]:
+    def pp_difficulty(self) -> float | None:
         """
         The strain portion of the final pp.
 
@@ -1151,31 +1152,31 @@ class PerformanceAttributes:
         """
 
     @property
-    def combo_based_estimated_miss_count(self) -> Optional[float]:
+    def combo_based_estimated_miss_count(self) -> float | None:
         """
         Only available for osu!.
         """
 
     @property
-    def score_based_estimated_miss_count(self) -> Optional[float]:
+    def score_based_estimated_miss_count(self) -> float | None:
         """
         Only *optionally* available for osu!.
         """
 
     @property
-    def aim_estimated_slider_breaks(self) -> Optional[float]:
+    def aim_estimated_slider_breaks(self) -> float | None:
         """
         Only available for osu!.
         """
 
     @property
-    def speed_estimated_slider_breaks(self) -> Optional[float]:
+    def speed_estimated_slider_breaks(self) -> float | None:
         """
         Only available for osu!.
         """
 
     @property
-    def state(self) -> Optional[ScoreState]:
+    def state(self) -> ScoreState | None:
         """
         The hitresult score state that was used for performance calculation.
 
@@ -1201,67 +1202,67 @@ class Strains:
         """
 
     @property
-    def aim(self) -> Optional[List[float]]:
+    def aim(self) -> list[float] | None:
         """
         Strain peaks of the aim skill in osu!
         """
 
     @property
-    def aim_no_sliders(self) -> Optional[List[float]]:
+    def aim_no_sliders(self) -> list[float] | None:
         """
         Strain peaks of the aim skill without sliders in osu!
         """
 
     @property
-    def speed(self) -> Optional[List[float]]:
+    def speed(self) -> list[float] | None:
         """
         Strain peaks of the speed skill in osu!
         """
 
     @property
-    def flashlight(self) -> Optional[List[float]]:
+    def flashlight(self) -> list[float] | None:
         """
         Strain peaks of the flashlight skill in osu!
         """
 
     @property
-    def color(self) -> Optional[List[float]]:
+    def color(self) -> list[float] | None:
         """
         Strain peaks of the color skill in osu!taiko.
         """
 
     @property
-    def reading(self) -> Optional[List[float]]:
+    def reading(self) -> list[float] | None:
         """
         Strain peaks of the reading skill in osu!taiko.
         """
 
     @property
-    def rhythm(self) -> Optional[List[float]]:
+    def rhythm(self) -> list[float] | None:
         """
         Strain peaks of the rhythm skill in osu!taiko.
         """
 
     @property
-    def stamina(self) -> Optional[List[float]]:
+    def stamina(self) -> list[float] | None:
         """
         Strain peaks of the stamina skill in osu!taiko.
         """
 
     @property
-    def single_color_stamina(self) -> Optional[List[float]]:
+    def single_color_stamina(self) -> list[float] | None:
         """
         Strain peaks of the single color stamina skill in osu!taiko.
         """
 
     @property
-    def movement(self) -> Optional[List[float]]:
+    def movement(self) -> list[float] | None:
         """
         Strain peaks of the movement skill in osu!catch.
         """
 
     @property
-    def strains(self) -> Optional[List[float]]:
+    def strains(self) -> list[float] | None:
         """
         Strain peaks of the strain skill in osu!mania.
         """

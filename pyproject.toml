@@ -31,7 +31,12 @@ pytest = ">=8"
 
 [tool.ruff]
 target-version = "py311"
-exclude = ["rosu_pp_py.pyi"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I"]
+select = [
+    "E",    # pycodestyle errors (line length, syntax errors, etc.)
+    "F",    # pyflakes (unused imports, undefined names, etc.)
+    "I",    # isort (import sorting)
+    "UP",   # pyupgrade (modernize syntax for target Python version)
+]
+ignore = ["E501"]  # line length - docstrings in stubs are hard to wrap
