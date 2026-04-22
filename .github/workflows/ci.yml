@@ -83,17 +83,20 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v7
 
-      - name: Install maturin and pytest
+      - name: Create virtualenv
+        run: uv venv
+
+      - name: Install tools
         run: uv tool install maturin && uv tool install pytest
 
-      - name: Install package in editable mode
-        run: uv pip install -e .
+      - name: Build and install package
+        run: maturin develop
 
       - name: Run Rust tests
         run: cargo test
 
       - name: Run Python tests
-        run: pytest
+        run: uv run pytest
 
   build-sdist:
     name: Build sdist
