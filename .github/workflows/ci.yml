@@ -83,17 +83,11 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v7
 
-      - name: Create virtualenv
-        run: uv venv
-
-      - name: Activate virtualenv
-        run: echo "VIRTUAL_ENV=$PWD/.venv" >> $GITHUB_ENV && echo "$PWD/.venv/bin" >> $GITHUB_PATH
-
       - name: Install maturin and pytest
         run: uv tool install maturin && uv tool install pytest
 
-      - name: Build and install
-        run: maturin develop
+      - name: Install package in editable mode
+        run: uv pip install -e .
 
       - name: Run Rust tests
         run: cargo test
