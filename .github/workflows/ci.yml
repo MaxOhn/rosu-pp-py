@@ -86,6 +86,9 @@ jobs:
       - name: Create virtualenv
         run: uv venv
 
+      - name: Activate virtualenv
+        run: echo "VIRTUAL_ENV=$PWD/.venv" >> $GITHUB_ENV && echo "$PWD/.venv/bin" >> $GITHUB_PATH
+
       - name: Install maturin and pytest
         run: uv tool install maturin && uv tool install pytest
 
