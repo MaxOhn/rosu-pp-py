@@ -189,7 +189,7 @@ impl PyDifficulty {
     }
 
     pub fn try_as_difficulty(&self, mode: GameMode, py: Python<'_>) -> PyResult<Difficulty> {
-        let mut difficulty = Difficulty::new();
+        let mut difficulty = self.inner.clone().unwrap_or_default();
 
         difficulty = match PyGameMods::extract(self.mods.as_ref(), mode, py) {
             Ok(PyGameMods::Lazer(ref mods)) => difficulty.mods(mods.clone()),
