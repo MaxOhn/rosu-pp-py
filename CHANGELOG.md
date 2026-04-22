@@ -1,4 +1,9 @@
-# v4.0.1 (2026-04-12)
+# v4.0.2 (2026-04-22)
+
+- Fixed a bug causing difficulty settings to not be applied
+- Added some missing definitions in the pyi stub
+
+## v4.0.1 (2026-04-12)
 
 Fixed a bug about legacy score miss approximation
 
