@@ -1,6 +1,15 @@
 from collections.abc import Iterator
 from enum import Enum
-from typing import List, Mapping, Optional, Union
+from typing import List, Mapping, Optional, Self, Union
+
+class ArgsError(Exception):
+    """Raised when an invalid argument is passed to a function."""
+
+class ParseError(Exception):
+    """Raised when parsing a beatmap or mods string fails."""
+
+class ConvertError(Exception):
+    """Raised when converting a beatmap to another game mode fails."""
 
 GameMods = Union[int, str, GameMod, List[Union[GameMod, str, int]]]
 GameMod = Mapping[str, Union[str, Optional[GameModSettings]]]
@@ -478,6 +487,9 @@ class Performance:
     def set_hitresult_priority(
         self, hitresult_priority: Optional[HitResultPriority]
     ) -> None: ...
+    def set_hitresult_generator(
+        self, hitresult_generator: HitResultGenerator, mode: Optional[GameMode] = None
+    ) -> None: ...
 
 class GradualDifficulty(Iterator):
     """
@@ -485,6 +497,7 @@ class GradualDifficulty(Iterator):
     """
 
     def __init__(self, difficulty: Difficulty, map: Beatmap) -> None: ...
+    def __iter__(self) -> Self: ...
     def next(self) -> Optional[DifficultyAttributes]:
         """
         Advances the iterator and returns the next attributes.
