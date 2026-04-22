@@ -14,7 +14,7 @@ The library exposes multiple classes:
   - [`Difficulty`](https://github.com/MaxOhn/rosu-pp-py/blob/f067e75901ac5226a7bc1d828cc8a8c7fce4b3eb/rosu_pp_py.pyi#L111-L264): Class to calculate difficulty attributes, strains, or create gradual calculators
   - [`Performance`](https://github.com/MaxOhn/rosu-pp-py/blob/f067e75901ac5226a7bc1d828cc8a8c7fce4b3eb/rosu_pp_py.pyi#L266-L480): Performance attributes calculator
   - [`GradualDifficulty`](https://github.com/MaxOhn/rosu-pp-py/blob/f067e75901ac5226a7bc1d828cc8a8c7fce4b3eb/rosu_pp_py.pyi#L482-L505): Calculator to calculate difficulty attributes after each hitobject
-  - [`GradualPerformance`](https://github.com/MaxOhn/rosu-pp-py/blob/f067e75901ac5226a7bc1d828cc8a8c7fce4b3eb/rosu_pp_py.pyi#L507-L532): Calculator to calculator performance attributes after each hitresult
+  - [`GradualPerformance`](https://github.com/MaxOhn/rosu-pp-py/blob/f067e75901ac5226a7bc1d828cc8a8c7fce4b3eb/rosu_pp_py.pyi#L507-L532): Calculator to calculate performance attributes after each hitresult
   - [`BeatmapAttributesBuilder`](https://github.com/MaxOhn/rosu-pp-py/blob/f067e75901ac5226a7bc1d828cc8a8c7fce4b3eb/rosu_pp_py.pyi#L534-L653): Beatmap attributes calculator
 - Results
   - [`DifficultyAttributes`](https://github.com/MaxOhn/rosu-pp-py/blob/f067e75901ac5226a7bc1d828cc8a8c7fce4b3eb/rosu_pp_py.pyi#L736-L1057)
