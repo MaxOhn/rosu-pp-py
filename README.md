@@ -137,9 +137,9 @@ while True:
 
 Wherever mods are specified, their type should coincide with the following alias definition:
 ```py
-GameMods = Union[int, str, GameMod, List[Union[GameMod, str, int]]]
-GameMod = dict[str, Union[str, GameModSettings]]
-GameModSettings = dict[str, Union[bool, float, str]]
+GameMods = int | str | GameMod | list[GameMod | str | int]
+GameMod = dict[str, str | GameModSettings]
+GameModSettings = dict[str, bool | float | str]
 ```
 
 That means, mods can be given either through their [(legacy) bitflags](https://github.com/ppy/osu-api/wiki#reference),
