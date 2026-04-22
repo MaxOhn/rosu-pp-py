@@ -1,4 +1,5 @@
 import pytest
+
 import rosu_pp_py as rosu
 from rosu_pp_py import ArgsError
 

@@ -43,3 +43,6 @@ select = [
     "UP",   # pyupgrade (modernize syntax for target Python version)
 ]
 ignore = ["E501"]  # line length - docstrings in stubs are hard to wrap
+
+[tool.ruff.lint.isort]
+known-first-party = ["rosu_pp_py"]

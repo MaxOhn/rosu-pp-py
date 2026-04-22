@@ -1,6 +1,7 @@
 import pathlib
 
 import pytest
+
 import rosu_pp_py as rosu
 
 FIXTURES = pathlib.Path(__file__).parent / "fixtures"
